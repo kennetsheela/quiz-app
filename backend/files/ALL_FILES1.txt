@@ -1,0 +1,393 @@
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\models>(
+echo =====================================  
+ echo FILE NAME: Event.js  
+ echo =====================================  
+ type "Event.js"  
+ echo.
+) 
+=====================================
+FILE NAME: Event.js
+=====================================
+const mongoose = require("mongoose");
+
+const EventSetSchema = new mongoose.Schema({
+  setName: {
+    type: String,
+    required: true
+  },
+  questionsFile: {
+    type: String,
+    required: true
+  },
+  timeLimit: {
+    type: Number,
+    required: true // minutes
+  },
+  isActive: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const EventSchema = new mongoose.Schema({
+  eventName: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  adminPassword: {
+    type: String,
+    required: true
+  },
+  studentPassword: {
+    type: String,
+    required: true
+  },
+  startTime: {
+    type: Date,
+    required: true
+  },
+  endTime: {
+    type: Date,
+    required: true
+  },
+  sets: {
+    type: [EventSetSchema],
+    default: []
+  },
+  createdBy: {
+    type: String,
+    required: true // Firebase UID
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+module.exports = mongoose.model("Event", EventSchema);
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\models>(
+echo =====================================  
+ echo FILE NAME: EventParticipant.js  
+ echo =====================================  
+ type "EventParticipant.js"  
+ echo.
+) 
+=====================================
+FILE NAME: EventParticipant.js
+=====================================
+const mongoose = require("mongoose");
+
+const EventParticipantSchema = new mongoose.Schema({
+  eventId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Event",
+    required: true,
+    index: true
+  },
+  userId: {
+    type: String,
+    required: true,
+    index: true // Firebase UID
+  },
+  rollNo: {
+    type: String,
+    required: true
+  },
+  department: {
+    type: String,
+    required: true
+  },
+  setResults: [
+    {
+      setId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+      },
+      startedAt: {
+        type: Date,
+        default: Date.now
+      },
+      completedAt: {
+        type: Date,
+        default: null
+      },
+      score: {
+        type: Number,
+        default: null
+      },
+      totalQuestions: {
+        type: Number,
+        default: 0
+      },
+      autoSubmitAt: {
+        type: Date,
+        default: null
+      }
+    }
+  ]
+}, { 
+  timestamps: true 
+});
+
+// Compound index for efficient lookups
+EventParticipantSchema.index({ eventId: 1, userId: 1 }, { unique: true });
+
+module.exports = mongoose.model("EventParticipant", EventParticipantSchema);
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\models>(
+echo =====================================  
+ echo FILE NAME: PracticeProgress.js  
+ echo =====================================  
+ type "PracticeProgress.js"  
+ echo.
+) 
+=====================================
+FILE NAME: PracticeProgress.js
+=====================================
+const mongoose = require("mongoose");
+
+const PracticeProgressSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  category: {
+    type: String,
+    required: true
+  },
+  topic: {
+    type: String,
+    required: true
+  },
+  level: {
+    type: String,
+    required: true
+  },
+  setNumber: {
+    type: Number,
+    required: true
+  },
+  startedAt: {
+    type: Date,
+    default: Date.now
+  },
+  score: {
+    type: Number,
+    min: 0,
+    default: null
+  },
+  totalQuestions: {
+    type: Number,
+    required: true
+  },
+  completed: {
+    type: Boolean,
+    default: false
+  },
+  completedAt: {
+    type: Date,
+    default: null
+  },
+  answers: [{
+    questionId: mongoose.Schema.Types.ObjectId,
+    selectedAnswer: String,
+    isCorrect: Boolean
+  }]
+});
+
+// One progress per user per set
+PracticeProgressSchema.index(
+  { userId: 1, category: 1, topic: 1, level: 1, setNumber: 1 },
+  { unique: true }
+);
+
+module.exports = mongoose.model("PracticeProgress", PracticeProgressSchema);
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\models>(
+echo =====================================  
+ echo FILE NAME: PracticeSet.js  
+ echo =====================================  
+ type "PracticeSet.js"  
+ echo.
+) 
+=====================================
+FILE NAME: PracticeSet.js
+=====================================
+const mongoose = require("mongoose");
+
+const PracticeSetSchema = new mongoose.Schema({
+  category: {
+    type: String,
+    required: true,
+    index: true
+  },
+  topic: {
+    type: String,
+    required: true,
+    index: true
+  },
+  level: {
+    type: String,
+    enum: ["easy", "medium", "hard"],
+    required: true,
+    index: true
+  },
+  setNumber: {
+    type: Number,
+    required: true
+  },
+  timeLimit: { 
+    type: Number, 
+    default: 10 // minutes
+  },
+  questions: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "QuestionBank"
+    }
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Prevent duplicate sets
+PracticeSetSchema.index(
+  { category: 1, topic: 1, level: 1, setNumber: 1 },
+  { unique: true }
+);
+
+module.exports = mongoose.model("PracticeSet", PracticeSetSchema);
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\models>(
+echo =====================================  
+ echo FILE NAME: QuestionBank.js  
+ echo =====================================  
+ type "QuestionBank.js"  
+ echo.
+) 
+=====================================
+FILE NAME: QuestionBank.js
+=====================================
+const mongoose = require("mongoose");
+
+const QuestionSchema = new mongoose.Schema({
+  category: {
+    type: String,
+    required: true,
+    enum: ["aptitude", "reasoning", "coding", "technical"],
+    index: true
+  },
+  topic: {
+    type: String,
+    required: true,
+    trim: true,
+    index: true
+  },
+  level: {
+    type: String,
+    required: true,
+    enum: ["easy", "medium", "hard"],
+    index: true
+  },
+  question: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  options: {
+    type: [String],
+    required: true,
+    validate: {
+      validator: v => v.length >= 2 && v.length <= 4,
+      message: "Must have 2-4 options"
+    }
+  },
+  correctAnswer: {
+    type: String,
+    required: true
+  },
+  explanation: {
+    type: String,
+    default: ""
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Compound index for efficient querying
+QuestionSchema.index({ category: 1, topic: 1, level: 1 });
+
+module.exports = mongoose.model("QuestionBank", QuestionSchema);
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\models>(
+echo =====================================  
+ echo FILE NAME: User.js  
+ echo =====================================  
+ type "User.js"  
+ echo.
+) 
+=====================================
+FILE NAME: User.js
+=====================================
+const mongoose = require("mongoose");
+
+const UserSchema = new mongoose.Schema({
+  firebaseUid: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  username: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  department: {
+    type: String,
+    enum: ["aids", "cs", "it", "mechanical", "civil", "ece", "eee"],
+    required: true
+  },
+  college: {
+    type: String,
+    required: true
+  },
+  city: {
+    type: String,
+    required: true
+  },
+  photoURL: {
+    type: String,
+    default: null
+  },
+  provider: {
+    type: String,
+    enum: ["email", "google", "github"],
+    default: "email"
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+module.exports = mongoose.model("User", UserSchema);

@@ -1,0 +1,347 @@
+
+C:\Users\J KENNETSHEELA\quiz-app\frontend\js>(
+echo =====================================  
+ echo FILE NAME: api.js  
+ echo =====================================  
+ type "api.js"  
+ echo.
+) 
+=====================================
+FILE NAME: api.js
+=====================================
+import { auth } from "./firebase.js";
+
+const API_BASE_URL = "http://localhost:5000/api";
+
+// ✅ FIX: Added token refresh logic
+async function getAuthToken() {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+  
+  // Force refresh token to ensure it's valid
+  // Firebase tokens expire after 1 hour
+  return await user.getIdToken(true);
+}
+
+async function apiCall(endpoint, options = {}) {
+  try {
+    const token = await getAuthToken();
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...options.headers
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "API request failed");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("API call error:", error);
+    
+    // ✅ FIX: Better error handling
+    if (error.message.includes("auth/")) {
+      // Firebase auth error - redirect to login
+      window.location.href = "index.html";
+    }
+    
+    throw error;
+  }
+}
+
+// Auth APIs
+export const authAPI = {
+  saveProfile: (profileData) => apiCall("/auth/profile", {
+    method: "POST",
+    body: JSON.stringify(profileData)
+  }),
+  
+  getProfile: () => apiCall("/auth/profile"),
+  
+  recordLogin: () => apiCall("/auth/login", { method: "POST" })
+};
+
+// Practice APIs
+export const practiceAPI = {
+  getSets: (category, topic, level) => 
+    apiCall(`/practice/sets?category=${category}&topic=${topic}&level=${level}`),
+  
+  getQuestions: (setId) => apiCall(`/practice/sets/${setId}/questions`),
+  
+  startSet: (data) => apiCall("/practice/sets/start", {
+    method: "POST",
+    body: JSON.stringify(data)
+  }),
+  
+  submitSet: (data) => apiCall("/practice/sets/submit", {
+    method: "POST",
+    body: JSON.stringify(data)
+  }),
+  
+  getProgress: () => apiCall("/practice/progress"),
+  
+  // ✅ FIX: Public endpoint - no auth needed
+  getCategories: () => fetch(`${API_BASE_URL}/practice/categories`).then(r => r.json()),
+  
+  // ✅ NEW: Get topics for category
+  getTopics: (category) => 
+    fetch(`${API_BASE_URL}/practice/categories/${category}/topics`).then(r => r.json())
+};
+
+// Event APIs
+export const eventAPI = {
+  getAll: () => fetch(`${API_BASE_URL}/events`).then(r => r.json()),
+  
+  getEvent: (eventId) => fetch(`${API_BASE_URL}/events/${eventId}`).then(r => r.json()),
+  
+  createEvent: async (formData) => {
+    const token = await getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/events/create`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`
+        // Don't set Content-Type for multipart/form-data
+      },
+      body: formData
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to create event");
+    }
+    
+    return response.json();
+  },
+  
+  studentLogin: (data) => apiCall("/events/student-login", {
+    method: "POST",
+    body: JSON.stringify(data)
+  }),
+  
+  getActiveSet: (eventId) => 
+    fetch(`${API_BASE_URL}/events/${eventId}/active-set`).then(r => r.json()),
+  
+  startSet: (data) => apiCall("/events/start-set", {
+    method: "POST",
+    body: JSON.stringify(data)
+  }),
+  
+  submitSet: (data) => apiCall("/events/submit-set", {
+    method: "POST",
+    body: JSON.stringify(data)
+  }),
+  
+  toggleSet: (data) => apiCall("/events/toggle-set", {
+    method: "POST",
+    body: JSON.stringify(data)
+  }),
+  
+  getParticipants: (eventId) => apiCall(`/events/${eventId}/participants`),
+  
+  getStats: (eventId) => apiCall(`/events/${eventId}/stats`),
+  
+  deleteEvent: (eventId, adminPassword) => apiCall(`/events/${eventId}`, {
+    method: "DELETE",
+    body: JSON.stringify({ adminPassword })
+  })
+};
+
+export default {
+  authAPI,
+  practiceAPI,
+  eventAPI
+};
+
+C:\Users\J KENNETSHEELA\quiz-app\frontend\js>(
+echo =====================================  
+ echo FILE NAME: auth.js  
+ echo =====================================  
+ type "auth.js"  
+ echo.
+) 
+=====================================
+FILE NAME: auth.js
+=====================================
+import { auth } from "./firebase.js";
+import { 
+  onAuthStateChanged, 
+  signOut 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// Check if user is authenticated
+export function requireAuth(redirectTo = "index.html") {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe(); // Unsubscribe after first call
+      if (user) {
+        console.log("User authenticated:", user.uid);
+        resolve(user);
+      } else {
+        console.log("No user authenticated, redirecting...");
+        window.location.href = redirectTo;
+        reject(new Error("Not authenticated"));
+      }
+    });
+  });
+}
+
+// Logout function
+export async function logout() {
+  try {
+    await signOut(auth);
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Logout error:", error);
+    alert("Error logging out: " + error.message);
+  }
+}
+
+// Get current user
+export function getCurrentUser() {
+  return auth.currentUser;
+}
+
+// Setup logout button
+export function setupLogoutButton(buttonId = "logoutBtn") {
+  const logoutBtn = document.getElementById(buttonId);
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+  }
+}
+
+C:\Users\J KENNETSHEELA\quiz-app\frontend\js>(
+echo =====================================  
+ echo FILE NAME: firebase.js  
+ echo =====================================  
+ type "firebase.js"  
+ echo.
+) 
+=====================================
+FILE NAME: firebase.js
+=====================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBcRtgd-z14UvwmbheL-yngJatMSzoMmfU",
+  authDomain: "quiz-app-3e991.firebaseapp.com",
+  projectId: "quiz-app-3e991",
+  storageBucket: "quiz-app-3e991.firebasestorage.app",
+  messagingSenderId: "102955195852",
+  appId: "1:102955195852:web:cb197f01bba5209bcd1169"
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+
+C:\Users\J KENNETSHEELA\quiz-app\frontend\js>(
+echo =====================================  
+ echo FILE NAME: theme.js  
+ echo =====================================  
+ type "theme.js"  
+ echo.
+) 
+=====================================
+FILE NAME: theme.js
+=====================================
+// Theme Manager
+const THEME_KEY = "quiz-app-theme";
+
+export function initTheme() {
+  const savedTheme = localStorage.getItem(THEME_KEY) || "light";
+  applyTheme(savedTheme);
+  updateThemeIcon(savedTheme);
+}
+
+export function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+  const newTheme = currentTheme === "light" ? "dark" : "light";
+  applyTheme(newTheme);
+  localStorage.setItem(THEME_KEY, newTheme);
+  updateThemeIcon(newTheme);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+}
+
+function updateThemeIcon(theme) {
+  const themeIcon = document.querySelector(".theme-toggle");
+  if (themeIcon) {
+    themeIcon.className = theme === "light" ? "fa-solid fa-moon theme-toggle" : "fa-solid fa-sun theme-toggle";
+  }
+}
+
+// Setup theme toggle button
+export function setupThemeToggle() {
+  const themeToggle = document.querySelector(".theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme);
+  }
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
+  setupThemeToggle();
+});
+
+C:\Users\J KENNETSHEELA\quiz-app\frontend\js>(
+echo =====================================  
+ echo FILE NAME: utils.js  
+ echo =====================================  
+ type "utils.js"  
+ echo.
+) 
+=====================================
+FILE NAME: utils.js
+=====================================
+// Utility functions
+
+export function formatDate(date) {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+export function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+export function calculateXPForLevel(level) {
+  return level * 100;
+}
+
+export function calculateLevel(xp) {
+  return Math.floor(xp / 100) + 1;
+}
+
+export function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+export function truncateText(text, maxLength) {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}

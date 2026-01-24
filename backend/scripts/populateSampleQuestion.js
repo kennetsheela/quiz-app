@@ -1,0 +1,439 @@
+require("dotenv").config();
+const mongoose = require("mongoose");
+const QuestionBank = require("../models/QuestionBank");
+const PracticeSet = require("../models/PracticeSet");
+
+mongoose.connect(process.env.MONGO_URI);
+
+// Sample questions for each category/topic/level
+const sampleQuestions = [
+  // ============================================================
+  // APTITUDE - PERCENTAGES - EASY
+  // ============================================================
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "What is 20% of 500?",
+    options: ["50", "100", "150", "200"],
+    correctAnswer: "100",
+    explanation: "20% = 20/100 = 0.2, so 0.2 × 500 = 100"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "If 25% of a number is 50, what is the number?",
+    options: ["100", "150", "200", "250"],
+    correctAnswer: "200",
+    explanation: "Let x be the number. 25% of x = 50, so 0.25x = 50, x = 200"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "What is 10% of 1000?",
+    options: ["10", "50", "100", "150"],
+    correctAnswer: "100",
+    explanation: "10% of 1000 = (10/100) × 1000 = 100"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "Convert 0.75 to percentage",
+    options: ["7.5%", "75%", "750%", "0.75%"],
+    correctAnswer: "75%",
+    explanation: "0.75 = 75/100 = 75%"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "What is 50% of 80?",
+    options: ["20", "30", "40", "50"],
+    correctAnswer: "40",
+    explanation: "50% of 80 = (50/100) × 80 = 40"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "If a shirt costs $40 and is discounted by 25%, what is the new price?",
+    options: ["$10", "$20", "$30", "$35"],
+    correctAnswer: "$30",
+    explanation: "Discount = 25% of 40 = $10, New price = 40 - 10 = $30"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "What percentage is 30 out of 150?",
+    options: ["10%", "15%", "20%", "25%"],
+    correctAnswer: "20%",
+    explanation: "(30/150) × 100 = 20%"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "Increase 200 by 10%",
+    options: ["210", "220", "230", "240"],
+    correctAnswer: "220",
+    explanation: "10% of 200 = 20, New value = 200 + 20 = 220"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "What is 5% of 2000?",
+    options: ["50", "100", "150", "200"],
+    correctAnswer: "100",
+    explanation: "5% of 2000 = (5/100) × 2000 = 100"
+  },
+  {
+    category: "aptitude",
+    topic: "percentages",
+    level: "easy",
+    question: "Convert 1/4 to percentage",
+    options: ["20%", "25%", "30%", "40%"],
+    correctAnswer: "25%",
+    explanation: "1/4 = 0.25 = 25%"
+  },
+
+  // ============================================================
+  // TECHNICAL - OPERATING SYSTEMS - EASY
+  // ============================================================
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "Which of the following is NOT an operating system?",
+    options: ["Windows", "Linux", "Oracle", "macOS"],
+    correctAnswer: "Oracle",
+    explanation: "Oracle is a database management system, not an OS"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "What does OS stand for?",
+    options: ["Open Source", "Operating System", "Online Service", "Optical Storage"],
+    correctAnswer: "Operating System",
+    explanation: "OS is the abbreviation for Operating System"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "Which scheduling algorithm allocates CPU first to the process that requests it first?",
+    options: ["FCFS", "SJF", "Round Robin", "Priority"],
+    correctAnswer: "FCFS",
+    explanation: "First Come First Served (FCFS) processes requests in order of arrival"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "What is a process?",
+    options: ["Program in execution", "Program on disk", "Code only", "Data only"],
+    correctAnswer: "Program in execution",
+    explanation: "A process is a program that is currently being executed"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "Which is NOT a state of a process?",
+    options: ["Ready", "Running", "Waiting", "Compiling"],
+    correctAnswer: "Compiling",
+    explanation: "Process states are: New, Ready, Running, Waiting, Terminated"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "What is virtual memory?",
+    options: ["RAM only", "Hard disk used as RAM", "Cache memory", "ROM"],
+    correctAnswer: "Hard disk used as RAM",
+    explanation: "Virtual memory uses disk space to extend available RAM"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "Which is a type of multitasking?",
+    options: ["Preemptive", "Destructive", "Constructive", "Selective"],
+    correctAnswer: "Preemptive",
+    explanation: "Preemptive multitasking allows OS to decide when to switch tasks"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "What is a thread?",
+    options: ["Smallest unit of execution", "Type of process", "Memory segment", "CPU core"],
+    correctAnswer: "Smallest unit of execution",
+    explanation: "A thread is the smallest sequence of programmed instructions"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "Which command is used to list files in Linux?",
+    options: ["dir", "ls", "list", "show"],
+    correctAnswer: "ls",
+    explanation: "ls (list) command displays files and directories in Linux"
+  },
+  {
+    category: "technical",
+    topic: "operating-systems",
+    level: "easy",
+    question: "What does GUI stand for?",
+    options: ["General User Interface", "Graphical User Interface", "Global Utility Interface", "General Utility Integration"],
+    correctAnswer: "Graphical User Interface",
+    explanation: "GUI provides visual interaction with the computer"
+  },
+
+  // ============================================================
+  // REASONING - VERBAL - EASY
+  // ============================================================
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "Choose the word most similar to 'Happy'",
+    options: ["Sad", "Joyful", "Angry", "Tired"],
+    correctAnswer: "Joyful",
+    explanation: "Joyful is a synonym of Happy"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "Complete the series: A, C, E, G, __",
+    options: ["H", "I", "J", "K"],
+    correctAnswer: "I",
+    explanation: "Pattern: Skip one letter. After G comes I"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "Find the odd one out: Dog, Cat, Lion, Table",
+    options: ["Dog", "Cat", "Lion", "Table"],
+    correctAnswer: "Table",
+    explanation: "Table is not an animal"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "If APPLE is coded as BQQMF, how is MANGO coded?",
+    options: ["NBOHP", "LZMFN", "NBOIP", "NAHOP"],
+    correctAnswer: "NBOHP",
+    explanation: "Each letter is shifted by +1 in the alphabet"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "Choose the antonym of 'Hot'",
+    options: ["Warm", "Cool", "Cold", "Freezing"],
+    correctAnswer: "Cold",
+    explanation: "Cold is the opposite of Hot"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "If all roses are flowers and some flowers fade quickly, which is definitely true?",
+    options: ["All roses fade quickly", "Some roses may fade quickly", "No roses fade", "All flowers are roses"],
+    correctAnswer: "Some roses may fade quickly",
+    explanation: "Since roses are flowers, some roses could be among the flowers that fade"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "Complete: Book is to Reading as Fork is to __",
+    options: ["Eating", "Cooking", "Writing", "Driving"],
+    correctAnswer: "Eating",
+    explanation: "Book is used for reading, fork is used for eating"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "Which word does NOT belong: Car, Bus, Train, Apple",
+    options: ["Car", "Bus", "Train", "Apple"],
+    correctAnswer: "Apple",
+    explanation: "Apple is not a vehicle"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "If CAT = 24, what is DOG?",
+    options: ["26", "27", "28", "29"],
+    correctAnswer: "26",
+    explanation: "C(3)+A(1)+T(20)=24, D(4)+O(15)+G(7)=26"
+  },
+  {
+    category: "reasoning",
+    topic: "verbal-reasoning",
+    level: "easy",
+    question: "Choose the correctly spelled word",
+    options: ["Recieve", "Receive", "Receve", "Receave"],
+    correctAnswer: "Receive",
+    explanation: "Correct spelling follows 'i before e except after c'"
+  },
+
+  // ============================================================
+  // CODING - ARRAYS - EASY
+  // ============================================================
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "What is the time complexity of accessing an element in an array by index?",
+    options: ["O(1)", "O(n)", "O(log n)", "O(n²)"],
+    correctAnswer: "O(1)",
+    explanation: "Array access by index is constant time"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "In a zero-indexed array of size 5, what is the last valid index?",
+    options: ["3", "4", "5", "6"],
+    correctAnswer: "4",
+    explanation: "Indices are 0 to size-1, so 0 to 4"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "What will be the output of arr[2] if arr = [10, 20, 30, 40]?",
+    options: ["10", "20", "30", "40"],
+    correctAnswer: "30",
+    explanation: "Index 2 points to the third element: 30"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "Which operation is most efficient in an array?",
+    options: ["Insert at middle", "Access by index", "Delete from middle", "Search unsorted"],
+    correctAnswer: "Access by index",
+    explanation: "Random access is O(1) in arrays"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "How do you find the length of an array in Python?",
+    options: ["arr.length", "len(arr)", "arr.size()", "size(arr)"],
+    correctAnswer: "len(arr)",
+    explanation: "Python uses len() function for array/list length"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "What is an array?",
+    options: ["Collection of similar data types", "Collection of functions", "Single variable", "Database"],
+    correctAnswer: "Collection of similar data types",
+    explanation: "Arrays store multiple elements of the same type"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "Which is true about arrays?",
+    options: ["Dynamic size", "Fixed size", "No indexing", "Stores different types"],
+    correctAnswer: "Fixed size",
+    explanation: "Traditional arrays have fixed size (in most languages)"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "What is the first index in a zero-indexed array?",
+    options: ["-1", "0", "1", "null"],
+    correctAnswer: "0",
+    explanation: "Zero-indexed arrays start at index 0"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "In arr = [5, 3, 8, 1], what is arr[1]?",
+    options: ["5", "3", "8", "1"],
+    correctAnswer: "3",
+    explanation: "Index 1 is the second element: 3"
+  },
+  {
+    category: "coding",
+    topic: "arrays",
+    level: "easy",
+    question: "How many elements can an array of size 10 hold?",
+    options: ["9", "10", "11", "Unlimited"],
+    correctAnswer: "10",
+    explanation: "Size 10 means it can hold 10 elements (indices 0-9)"
+  }
+];
+
+async function populateQuestions() {
+  try {
+    // Clear existing questions
+    await QuestionBank.deleteMany({});
+    console.log("Cleared existing questions");
+
+    // Insert sample questions
+    const inserted = await QuestionBank.insertMany(sampleQuestions);
+    console.log(`✅ Inserted ${inserted.length} sample questions`);
+
+    // Generate practice sets for each unique category/topic/level
+    const combinations = [
+      ...new Set(
+        sampleQuestions.map(q => `${q.category}|${q.topic}|${q.level}`)
+      )
+    ];
+
+    for (const combo of combinations) {
+      const [category, topic, level] = combo.split("|");
+      
+      const questions = await QuestionBank
+        .find({ category, topic, level })
+        .sort({ _id: 1 });
+
+      if (questions.length >= 10) {
+        // Create Set 1
+        await PracticeSet.create({
+          category,
+          topic,
+          level,
+          setNumber: 1,
+          timeLimit: 10,
+          questions: questions.slice(0, 10).map(q => q._id)
+        });
+
+        console.log(`✅ Created Set 1 for ${category}/${topic}/${level}`);
+      }
+    }
+
+    console.log("\n🎉 Database populated successfully!");
+    console.log("\nYou can now:");
+    console.log("1. Login to the application");
+    console.log("2. Navigate to Aptitude, Technical, Reasoning, or Coding");
+    console.log("3. Select a topic and start practicing!");
+
+  } catch (error) {
+    console.error("❌ Error populating questions:", error);
+  } finally {
+    mongoose.connection.close();
+  }
+}
+
+populateQuestions();

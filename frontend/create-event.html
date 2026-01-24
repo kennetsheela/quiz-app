@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Create Event</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .form-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 20px;
+    }
+    
+    .form-section {
+      margin-bottom: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .form-section:last-child {
+      border-bottom: none;
+    }
+    
+    .set-container {
+      background: var(--bg-tertiary);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .file-upload {
+      border: 2px dashed var(--border-color);
+      padding: 30px;
+      text-align: center;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .file-upload:hover {
+      border-color: var(--accent-primary);
+      background: var(--bg-tertiary);
+    }
+    
+    .file-upload i {
+      font-size: 3rem;
+      color: var(--accent-primary);
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h1>Create Quiz Event</h1>
+    <p style="color: var(--text-secondary); margin-bottom: 30px;">
+      Set up a timed quiz event for your students
+    </p>
+
+    <form id="createEventForm">
+      <!-- Basic Info -->
+      <div class="form-section">
+        <h3>Event Details</h3>
+        
+        <div class="form-group">
+          <label for="eventName">Event Name</label>
+          <input type="text" id="eventName" placeholder="e.g., Mid-Term Assessment 2024" required>
+        </div>
+
+        <div class="form-group">
+          <label for="adminPassword">Admin Password</label>
+          <input type="password" id="adminPassword" placeholder="Password for admin controls" required>
+        </div>
+
+        <div class="form-group">
+          <label for="studentPassword">Student Password</label>
+          <input type="password" id="studentPassword" placeholder="Password students will use to join" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="form-group">
+            <label for="startTime">Start Date & Time</label>
+            <input type="datetime-local" id="startTime" required>
+          </div>
+
+          <div class="form-group">
+            <label for="endTime">End Date & Time</label>
+            <input type="datetime-local" id="endTime" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Sets -->
+      <div class="form-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3>Quiz Sets</h3>
+          <button type="button" class="btn btn-primary" id="addSetBtn">
+            <i class="fas fa-plus"></i> Add Set
+          </button>
+        </div>
+
+        <div id="setsContainer"></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        Create Event
+      </button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.js";
+    import { eventAPI } from "./js/api.js";
+
+    requireAuth();
+
+    let setCount = 0;
+
+    document.getElementById("addSetBtn").addEventListener("click", () => {
+      setCount++;
+      const setDiv = document.createElement("div");
+      setDiv.className = "set-container";
+      setDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h4>Set ${setCount}</h4>
+          <button type="button" class="btn btn-danger" onclick="this.closest('.set-container').remove()">
+            <i class="fas fa-trash"></i> Remove
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>Set Name</label>
+          <input type="text" class="setName" placeholder="e.g., Set 1 - Easy" required>
+        </div>
+
+        <div class="form-group">
+          <label>Duration (minutes)</label>
+          <input type="number" class="duration" placeholder="e.g., 30" min="1" required>
+        </div>
+
+        <div class="form-group">
+          <label>Upload Questions (PDF/DOCX)</label>
+          <div class="file-upload" onclick="this.querySelector('input').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload or drag and drop</p>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Supported: PDF, DOCX</p>
+            <input type="file" class="setFile" accept=".pdf,.docx" style="display: none" required>
+          </div>
+          <p class="file-name" style="margin-top: 10px; color: var(--accent-primary);"></p>
+        </div>
+      `;
+
+      // File name display
+      const fileInput = setDiv.querySelector(".setFile");
+      const fileName = setDiv.querySelector(".file-name");
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          fileName.textContent = "Selected: " + e.target.files[0].name;
+        }
+      });
+
+      document.getElementById("setsContainer").appendChild(setDiv);
+    });
+
+    // Add first set automatically
+    document.getElementById("addSetBtn").click();
+
+    document.getElementById("createEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append("eventName", document.getElementById("eventName").value);
+      formData.append("adminPassword", document.getElementById("adminPassword").value);
+      formData.append("studentPassword", document.getElementById("studentPassword").value);
+      formData.append("startTime", document.getElementById("startTime").value);
+      formData.append("endTime", document.getElementById("endTime").value);
+
+      const sets = [];
+      document.querySelectorAll(".set-container").forEach((setDiv, index) => {
+        const setName = setDiv.querySelector(".setName").value;
+        const duration = setDiv.querySelector(".duration").value;
+        const file = setDiv.querySelector(".setFile").files[0];
+
+        sets.push({ setName, timeLimit: duration });
+        formData.append("setFiles", file);
+      });
+
+      formData.append("sets", JSON.stringify(sets));
+
+      try {
+        const result = await eventAPI.createEvent(formData);
+        alert("Event created successfully!");
+        window.location.href = "challenge.html";
+      } catch (error) {
+        alert("Error creating event: " + error.message);
+      }
+    });
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

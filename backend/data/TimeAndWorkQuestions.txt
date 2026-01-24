@@ -1,0 +1,1064 @@
+Easy Level Questions
+These questions involve basic calculations of work rates, time taken, or work done by individuals or groups using the formula: If A does a work in n days, A’s 1 day’s work = 1/n.
+
+1. A can complete a work in 12 days. What fraction of the work does A complete in 3 days?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 3/4
+
+2. B’s 1 day’s work is 1/15. In how many days can B complete the entire work?
+A) 12
+B) 15
+C) 18
+D) 20
+
+3. A can do a work in 10 days and B in 15 days. How many days will they take together to complete the work?
+A) 6
+B) 7
+C) 8
+D) 9
+
+4. A is twice as efficient as B. If B takes 18 days to complete a work, how many days will A take?
+A) 6
+B) 9
+C) 12
+D) 15
+
+5. A can do a work in 20 days. After working for 5 days, how much work is left?
+A) 3/4
+B) 2/3
+C) 1/2
+D) 1/4
+
+6. A and B together can complete a work in 8 days. If A alone takes 12 days, how many days will B alone take?
+A) 16
+B) 18
+C) 20
+D) 24
+
+7. A can complete a work in 15 days. How much work does A do in 5 days?
+A) 1/3
+B) 2/5
+C) 1/2
+D) 2/3
+
+8. If B’s 1 day’s work is 1/10, how many days will B take to complete 3/5 of the work?
+A) 4
+B) 5
+C) 6
+D) 7
+
+9. A and B can do a work in 6 days together. If A is thrice as efficient as B, how many days will B take alone?
+A) 8
+B) 12
+C) 18
+D) 24
+
+10. A can do a work in 30 days. After working for 10 days, how much work remains?
+A) 1/3
+B) 2/3
+C) 1/2
+D) 3/4
+
+11. B can complete a work in 12 days. What fraction of the work does B complete in 4 days?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+12. A’s 1 day’s work is 1/20. In how many days can A complete the entire work?
+A) 15
+B) 18
+C) 20
+D) 25
+
+13. A and B together can complete a work in 10 days. If A alone takes 15 days, how many days will B take alone?
+A) 20
+B) 25
+C) 30
+D) 35
+
+14. A is twice as efficient as B. If A takes 8 days to complete a work, how many days will B take?
+A) 12
+B) 14
+C) 16
+D) 18
+
+15. A can do a work in 25 days. After working for 10 days, how much work is left?
+A) 3/5
+B) 2/5
+C) 1/2
+D) 1/5
+
+16. A and B together can do a work in 12 days. If B alone takes 36 days, how many days will A take alone?
+A) 16
+B) 18
+C) 20
+D) 22
+
+17. A can complete a work in 10 days. How much work does A do in 2 days?
+A) 1/5
+B) 1/4
+C) 1/3
+D) 2/5
+
+18. If B’s 1 day’s work is 1/8, how many days will B take to complete 1/2 of the work?
+A) 3
+B) 4
+C) 5
+D) 6
+
+19. A is thrice as efficient as B. If A takes 9 days to complete a work, how many days will B take?
+A) 18
+B) 21
+C) 24
+D) 27
+
+20. A can do a work in 15 days. After working for 6 days, how much work remains?
+A) 3/5
+B) 2/5
+C) 1/2
+D) 1/3
+
+21. B can complete a work in 20 days. What fraction of the work does B complete in 5 days?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 3/4
+
+22. A’s 1 day’s work is 1/12. In how many days can A complete the entire work?
+A) 10
+B) 12
+C) 14
+D) 16
+
+23. A and B together can complete a work in 9 days. If A alone takes 12 days, how many days will B take alone?
+A) 18
+B) 20
+C) 24
+D) 27
+
+24. A is twice as efficient as B. If B takes 24 days to complete a work, how many days will A take?
+A) 10
+B) 12
+C) 14
+D) 16
+
+25. A can do a work in 18 days. After working for 6 days, how much work is left?
+A) 1/3
+B) 2/3
+C) 1/2
+D) 3/4
+
+26. A and B together can do a work in 10 days. If B alone takes 30 days, how many days will A take alone?
+A) 12
+B) 14
+C) 15
+D) 16
+
+27. A can complete a work in 8 days. How much work does A do in 4 days?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+28. If B’s 1 day’s work is 1/15, how many days will B take to complete 2/5 of the work?
+A) 5
+B) 6
+C) 7
+D) 8
+
+29. A is thrice as efficient as B. If B takes 21 days to complete a work, how many days will A take?
+A) 7
+B) 9
+C) 11
+D) 13
+
+30. A can do a work in 24 days. After working for 8 days, how much work remains?
+A) 1/3
+B) 2/3
+C) 1/2
+D) 3/4
+
+31. B can complete a work in 16 days. What fraction of the work does B complete in 4 days?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+32. A’s 1 day’s work is 1/10. In how many days can A complete the entire work?
+A) 8
+B) 10
+C) 12
+D) 14
+
+33. A and B together can complete a work in 6 days. If A alone takes 10 days, how many days will B take alone?
+A) 12
+B) 15
+C) 18
+D) 20
+
+34. A is twice as efficient as B. If A takes 6 days to complete a work, how many days will B take?
+A) 10
+B) 12
+C) 14
+D) 16
+
+35. A can do a work in 20 days. After working for 8 days, how much work is left?
+A) 3/5
+B) 2/5
+C) 1/2
+D) 1/5
+
+36. A and B together can do a work in 8 days. If B alone takes 24 days, how many days will A take alone?
+A) 10
+B) 12
+C) 14
+D) 16
+
+37. A can complete a work in 12 days. How much work does A do in 6 days?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+38. If B’s 1 day’s work is 1/12, how many days will B take to complete 3/4 of the work?
+A) 8
+B) 9
+C) 10
+D) 11
+
+39. A is thrice as efficient as B. If A takes 12 days to complete a work, how many days will B take?
+A) 24
+B) 30
+C) 36
+D) 42
+
+40. A can do a work in 30 days. After working for 12 days, how much work remains?
+A) 3/5
+B) 2/5
+C) 1/2
+D) 1/5
+
+41. B can complete a work in 18 days. What fraction of the work does B complete in 6 days?
+A) 1/3
+B) 1/2
+C) 2/3
+D) 3/4
+
+42. A’s 1 day’s work is 1/15. In how many days can A complete the entire work?
+A) 12
+B) 15
+C) 18
+D) 20
+
+43. A and B together can complete a work in 12 days. If A alone takes 18 days, how many days will B take alone?
+A) 24
+B) 30
+C) 36
+D) 42
+
+44. A is twice as efficient as B. If B takes 20 days to complete a work, how many days will A take?
+A) 8
+B) 10
+C) 12
+D) 14
+
+45. A can do a work in 16 days. After working for 4 days, how much work is left?
+A) 1/4
+B) 1/2
+C) 3/4
+D) 1/3
+
+46. A and B together can do a work in 15 days. If B alone takes 30 days, how many days will A take alone?
+A) 20
+B) 25
+C) 30
+D) 35
+
+47. A can complete a work in 10 days. How much work does A do in 5 days?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+48. If B’s 1 day’s work is 1/20, how many days will B take to complete 1/5 of the work?
+A) 3
+B) 4
+C) 5
+D) 6
+
+49. A is thrice as efficient as B. If B takes 15 days to complete a work, how many days will A take?
+A) 5
+B) 6
+C) 7
+D) 8
+
+50. A can do a work in 22 days. After working for 11 days, how much work remains?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+Easy Level Answers
+1. A) 1/4
+2. B) 15
+3. A) 6
+4. B) 9
+5. A) 3/4
+6. D) 24
+7. A) 1/3
+8. C) 6
+9. D) 24
+10. B) 2/3
+11. B) 1/3
+12. C) 20
+13. C) 30
+14. C) 16
+15. A) 3/5
+16. B) 18
+17. A) 1/5
+18. B) 4
+19. D) 27
+20. A) 3/5
+21. A) 1/4
+22. B) 12
+23. C) 24
+24. B) 12
+25. B) 2/3
+26. C) 15
+27. C) 1/2
+28. B) 6
+29. A) 7
+30. B) 2/3
+31. A) 1/4
+32. B) 10
+33. B) 15
+34. B) 12
+35. A) 3/5
+36. B) 12
+37. C) 1/2
+38. B) 9
+39. C) 36
+40. A) 3/5
+41. A) 1/3
+42. B) 15
+43. C) 36
+44. B) 10
+45. C) 3/4
+46. C) 30
+47. C) 1/2
+48. B) 4
+49. A) 5
+50. C) 1/2
+
+Medium Level Questions
+These questions involve calculations with multiple workers, partial work, or efficiency ratios, requiring manipulation of work rates.
+
+1. A can do a work in 12 days and B in 18 days. If they work together for 4 days, what fraction of the work is left?
+A) 1/3
+B) 2/3
+C) 1/2
+D) 3/4
+
+2. A can complete a work in 15 days, B in 20 days, and C in 30 days. How many days will they take together to complete the work?
+A) 6
+B) 7
+C) 8
+D) 9
+
+3. A is twice as efficient as B. If they together complete a work in 10 days, how many days will B take alone?
+A) 15
+B) 20
+C) 25
+D) 30
+
+4. A can do a work in 24 days. B, who is 50% more efficient, works for 8 days and leaves. How many days will A take to complete the remaining work?
+A) 12
+B) 14
+C) 16
+D) 18
+
+5. A and B together can do a work in 6 days. If A’s 1 day’s work is 1/9, how many days will B take alone?
+A) 12
+B) 15
+C) 18
+D) 21
+
+6. A can do a work in 10 days and B in 15 days. They work together for 3 days, then B leaves. How many days will A take to finish the remaining work?
+A) 4
+B) 5
+C) 6
+D) 7
+
+7. A is thrice as efficient as B. If B takes 30 days to complete a work, how many days will they take together?
+A) 7.5
+B) 8
+C) 8.5
+D) 9
+
+8. A can complete a work in 20 days. After working for 5 days, B joins and they finish the work in 9 more days. How many days will B take alone?
+A) 30
+B) 36
+C) 40
+D) 45
+
+9. A and B can do a work in 12 days, B and C in 15 days, and C and A in 20 days. How many days will they take together?
+A) 8
+B) 9
+C) 10
+D) 11
+
+10. A can do a work in 18 days. If A and B together take 10 days, how many days will B take alone?
+A) 22.5
+B) 24
+C) 25
+D) 27
+
+11. A can complete a work in 16 days and B in 24 days. If they work together for 6 days, what fraction of the work is left?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+12. A, B, and C can do a work in 12, 15, and 20 days respectively. How many days will they take together?
+A) 5
+B) 6
+C) 7
+D) 8
+
+13. A is 50% more efficient than B. If they together complete a work in 12 days, how many days will A take alone?
+A) 18
+B) 20
+C) 22
+D) 24
+
+14. B can do a work in 20 days. A, who is twice as efficient, works for 5 days and leaves. How many days will B take to complete the remaining work?
+A) 10
+B) 12
+C) 14
+D) 16
+
+15. A and B together can do a work in 8 days. If A’s 1 day’s work is 1/12, how many days will B take alone?
+A) 16
+B) 18
+C) 20
+D) 24
+
+16. A can do a work in 15 days and B in 20 days. They work together for 5 days, then A leaves. How many days will B take to finish the remaining work?
+A) 8
+B) 10
+C) 12
+D) 14
+
+17. A is thrice as efficient as B. If A takes 12 days to complete a work, how many days will they take together?
+A) 3
+B) 4
+C) 5
+D) 6
+
+18. A can complete a work in 30 days. After working for 10 days, B joins and they finish the work in 12 more days. How many days will B take alone?
+A) 36
+B) 40
+C) 45
+D) 50
+
+19. A and B can do a work in 10 days, B and C in 12 days, and C and A in 15 days. How many days will they take together?
+A) 6
+B) 7
+C) 8
+D) 9
+
+20. A can do a work in 20 days. If A and B together take 8 days, how many days will B take alone?
+A) 12
+B) 14
+C) 15
+D) 16
+
+21. A can complete a work in 18 days and B in 24 days. If they work together for 8 days, what fraction of the work is left?
+A) 1/4
+B) 1/3
+C) 1/2
+D) 2/3
+
+22. A, B, and C can do a work in 10, 15, and 30 days respectively. How many days will they take together?
+A) 5
+B) 6
+C) 7
+D) 8
+
+23. A is 25% more efficient than B. If they together complete a work in 15 days, how many days will B take alone?
+A) 20
+B) 22
+C) 24
+D) 25
+
+24. A can do a work in 12 days. B, who is 50% more efficient, works for 4 days and leaves. How many days will A take to complete the remaining work?
+A) 6
+B) 7
+C) 8
+D) 9
+
+25. A and B together can do a work in 9 days. If A’s 1 day’s work is 1/15, how many days will B take alone?
+A) 18
+B) 20
+C) 22
+D) 24
+
+26. A can do a work in 10 days and B in 20 days. They work together for 4 days, then B leaves. How many days will A take to finish the remaining work?
+A) 4
+B) 5
+C) 6
+D) 7
+
+27. A is twice as efficient as B. If B takes 24 days to complete a work, how many days will they take together?
+A) 8
+B) 9
+C) 10
+D) 12
+
+28. A can complete a work in 25 days. After working for 10 days, B joins and they finish the work in 9 more days. How many days will B take alone?
+A) 30
+B) 35
+C) 40
+D) 45
+
+29. A and B can do a work in 15 days, B and C in 18 days, and C and A in 20 days. How many days will they take together?
+A) 8
+B) 9
+C) 10
+D) 11
+
+30. A can do a work in 16 days. If A and B together take 10 days, how many days will B take alone?
+A) 20
+B) 24
+C) 28
+D) 32
+
+31. A can complete a work in 20 days and B in 30 days. If they work together for 6 days, what fraction of the work is left?
+A) 1/2
+B) 1/3
+C) 2/3
+D) 3/4
+
+32. A, B, and C can do a work in 15, 20, and 30 days respectively. How many days will they take together?
+A) 6
+B) 7
+C) 8
+D) 9
+
+33. A is 50% more efficient than B. If they together complete a work in 10 days, how many days will B take alone?
+A) 15
+B) 18
+C) 20
+D) 22
+
+34. B can do a work in 15 days. A, who is twice as efficient, works for 5 days and leaves. How many days will B take to complete the remaining work?
+A) 5
+B) 6
+C) 7
+D) 8
+
+35. A and B together can do a work in 12 days. If A’s 1 day’s work is 1/18, how many days will B take alone?
+A) 24
+B) 27
+C) 30
+D) 36
+
+36. A can do a work in 12 days and B in 18 days. They work together for 3 days, then A leaves. How many days will B take to finish the remaining work?
+A) 10
+B) 11
+C) 12
+D) 13
+
+37. A is thrice as efficient as B. If A takes 15 days to complete a work, how many days will they take together?
+A) 3.75
+B) 4
+C) 4.5
+D) 5
+
+38. A can complete a work in 24 days. After working for 8 days, B joins and they finish the work in 12 more days. How many days will B take alone?
+A) 36
+B) 40
+C) 48
+D) 50
+
+39. A and B can do a work in 12 days, B and C in 15 days, and C and A in 20 days. How many days will they take together?
+A) 8
+B) 9
+C) 10
+D) 11
+
+40. A can do a work in 18 days. If A and B together take 12 days, how many days will B take alone?
+A) 24
+B) 27
+C) 30
+D) 36
+
+41. A can complete a work in 15 days and B in 20 days. If they work together for 5 days, what fraction of the work is left?
+A) 1/3
+B) 2/3
+C) 1/2
+D) 3/4
+
+42. A, B, and C can do a work in 12, 18, and 24 days respectively. How many days will they take together?
+A) 5
+B) 6
+C) 7
+D) 8
+
+43. A is 25% more efficient than B. If they together complete a work in 12 days, how many days will A take alone?
+A) 16
+B) 18
+C) 20
+D) 22
+
+44. A can do a work in 20 days. B, who is 50% more efficient, works for 6 days and leaves. How many days will A take to complete the remaining work?
+A) 8
+B) 10
+C) 12
+D) 14
+
+45. A and B together can do a work in 10 days. If A’s 1 day’s work is 1/15, how many days will B take alone?
+A) 20
+B) 25
+C) 30
+D) 35
+
+46. A can do a work in 15 days and B in 25 days. They work together for 6 days, then B leaves. How many days will A take to finish the remaining work?
+A) 5
+B) 6
+C) 7
+D) 8
+
+47. A is twice as efficient as B. If B takes 18 days to complete a work, how many days will they take together?
+A) 6
+B) 7
+C) 8
+D) 9
+
+48. A can complete a work in 30 days. After working for 12 days, B joins and they finish the work in 10 more days. How many days will B take alone?
+A) 25
+B) 30
+C) 35
+D) 40
+
+49. A and B can do a work in 18 days, B and C in 24 days, and C and A in 30 days. How many days will they take together?
+A) 10
+B) 12
+C) 14
+D) 16
+
+50. A can do a work in 20 days. If A and B together take 12 days, how many days will B take alone?
+A) 24
+B) 30
+C) 36
+D) 40
+
+Medium Level Answers
+1. A) 1/3
+2. C) 8
+3. D) 30
+4. C) 16
+5. C) 18
+6. C) 6
+7. A) 7.5
+8. A) 30
+9. C) 10
+10. A) 22.5
+11. C) 1/2
+12. A) 5
+13. A) 18
+14. C) 14
+15. D) 24
+16. B) 10
+17. B) 4
+18. A) 36
+19. C) 8
+20. B) 14
+21. B) 1/3
+22. B) 6
+23. C) 24
+24. C) 8
+25. B) 20
+26. C) 6
+27. A) 8
+28. B) 35
+29. B) 9
+30. B) 24
+31. A) 1/3
+32. B) 7
+33. C) 20
+34. B) 6
+35. C) 30
+36. C) 12
+37. A) 3.75
+38. C) 48
+39. C) 10
+40. A) 24
+41. A) 1/3
+42. C) 7
+43. A) 16
+44. B) 10
+45. B) 25
+46. C) 7
+47. A) 6
+48. B) 30
+49. B) 12
+50. B) 30
+
+Hard Level Questions
+These questions involve complex scenarios with multiple workers, efficiency ratios, partial work, or payment distribution.
+
+1. A can do a work in 15 days, B in 20 days, and C in 30 days. If they work together for 4 days, what fraction of the work is left?
+A) 2/5
+B) 3/5
+C) 1/2
+D) 4/5
+
+2. A can complete a work in 12 days, B in 18 days, and C in 24 days. If A and B work for 3 days and then C joins, how many days will they take to finish the work?
+A) 5
+B) 6
+C) 7
+D) 8
+
+3. A is twice as efficient as B, and B is twice as efficient as C. If they together complete a work in 8 days, how many days will C take alone?
+A) 28
+B) 32
+C) 36
+D) 40
+
+4. A can do a work in 20 days. B, who is 25% more efficient, works for 8 days and leaves. A then completes the remaining work with C, who takes 6 days alone. How many days will C take alone?
+A) 24
+B) 30
+C) 36
+D) 40
+
+5. A and B together can do a work in 10 days. A alone takes 15 days, and they undertake the work for Rs. 5000. With C’s help, they complete it in 6 days. How much should C be paid?
+A) Rs. 1000
+B) Rs. 1250
+C) Rs. 1500
+D) Rs. 1750
+
+6. 4 men and 6 women can do a work in 10 days, while 6 men and 8 women can do it in 8 days. How many days will 10 men take?
+A) 6
+B) 7
+C) 8
+D) 9
+
+7. A can do a work in 8 hours, B and C together in 6 hours, and A and C together in 4 hours. How many hours will B take alone?
+A) 12
+B) 14
+C) 16
+D) 18
+
+8. A can do a work in the same time as B and C together. If A and B together take 12 days and C alone takes 36 days, how many days will B take alone?
+A) 18
+B) 20
+C) 22
+D) 24
+
+9. A does 75% of a work in 15 days and then B joins to complete the remaining work in 3 days. How many days will B take to do the whole work alone?
+A) 24
+B) 28
+C) 32
+D) 36
+
+10. Machine X prints 1000 pages in 6 hours, Y in 8 hours, and Z in 12 hours. All start at 8 A.M., X stops at 10 A.M., and Y and Z complete the work. At what time is the work finished?
+A) 11:00 A.M.
+B) 11:30 A.M.
+C) 12:00 P.M.
+D) 12:30 P.M.
+
+11. A can do a work in 18 days and B in 12 days. B works for 8 days and leaves. How many days will A take to complete the remaining work?
+A) 5
+B) 6
+C) 7
+D) 8
+
+12. 5 men and 8 women can do a work in 12 days, while 4 men and 10 women can do it in 15 days. How many days will 12 women take?
+A) 20
+B) 25
+C) 30
+D) 35
+
+13. A and B can do a work in 24 days. They work together for 16 days, then B leaves. A finishes the remaining work in 12 days. How many days will A take alone?
+A) 30
+B) 36
+C) 40
+D) 48
+
+14. P can do a work in 10 days working 8 hours a day. Q can do it in 8 days working 10 hours a day. Working 8 hours a day together, how many days will they take?
+A) 4
+B) 4.5
+C) 5
+D) 5.5
+
+15. 8 women can do a work in 10 days, and 12 children in 15 days. How many days will 4 women and 6 children take together?
+A) 6
+B) 7
+C) 8
+D) 9
+
+16. A can do a work in 15 days and B in 10 days. A starts, and B joins after 5 days. How many days will the work take to complete?
+A) 8
+B) 9
+C) 10
+D) 11
+
+17. A is 40% more efficient than B. If A alone takes 21 days, how many days will they take together?
+A) 12
+B) 13
+C) 14
+D) 15
+
+18. A takes 5 hours to type 40 pages, and B takes 6 hours to type 48 pages. How many hours will they take together to type 120 pages on separate computers?
+A) 7
+B) 7.5
+C) 8
+D) 8.5
+
+19. A, B, and C can do a work in 20, 10, and 15 days respectively. How many days will they take together?
+A) 4
+B) 5
+C) 6
+D) 7
+
+20. A can do a work in 25 days. B, who is 20% more efficient, takes how many days to do the same work?
+A) 20
+B) 21
+C) 22
+D) 23
+
+21. A takes twice as much time as B, and thrice as much as C. Together, they complete a work in 3 days. How many days will B take alone?
+A) 6
+B) 8
+C) 9
+D) 12
+
+22. A and B can do a work in 12 days. They work together for 4 days, then B leaves. A completes the remaining work in 10 days. How many days will B take alone?
+A) 15
+B) 18
+C) 20
+D) 24
+
+23. A and B can do a work in 20 days, B and C in 24 days, and C and A in 30 days. They work together for 8 days, then B and C leave. How many days will A take to finish the work?
+A) 10
+B) 12
+C) 14
+D) 16
+
+24. A works twice as fast as B. If B takes 15 days to complete a work, how many days will they take together?
+A) 5
+B) 6
+C) 7
+D) 8
+
+25. 15 women can do a work in 20 days, and 20 men can do it in 15 days. What is the ratio of the work capacity of a man to a woman?
+A) 4:3
+B) 3:4
+C) 5:4
+D) 4:5
+
+26. A can do a work in 10 days, B in 15 days, and C in 20 days. If they work together for 3 days, what fraction of the work is left?
+A) 1/4
+B) 1/2
+C) 3/4
+D) 2/3
+
+27. A can complete a work in 18 days, B in 24 days, and C in 36 days. If A and B work for 6 days and then C joins, how many days will they take to finish the work?
+A) 6
+B) 7
+C) 8
+D) 9
+
+28. A is thrice as efficient as B, and B is twice as efficient as C. If they together complete a work in 6 days, how many days will C take alone?
+A) 27
+B) 30
+C) 33
+D) 36
+
+29. A can do a work in 15 days. B, who is 50% more efficient, works for 5 days and leaves. A then completes the remaining work with C, who takes 8 days alone. How many days will C take alone?
+A) 24
+B) 30
+C) 36
+D) 40
+
+30. A and B together can do a work in 12 days. A alone takes 18 days, and they undertake the work for Rs. 6000. With C’s help, they complete it in 8 days. How much should C be paid?
+A) Rs. 1000
+B) Rs. 1200
+C) Rs. 1500
+D) Rs. 1800
+
+31. 6 men and 10 women can do a work in 8 days, while 8 men and 12 women can do it in 6 days. How many days will 12 men take?
+A) 5
+B) 6
+C) 7
+D) 8
+
+32. A can do a work in 12 hours, B and C together in 8 hours, and A and C together in 6 hours. How many hours will B take alone?
+A) 16
+B) 18
+C) 20
+D) 24
+
+33. A can do a work in the same time as B and C together. If A and B together take 15 days and C alone takes 30 days, how many days will B take alone?
+A) 20
+B) 22
+C) 24
+D) 26
+
+34. A does 80% of a work in 16 days and then B joins to complete the remaining work in 3 days. How many days will B take to do the whole work alone?
+A) 30
+B) 36
+C) 40
+D) 45
+
+35. Machine X prints 1000 pages in 5 hours, Y in 10 hours, and Z in 15 hours. All start at 9 A.M., X stops at 11 A.M., and Y and Z complete the work. At what time is the work finished?
+A) 12:00 P.M.
+B) 12:30 P.M.
+C) 1:00 P.M.
+D) 1:30 P.M.
+
+36. A can do a work in 20 days and B in 15 days. B works for 10 days and leaves. How many days will A take to complete the remaining work?
+A) 6
+B) 7
+C) 8
+D) 9
+
+37. 4 men and 8 women can do a work in 10 days, while 6 men and 10 women can do it in 8 days. How many days will 15 women take?
+A) 12
+B) 15
+C) 18
+D) 20
+
+38. A and B can do a work in 30 days. They work together for 20 days, then B leaves. A finishes the remaining work in 15 days. How many days will A take alone?
+A) 36
+B) 40
+C) 45
+D) 50
+
+39. P can do a work in 12 days working 6 hours a day. Q can do it in 8 days working 8 hours a day. Working 6 hours a day together, how many days will they take?
+A) 4
+B) 4.5
+C) 5
+D) 5.5
+
+40. 10 women can do a work in 8 days, and 15 children in 12 days. How many days will 5 women and 10 children take together?
+A) 5
+B) 6
+C) 7
+D) 8
+
+41. A can do a work in 12 days and B in 8 days. A starts, and B joins after 4 days. How many days will the work take to complete?
+A) 6
+B) 7
+C) 8
+D) 9
+
+42. A is 50% more efficient than B. If A alone takes 18 days, how many days will they take together?
+A) 10
+B) 11
+C) 12
+D) 13
+
+43. A takes 6 hours to type 48 pages, and B takes 8 hours to type 64 pages. How many hours will they take together to type 140 pages on separate computers?
+A) 7
+B) 7.5
+C) 8
+D) 8.5
+
+44. A, B, and C can do a work in 15, 10, and 12 days respectively. How many days will they take together?
+A) 4
+B) 5
+C) 6
+D) 7
+
+45. A can do a work in 20 days. B, who is 25% more efficient, takes how many days to do the same work?
+A) 15
+B) 16
+C) 17
+D) 18
+
+46. A takes twice as much time as B, and thrice as much as C. Together, they complete a work in 4 days. How many days will B take alone?
+A) 8
+B) 10
+C) 12
+D) 14
+
+47. A and B can do a work in 15 days. They work together for 5 days, then B leaves. A completes the remaining work in 12 days. How many days will B take alone?
+A) 18
+B) 20
+C) 22
+D) 24
+
+48. A and B can do a work in 24 days, B and C in 30 days, and C and A in 40 days. They work together for 10 days, then B and C leave. How many days will A take to finish the work?
+A) 12
+B) 14
+C) 16
+D) 18
+
+49. A works twice as fast as B. If B takes 18 days to complete a work, how many days will they take together?
+A) 6
+B) 7
+C) 8
+D) 9
+
+50. 12 women can do a work in 15 days, and 15 men can do it in 12 days. What is the ratio of the work capacity of a man to a woman?
+A) 4:3
+B) 3:4
+C) 5:4
+D) 4:5
+
+Hard Level Answers
+1. A) 2/5
+2. C) 7
+3. C) 36
+4. B) 30
+5. B) Rs. 1250
+6. B) 7
+7. A) 12
+8. D) 24
+9. C) 32
+10. C) 12:00 P.M.
+11. B) 6
+12. C) 30
+13. B) 36
+14. B) 4.5
+15. C) 8
+16. B) 9
+17. C) 14
+18. C) 8
+19. B) 5
+20. B) 16
+21. C) 9
+22. C) 20
+23. B) 12
+24. A) 5
+25. A) 4:3
+26. B) 1/2
+27. C) 8
+28. C) 33
+29. B) 30
+30. B) Rs. 1200
+31. B) 6
+32. A) 16
+33. C) 24
+34. C) 40
+35. B) 12:30 P.M.
+36. B) 7
+37. C) 18
+38. B) 40
+39. B) 4.5
+40. C) 7
+41. B) 7
+42. C) 12
+43. C) 8
+44. B) 5
+45. B) 16
+46. B) 10
+47. C) 22
+48. B) 14
+49. A) 6
+50. A) 4:3

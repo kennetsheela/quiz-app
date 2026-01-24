@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Results - AptioGen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+
+    .results-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .results-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .results-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .score-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px var(--shadow);
+      border: 2px solid var(--border-color);
+    }
+
+    .score-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 30px;
+      position: relative;
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .score-inner {
+      width: 180px;
+      height: 180px;
+      background: var(--card-bg);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-percentage {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 5px;
+    }
+
+    .score-message {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+    }
+
+    .score-details {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 4px 6px var(--shadow);
+      border: 2px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text-primary);
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .category-breakdown {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    .category-breakdown h3 {
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .category-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .category-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+    }
+
+    .category-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .category-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .category-score {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: var(--accent-primary);
+    }
+
+    .performance-bar {
+      width: 200px;
+      height: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-left: 15px;
+    }
+
+    .performance-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      transition: width 0.5s ease;
+    }
+
+    .detailed-results {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    .detailed-results h3 {
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-question {
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-left: 4px solid var(--border-color);
+    }
+
+    .result-question.correct {
+      border-left-color: var(--success);
+    }
+
+    .result-question.incorrect {
+      border-left-color: var(--error);
+    }
+
+    .result-question.skipped {
+      border-left-color: var(--warning);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .result-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .result-status.correct {
+      color: var(--success);
+    }
+
+    .result-status.incorrect {
+      color: var(--error);
+    }
+
+    .result-status.skipped {
+      color: var(--warning);
+    }
+
+    .result-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .result-tag {
+      background: var(--card-bg);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .result-question-text {
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+
+    .result-answers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .result-answer-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: var(--card-bg);
+      border-radius: 6px;
+    }
+
+    .result-answer-item.your-answer {
+      background: rgba(220, 53, 69, 0.1);
+      border: 1px solid var(--error);
+    }
+
+    .result-answer-item.correct-answer {
+      background: rgba(40, 167, 69, 0.1);
+      border: 1px solid var(--success);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons button {
+      padding: 15px 30px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .score-circle {
+        width: 150px;
+        height: 150px;
+      }
+
+      .score-inner {
+        width: 130px;
+        height: 130px;
+      }
+
+      .score-percentage {
+        font-size: 2.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .category-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .performance-bar {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .action-buttons button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Appbar -->
+  <div class="appbar">
+    <h2>AptioGen</h2>
+    
+    <div class="nav-links">
+      <a href="explore.html">Explore</a>
+      <a href="challenge.html">Challenge</a>
+      <a href="level-up.html">Level Up</a>
+    </div>
+    
+    <div class="right-icons">
+      <i class="fa-solid fa-moon theme-toggle"></i>
+      <div class="dropdown" id="userDropdown">
+        <i class="fa-solid fa-user"></i>
+        <div class="dropdown-content">
+          <a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+          <hr>
+          <a href="contact.html"><i class="fa-solid fa-phone"></i> Contact</a>
+          <hr>
+          <a href="about.html"><i class="fa-solid fa-info-circle"></i> About us</a>
+          <hr>
+          <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="results-container">
+    <div class="results-header">
+      <h1><i class="fas fa-trophy"></i> Quiz Results</h1>
+    </div>
+
+    <!-- Score Card -->
+    <div class="score-card">
+      <div class="score-circle">
+        <div class="score-inner">
+          <div class="score-percentage" id="scorePercentage">0%</div>
+          <div class="score-label">Score</div>
+        </div>
+      </div>
+      <div class="score-message" id="scoreMessage">Great Job!</div>
+      <div class="score-details" id="scoreDetails">
+        You answered <strong id="correctCount">0</strong> out of <strong id="totalQuestions">0</strong> questions correctly
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-value" id="statCorrect">0</div>
+        <div class="stat-label">Correct</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-value" id="statIncorrect">0</div>
+        <div class="stat-label">Incorrect</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-forward"></i>
+        </div>
+        <div class="stat-value" id="statSkipped">0</div>
+        <div class="stat-label">Skipped</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-value" id="statTime">0:00</div>
+        <div class="stat-label">Time Spent</div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="category-breakdown">
+      <h3><i class="fas fa-chart-bar"></i> Performance by Category</h3>
+      <div id="categoryBreakdown"></div>
+    </div>
+
+    <!-- Detailed Results -->
+    <div class="detailed-results">
+      <h3><i class="fas fa-list-alt"></i> Detailed Question Review</h3>
+      <div id="detailedResults"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="window.location.href='create-custom.html'">
+        <i class="fas fa-redo"></i> Take Another Quiz
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.href='explore.html'">
+        <i class="fas fa-home"></i> Back to Home
+      </button>
+      <button class="btn btn-success" onclick="window.print()">
+        <i class="fas fa-print"></i> Print Results
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, setupLogoutButton } from "./js/auth.js";
+
+    let results = null;
+
+    // Initialize
+    requireAuth().then(() => {
+      loadResults();
+      setupLogoutButton();
+      setupDropdown();
+    });
+
+    // Load results from localStorage
+    function loadResults() {
+      const resultsStr = localStorage.getItem('quizResults');
+      
+      if (!resultsStr) {
+        alert('No quiz results found. Redirecting...');
+        window.location.href = 'explore.html';
+        return;
+      }
+
+      results = JSON.parse(resultsStr);
+      calculateAndDisplayResults();
+    }
+
+    // Calculate and display results
+    function calculateAndDisplayResults() {
+      let correctCount = results.score || 0;
+      let incorrectCount = 0;
+      let skippedCount = 0;
+
+      const categoryStats = {};
+
+      // If score is pre-calculated from backend, use it
+      if (results.score !== undefined) {
+        correctCount = results.score;
+        const totalQuestions = results.totalQuestions;
+        
+        // Calculate incorrect and skipped
+        results.questions.forEach((question, index) => {
+          const userAnswer = results.userAnswers[index];
+          const isCorrect = userAnswer === question.correctAnswer;
+          const isSkipped = userAnswer === null;
+
+          if (isSkipped) {
+            skippedCount++;
+          } else if (!isCorrect) {
+            incorrectCount++;
+          }
+
+          // Category stats
+          if (!categoryStats[question.category]) {
+            categoryStats[question.category] = {
+              total: 0,
+              correct: 0
+            };
+          }
+          categoryStats[question.category].total++;
+          if (isCorrect) {
+            categoryStats[question.category].correct++;
+          }
+        });
+      } else {
+        // Fallback: Calculate scores if not from backend
+        results.questions.forEach((question, index) => {
+          const userAnswer = results.userAnswers[index];
+          const isCorrect = userAnswer === question.correctAnswer;
+          const isSkipped = userAnswer === null;
+
+          if (isCorrect) {
+            correctCount++;
+          } else if (isSkipped) {
+            skippedCount++;
+          } else {
+            incorrectCount++;
+          }
+
+          // Category stats
+          if (!categoryStats[question.category]) {
+            categoryStats[question.category] = {
+              total: 0,
+              correct: 0
+            };
+          }
+          categoryStats[question.category].total++;
+          if (isCorrect) {
+            categoryStats[question.category].correct++;
+          }
+        });
+      }
+
+      const totalQuestions = results.totalQuestions;
+      const percentage = results.percentage || Math.round((correctCount / totalQuestions) * 100);
+
+      // Display overall score
+      document.getElementById('scorePercentage').textContent = `${percentage}%`;
+      document.getElementById('correctCount').textContent = correctCount;
+      document.getElementById('totalQuestions').textContent = totalQuestions;
+
+      // Display score message
+      const messageEl = document.getElementById('scoreMessage');
+      if (percentage >= 90) {
+        messageEl.textContent = '🎉 Outstanding Performance!';
+        messageEl.style.color = 'var(--success)';
+      } else if (percentage >= 70) {
+        messageEl.textContent = '👏 Great Job!';
+        messageEl.style.color = 'var(--accent-primary)';
+      } else if (percentage >= 50) {
+        messageEl.textContent = '👍 Good Effort!';
+        messageEl.style.color = 'var(--warning)';
+      } else {
+        messageEl.textContent = '💪 Keep Practicing!';
+        messageEl.style.color = 'var(--error)';
+      }
+
+      // Display stats
+      document.getElementById('statCorrect').textContent = correctCount;
+      document.getElementById('statIncorrect').textContent = incorrectCount;
+      document.getElementById('statSkipped').textContent = skippedCount;
+
+      // Display time
+      const minutes = Math.floor(results.timeSpent / 60);
+      const seconds = results.timeSpent % 60;
+      document.getElementById('statTime').textContent = 
+        `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+      // Display category breakdown
+      displayCategoryBreakdown(categoryStats);
+
+      // Display detailed results
+      displayDetailedResults();
+    }
+
+    // Display category breakdown
+    function displayCategoryBreakdown(categoryStats) {
+      const container = document.getElementById('categoryBreakdown');
+      container.innerHTML = '';
+
+      const categoryIcons = {
+        'aptitude': 'fa-brain',
+        'reasoning': 'fa-lightbulb',
+        'coding': 'fa-code',
+        'technical': 'fa-laptop-code'
+      };
+
+      Object.entries(categoryStats).forEach(([category, stats]) => {
+        const percentage = Math.round((stats.correct / stats.total) * 100);
+        
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'category-item';
+        categoryItem.innerHTML = `
+          <div class="category-info">
+            <div class="category-icon">
+              <i class="fas ${categoryIcons[category] || 'fa-tag'}"></i>
+            </div>
+            <div>
+              <div class="category-name">${category.charAt(0).toUpperCase() + category.slice(1)}</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                ${stats.correct}/${stats.total} questions
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="performance-bar">
+              <div class="performance-fill" style="width: ${percentage}%"></div>
+            </div>
+            <div class="category-score">${percentage}%</div>
+          </div>
+        `;
+        
+        container.appendChild(categoryItem);
+      });
+    }
+
+    // Display detailed results
+    function displayDetailedResults() {
+      const container = document.getElementById('detailedResults');
+      container.innerHTML = '';
+
+      results.questions.forEach((question, index) => {
+        const userAnswer = results.userAnswers[index];
+        const isCorrect = userAnswer === question.correctAnswer;
+        const isSkipped = userAnswer === null;
+
+        const resultQuestion = document.createElement('div');
+        resultQuestion.className = `result-question ${
+          isSkipped ? 'skipped' : isCorrect ? 'correct' : 'incorrect'
+        }`;
+
+        const statusIcon = isSkipped 
+          ? '<i class="fas fa-forward"></i>' 
+          : isCorrect 
+          ? '<i class="fas fa-check-circle"></i>' 
+          : '<i class="fas fa-times-circle"></i>';
+
+        const statusText = isSkipped 
+          ? 'Skipped' 
+          : isCorrect 
+          ? 'Correct' 
+          : 'Incorrect';
+
+        const statusClass = isSkipped 
+          ? 'skipped' 
+          : isCorrect 
+          ? 'correct' 
+          : 'incorrect';
+
+        resultQuestion.innerHTML = `
+          <div class="result-header">
+            <div class="result-status ${statusClass}">
+              ${statusIcon}
+              <span>${statusText}</span>
+            </div>
+            <div class="result-tags">
+              <span class="result-tag">Q${index + 1}</span>
+              <span class="result-tag">${question.category}</span>
+              <span class="result-tag">${question.topic}</span>
+              <span class="result-tag">${question.level}</span>
+            </div>
+          </div>
+          <div class="result-question-text">${question.question}</div>
+          <div class="result-answers">
+            ${!isSkipped ? `
+              <div class="result-answer-item ${!isCorrect ? 'your-answer' : ''}">
+                <strong>Your Answer:</strong> ${userAnswer}
+              </div>
+            ` : `
+              <div class="result-answer-item your-answer">
+                <strong>Your Answer:</strong> Not answered
+              </div>
+            `}
+            ${!isCorrect ? `
+              <div class="result-answer-item correct-answer">
+                <strong>Correct Answer:</strong> ${question.correctAnswer}
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        container.appendChild(resultQuestion);
+      });
+    }
+
+    // Setup dropdown
+    function setupDropdown() {
+      const dropdown = document.getElementById('userDropdown');
+      const dropdownIcon = dropdown.querySelector('.fa-user');
+
+      dropdownIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove('active');
+        }
+      });
+    }
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

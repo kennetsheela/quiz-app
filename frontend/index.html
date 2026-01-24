@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .login-container {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .logo h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    
+    .logo p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    .input-wrapper i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+    
+    .input-wrapper input {
+      padding-left: 45px;
+    }
+    
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .remember-me input {
+      width: auto;
+    }
+    
+    .forgot-link {
+      color: var(--accent-primary);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+    
+    .social-login {
+      margin-top: 30px;
+      text-align: center;
+    }
+    
+    .social-login p {
+      margin-bottom: 15px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .social-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+    
+    .social-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .social-btn:hover:not(:disabled) {
+      transform: scale(1.1);
+      border-color: var(--accent-primary);
+      background: var(--accent-primary);
+      color: white;
+    }
+    
+    .social-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .register-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .register-link a {
+      color: var(--accent-primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .success-message {
+      background: #efe;
+      color: #3c3;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">
+      <h1>AptioGen</h1>
+      <p>Master Your Skills, Ace Your Tests</p>
+    </div>
+    
+    <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
+    
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrapper">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Enter your password" required>
+        </div>
+      </div>
+      
+      <div class="form-options">
+        <label class="remember-me">
+          <input type="checkbox" id="remember">
+          <span>Remember me</span>
+        </label>
+        <a href="#" class="forgot-link">Forgot password?</a>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        <span id="loginBtnText">Sign In</span>
+      </button>
+      
+      <div class="social-login">
+        <p>or sign in with</p>
+        <div class="social-buttons">
+          <button type="button" class="social-btn" id="googleBtn" title="Sign in with Google">
+            <i class="fab fa-google"></i>
+          </button>
+          <button type="button" class="social-btn" id="githubBtn" title="Sign in with GitHub">
+            <i class="fab fa-github"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="register-link">
+        Don't have an account? <a href="register.html">Register here</a>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { auth } from "./js/firebase.js";
+    import {
+      signInWithEmailAndPassword,
+      GoogleAuthProvider,
+      GithubAuthProvider,
+      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { authAPI } from "./js/api.js";
+
+    const loginForm = document.getElementById("loginForm");
+    const errorMessage = document.getElementById("errorMessage");
+    const successMessage = document.getElementById("successMessage");
+    const loginBtnText = document.getElementById("loginBtnText");
+
+    function showError(message) {
+      console.error("Error:", message);
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 7000);
+    }
+
+    function showSuccess(message) {
+      console.log("Success:", message);
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+
+    function setLoading(isLoading, buttonText = 'Processing...') {
+      const container = document.querySelector('.login-container');
+      const googleBtn = document.getElementById('googleBtn');
+      const githubBtn = document.getElementById('githubBtn');
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      
+      if (isLoading) {
+        container.classList.add('loading');
+        googleBtn.disabled = true;
+        githubBtn.disabled = true;
+        submitBtn.disabled = true;
+        loginBtnText.innerHTML = `${buttonText} <span class="spinner"></span>`;
+      } else {
+        container.classList.remove('loading');
+        googleBtn.disabled = false;
+        githubBtn.disabled = false;
+        submitBtn.disabled = false;
+        loginBtnText.textContent = 'Sign In';
+      }
+    }
+
+    async function handleAuthSuccess(user) {
+      console.log("Auth successful for user:", user.email);
+      showSuccess("Login successful! Redirecting...");
+      
+      try {
+        await authAPI.recordLogin();
+        console.log("Login recorded");
+        
+        try {
+          const profile = await authAPI.getProfile();
+          console.log("Profile found, redirecting to explore");
+          window.location.href = "explore.html";
+        } catch (error) {
+          console.log("Profile not found, redirecting to details");
+          window.location.href = "details.html";
+        }
+      } catch (error) {
+        console.error("Error during post-auth processing:", error);
+        showError("Authentication succeeded but setup failed. Please try again.");
+        setLoading(false);
+      }
+    }
+
+    // Check for redirect result on page load
+    console.log("Checking for redirect result...");
+    (async () => {
+      try {
+        setLoading(true, 'Completing sign in...');
+        const result = await getRedirectResult(auth);
+        
+        if (result && result.user) {
+          console.log("Redirect result found:", result.user.email);
+          await handleAuthSuccess(result.user);
+        } else {
+          console.log("No redirect result");
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Redirect result error:", error);
+        let errorMsg = "Authentication failed. ";
+        
+        if (error.code === 'auth/popup-blocked') {
+          errorMsg += "Please allow popups for this site.";
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          errorMsg += "Sign-in was cancelled.";
+        } else if (error.code === 'auth/unauthorized-domain') {
+          errorMsg += "This domain is not authorized. Please contact support.";
+        } else if (error.code === 'auth/cancelled-popup-request') {
+          errorMsg += "Only one sign-in at a time.";
+        } else {
+          errorMsg += error.message || "Please try again.";
+        }
+        
+        showError(errorMsg);
+        setLoading(false);
+      }
+    })();
+
+    // Email/Password login
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      console.log("Attempting email login for:", email);
+
+      try {
+        setLoading(true, 'Signing in...');
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log("Email sign-in successful");
+        await handleAuthSuccess(userCredential.user);
+      } catch (error) {
+        console.error("Login error:", error);
+        let errorMsg = "Login failed. ";
+        
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          errorMsg = "Invalid email or password";
+        } else if (error.code === 'auth/too-many-requests') {
+          errorMsg = "Too many failed attempts. Please try again later.";
+        } else if (error.code === 'auth/user-disabled') {
+          errorMsg = "This account has been disabled.";
+        } else {
+          errorMsg += error.message || "Please try again.";
+        }
+        
+        showError(errorMsg);
+        setLoading(false);
+      }
+    });
+
+    // Try popup first, fallback to redirect
+    async function signInWithProvider(provider, providerName) {
+      console.log(`Attempting ${providerName} sign-in...`);
+      
+      try {
+        setLoading(true, `Signing in with ${providerName}...`);
+        
+        // Try popup first
+        try {
+          console.log(`Trying popup method for ${providerName}`);
+          const result = await signInWithPopup(auth, provider);
+          console.log(`${providerName} popup sign-in successful`);
+          await handleAuthSuccess(result.user);
+        } catch (popupError) {
+          console.log(`Popup failed for ${providerName}, trying redirect:`, popupError.code);
+          
+          // If popup fails, use redirect
+          if (popupError.code === 'auth/popup-blocked' || 
+              popupError.code === 'auth/popup-closed-by-user' ||
+              popupError.code === 'auth/cancelled-popup-request') {
+            console.log(`Using redirect method for ${providerName}`);
+            await signInWithRedirect(auth, provider);
+            // Page will reload and handle result in getRedirectResult
+          } else {
+            throw popupError;
+          }
+        }
+      } catch (error) {
+        console.error(`${providerName} sign-in error:`, error);
+        let errorMsg = `${providerName} sign-in failed. `;
+        
+        if (error.code === 'auth/unauthorized-domain') {
+          errorMsg += `Your domain is not authorized in Firebase Console. Add ${window.location.hostname} to authorized domains.`;
+        } else if (error.code === 'auth/operation-not-allowed') {
+          errorMsg += `${providerName} authentication is not enabled in Firebase Console.`;
+        } else if (error.code === 'auth/account-exists-with-different-credential') {
+          errorMsg += "An account already exists with this email using a different sign-in method.";
+        } else {
+          errorMsg += error.message || "Please try again.";
+        }
+        
+        showError(errorMsg);
+        setLoading(false);
+      }
+    }
+
+    // Google login
+    document.getElementById("googleBtn").onclick = async () => {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      await signInWithProvider(provider, 'Google');
+    };
+
+    // GitHub login
+    document.getElementById("githubBtn").onclick = async () => {
+      const provider = new GithubAuthProvider();
+      await signInWithProvider(provider, 'GitHub');
+    };
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

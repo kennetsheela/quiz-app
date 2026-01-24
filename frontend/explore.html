@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Explore</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    
+    .welcome-section {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .welcome-section h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .welcome-section p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    /* ✅ FIX: Improved dropdown styles */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown > i {
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
+
+    .dropdown > i:hover {
+      background: var(--hover-bg);
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 10px;
+      background: var(--card-bg);
+      min-width: 200px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      z-index: 10000;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .dropdown.active .dropdown-content {
+      display: block;
+      animation: dropdownSlide 0.2s ease;
+    }
+
+    @keyframes dropdownSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .dropdown-content a {
+      color: var(--text-primary);
+      padding: 12px 20px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s;
+    }
+
+    .dropdown-content a:hover {
+      background: var(--hover-bg);
+    }
+
+    .dropdown-content a i {
+      width: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .dropdown-content hr {
+      margin: 0;
+      border: none;
+      border-top: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body>
+  <!-- Appbar -->
+  <div class="appbar">
+    <h2>AptioGen</h2>
+    
+    <div class="nav-links">
+      <a href="explore.html" class="active">Explore</a>
+      <a href="challenge.html">Challenge</a>
+      <a href="level-up.html">Level Up</a>
+    </div>
+    
+    <div class="right-icons">
+      <i class="fa-solid fa-moon theme-toggle"></i>
+      <div class="dropdown" id="userDropdown">
+        <i class="fa-solid fa-user"></i>
+        <div class="dropdown-content">
+          <a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+          <hr>
+          <a href="contact.html"><i class="fa-solid fa-phone"></i> Contact</a>
+          <hr>
+          <a href="about.html"><i class="fa-solid fa-info-circle"></i> About us</a>
+          <hr>
+          <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="welcome-section">
+      <h1>Welcome back, <span id="username">Student</span></h1>
+      <p>What challenge will you conquer today?</p>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" placeholder="Search topics, categories...">
+      <i class="fas fa-search"></i>
+    </div>
+
+    <div class="content-grid">
+      <a href="aptitude.html" class="content-box">
+        <i class="fa-solid fa-brain"></i>
+        <h3>Aptitude</h3>
+        <p>Quantitative and logical reasoning</p>
+      </a>
+
+      <a href="reasoning.html" class="content-box">
+        <i class="fa-solid fa-lightbulb"></i>
+        <h3>Reasoning</h3>
+        <p>Verbal & Non-verbal skills</p>
+      </a>
+
+      <a href="coding.html" class="content-box">
+        <i class="fa-solid fa-code"></i>
+        <h3>Coding</h3>
+        <p>Algorithms & Data Structures</p>
+      </a>
+
+      <a href="technical.html" class="content-box">
+        <i class="fa-solid fa-laptop-code"></i>
+        <h3>Technical</h3>
+        <p>Core Engineering Subjects</p>
+      </a>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <button class="btn btn-primary" onclick="window.location.href='create-custom.html'">
+        <i class="fas fa-plus-circle"></i> Generate Custom Challenge
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, setupLogoutButton } from "./js/auth.js";
+    import { authAPI } from "./js/api.js";
+
+    requireAuth().then(async (user) => {
+      try {
+        const profile = await authAPI.getProfile();
+        document.getElementById("username").textContent = profile.username;
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      }
+    });
+
+    setupLogoutButton();
+
+    // ✅ FIX: Dropdown toggle functionality
+    const dropdown = document.getElementById('userDropdown');
+    const dropdownIcon = dropdown.querySelector('.fa-user');
+
+    // Toggle dropdown on click
+    dropdownIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('active');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('active');
+      }
+    });
+
+    // Prevent dropdown from closing when clicking inside it
+    dropdown.querySelector('.dropdown-content').addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

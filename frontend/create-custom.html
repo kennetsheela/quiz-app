@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Custom Challenge - AptioGen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+
+    .custom-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .custom-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .custom-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .custom-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .form-section {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 6px var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    .form-section h3 {
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-section h3 i {
+      color: var(--accent-primary);
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .option-card {
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .option-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+      box-shadow: 0 5px 15px var(--shadow);
+    }
+
+    .option-card.selected {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+
+    .option-card i {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .option-card h4 {
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .option-card.selected i,
+    .option-card.selected h4,
+    .option-card.selected p {
+      color: white;
+    }
+
+    .topic-category-section {
+      margin-bottom: 30px;
+    }
+
+    .topic-category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .topic-category-header i {
+      color: var(--accent-primary);
+      font-size: 1.2rem;
+    }
+
+    .topic-category-header h4 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      text-transform: capitalize;
+    }
+
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .topic-option {
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .topic-option:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .topic-option.selected {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+
+    .topic-option i {
+      font-size: 1.5rem;
+      margin-top: 3px;
+      min-width: 24px;
+    }
+
+    .topic-info h5 {
+      margin: 0 0 5px 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .topic-info p {
+      margin: 0;
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    .topic-option.selected .topic-info h5,
+    .topic-option.selected .topic-info p,
+    .topic-option.selected i {
+      color: white;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .range-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .range-container input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border-color);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .range-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .range-container input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 10px var(--accent-primary);
+    }
+
+    .range-value {
+      min-width: 60px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--accent-primary);
+    }
+
+    .summary-box {
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .summary-box h4 {
+      margin-bottom: 15px;
+      color: var(--text-primary);
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+
+    .summary-label {
+      color: var(--text-secondary);
+    }
+
+    .summary-value {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .action-buttons button {
+      flex: 1;
+      padding: 15px;
+      font-size: 1rem;
+    }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--overlay);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .loading-content {
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    .loading-content .spinner {
+      margin: 0 auto 20px;
+    }
+
+    .error-message {
+      background: var(--error);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-message.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .option-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .custom-header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Appbar -->
+  <div class="appbar">
+    <h2>AptioGen</h2>
+    
+    <div class="nav-links">
+      <a href="explore.html">Explore</a>
+      <a href="challenge.html">Challenge</a>
+      <a href="level-up.html">Level Up</a>
+    </div>
+    
+    <div class="right-icons">
+      <i class="fa-solid fa-moon theme-toggle"></i>
+      <div class="dropdown" id="userDropdown">
+        <i class="fa-solid fa-user"></i>
+        <div class="dropdown-content">
+          <a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+          <hr>
+          <a href="contact.html"><i class="fa-solid fa-phone"></i> Contact</a>
+          <hr>
+          <a href="about.html"><i class="fa-solid fa-info-circle"></i> About us</a>
+          <hr>
+          <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="custom-container">
+    <div class="custom-header">
+      <h1><i class="fas fa-magic"></i> Create Your Custom Challenge</h1>
+      <p>Customize your quiz experience to match your learning goals</p>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <!-- Category Selection -->
+    <div class="form-section">
+      <h3><i class="fas fa-layer-group"></i> Select Categories (Multiple)</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">
+        <i class="fas fa-info-circle"></i> You can select multiple categories
+      </p>
+      <div class="option-grid" id="categoryGrid">
+        <div class="option-card" data-category="aptitude">
+          <i class="fa-solid fa-brain"></i>
+          <h4>Aptitude</h4>
+        </div>
+        <div class="option-card" data-category="reasoning">
+          <i class="fa-solid fa-lightbulb"></i>
+          <h4>Reasoning</h4>
+        </div>
+        <div class="option-card" data-category="coding">
+          <i class="fa-solid fa-code"></i>
+          <h4>Coding</h4>
+        </div>
+        <div class="option-card" data-category="technical">
+          <i class="fa-solid fa-laptop-code"></i>
+          <h4>Technical</h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topic Selection -->
+    <div class="form-section" id="topicSection" style="display: none;">
+      <h3><i class="fas fa-book"></i> Select Topics (Multiple)</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">
+        <i class="fas fa-info-circle"></i> Click on topics to select/deselect. You can select topics from different categories.
+      </p>
+      <div id="topicContainer"></div>
+    </div>
+
+    <!-- Difficulty Selection -->
+    <div class="form-section">
+      <h3><i class="fas fa-signal"></i> Select Difficulty Level</h3>
+      <div class="option-grid" id="difficultyGrid">
+        <div class="option-card" data-difficulty="easy">
+          <i class="fa-solid fa-seedling"></i>
+          <h4>Easy</h4>
+        </div>
+        <div class="option-card" data-difficulty="medium">
+          <i class="fa-solid fa-fire"></i>
+          <h4>Medium</h4>
+        </div>
+        <div class="option-card" data-difficulty="hard">
+          <i class="fa-solid fa-skull"></i>
+          <h4>Hard</h4>
+        </div>
+        <div class="option-card" data-difficulty="mixed">
+          <i class="fa-solid fa-shuffle"></i>
+          <h4>Mixed</h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- Number of Questions -->
+    <div class="form-section">
+      <h3><i class="fas fa-list-ol"></i> Number of Questions</h3>
+      <div class="range-container">
+        <input type="range" id="questionCount" min="5" max="50" value="10" step="5">
+        <span class="range-value" id="questionCountValue">10</span>
+      </div>
+    </div>
+
+    <!-- Time Limit -->
+    <div class="form-section">
+      <h3><i class="fas fa-clock"></i> Time Limit (minutes)</h3>
+      <div class="range-container">
+        <input type="range" id="timeLimit" min="5" max="60" value="10" step="5">
+        <span class="range-value" id="timeLimitValue">10</span>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="form-section">
+      <h3><i class="fas fa-clipboard-check"></i> Quiz Summary</h3>
+      <div class="summary-box">
+        <div class="summary-item">
+          <span class="summary-label">Categories:</span>
+          <span class="summary-value" id="summaryCategory">Not selected</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Topics:</span>
+          <span class="summary-value" id="summaryTopic">Not selected</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Difficulty:</span>
+          <span class="summary-value" id="summaryDifficulty">Not selected</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Questions:</span>
+          <span class="summary-value" id="summaryQuestions">10</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Time Limit:</span>
+          <span class="summary-value" id="summaryTime">10 minutes</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="window.location.href='explore.html'">
+          <i class="fas fa-arrow-left"></i> Cancel
+        </button>
+        <button class="btn btn-primary" id="generateBtn">
+          <i class="fas fa-rocket"></i> Generate Quiz
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <h3>Generating your custom quiz...</h3>
+      <p>Please wait while we fetch the best questions for you</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, setupLogoutButton } from "./js/auth.js";
+    import { practiceAPI } from "./js/api.js";
+
+    // Topic metadata for all categories
+    const allTopicMeta = {
+      aptitude: {
+        "percentages": { icon: "fa-percent", description: "Calculate percentages and related problems" },
+        "profit-loss": { icon: "fa-chart-line", description: "Profit, loss, and discount calculations" },
+        "time-work": { icon: "fa-clock", description: "Time and work problems" },
+        "speed-distance": { icon: "fa-running", description: "Speed, distance, and time" },
+        "averages": { icon: "fa-equals", description: "Mean, median, and average calculations" },
+        "ratio-proportion": { icon: "fa-balance-scale", description: "Ratios and proportions" },
+        "simple-interest": { icon: "fa-money-bill-wave", description: "Simple and compound interest" },
+        "probability": { icon: "fa-dice", description: "Basic probability concepts" },
+        "permutation-combination": { icon: "fa-random", description: "Arrangements and selections" },
+        "number-series": { icon: "fa-sort-numeric-up", description: "Number patterns and sequences" }
+      },
+      reasoning: {
+        "verbal-reasoning": { icon: "fa-comments", description: "Analogies, synonyms, antonyms" },
+        "logical-reasoning": { icon: "fa-brain", description: "Logic puzzles and deductions" },
+        "analytical-reasoning": { icon: "fa-chart-bar", description: "Data interpretation and analysis" },
+        "non-verbal-reasoning": { icon: "fa-shapes", description: "Pattern recognition and spatial reasoning" },
+        "critical-reasoning": { icon: "fa-microscope", description: "Argument analysis and evaluation" },
+        "blood-relations": { icon: "fa-users", description: "Family relationship problems" },
+        "coding-decoding": { icon: "fa-key", description: "Pattern-based coding problems" },
+        "direction-sense": { icon: "fa-compass", description: "Direction and distance calculations" },
+        "seating-arrangement": { icon: "fa-chair", description: "Linear and circular arrangements" },
+        "syllogism": { icon: "fa-project-diagram", description: "Logical statement conclusions" },
+        "series-completion": { icon: "fa-stream", description: "Number and letter series" },
+        "statement-conclusion": { icon: "fa-check-double", description: "Drawing logical conclusions" },
+        "data-sufficiency": { icon: "fa-database", description: "Determining sufficient information" },
+        "puzzles": { icon: "fa-puzzle-piece", description: "Logic and mathematical puzzles" },
+        "venn-diagrams": { icon: "fa-circle-notch", description: "Set theory and Venn diagrams" }
+      },
+      coding: {
+        "arrays": { icon: "fa-table", description: "Array manipulation and algorithms" },
+        "strings": { icon: "fa-font", description: "String operations and pattern matching" },
+        "linked-lists": { icon: "fa-link", description: "Linked list operations" },
+        "stacks-queues": { icon: "fa-layer-group", description: "Stack and queue implementations" },
+        "trees": { icon: "fa-tree", description: "Binary trees and BST" },
+        "graphs": { icon: "fa-project-diagram", description: "Graph traversal and algorithms" },
+        "dynamic-programming": { icon: "fa-calculator", description: "DP problems and optimization" },
+        "sorting-searching": { icon: "fa-sort", description: "Sorting and searching algorithms" },
+        "recursion": { icon: "fa-redo", description: "Recursive problem solving" },
+        "greedy-algorithms": { icon: "fa-medal", description: "Greedy approach problems" },
+        "backtracking": { icon: "fa-undo", description: "Backtracking algorithms" },
+        "bit-manipulation": { icon: "fa-binary", description: "Bitwise operations" },
+        "hashing": { icon: "fa-hashtag", description: "Hash tables and hash maps" },
+        "heaps": { icon: "fa-mountain", description: "Priority queues and heaps" },
+        "matrix": { icon: "fa-th", description: "2D array and matrix problems" },
+        "sliding-window": { icon: "fa-window-maximize", description: "Sliding window technique" },
+        "two-pointers": { icon: "fa-arrows-alt-h", description: "Two pointer approach" },
+        "divide-conquer": { icon: "fa-cut", description: "Divide and conquer strategy" }
+      },
+      technical: {
+        "operating-systems": { icon: "fa-server", description: "OS concepts, processes, threads" },
+        "dbms": { icon: "fa-database", description: "Database management systems" },
+        "computer-networks": { icon: "fa-network-wired", description: "Networking fundamentals" },
+        "oops": { icon: "fa-object-group", description: "Object-oriented programming" },
+        "data-structures": { icon: "fa-sitemap", description: "Arrays, trees, graphs, etc." },
+        "algorithms": { icon: "fa-project-diagram", description: "Sorting, searching, dynamic programming" },
+        "web-technologies": { icon: "fa-globe", description: "HTML, CSS, JavaScript, frameworks" },
+        "cloud-computing": { icon: "fa-cloud", description: "AWS, Azure, cloud concepts" }
+      }
+    };
+
+    // State management
+    let quizConfig = {
+      categories: [],
+      topics: [],
+      difficulty: [],
+      questionCount: 10,
+      timeLimit: 10
+    };
+
+    // Initialize
+    requireAuth().then(() => {
+      setupEventListeners();
+      setupLogoutButton();
+    });
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Category selection (multiple)
+      document.querySelectorAll('#categoryGrid .option-card').forEach(card => {
+        card.addEventListener('click', () => toggleCategory(card));
+      });
+
+      // Difficulty selection (multiple)
+      document.querySelectorAll('#difficultyGrid .option-card').forEach(card => {
+        card.addEventListener('click', () => toggleDifficulty(card));
+      });
+
+      // Question count slider
+      const questionSlider = document.getElementById('questionCount');
+      const questionValue = document.getElementById('questionCountValue');
+      questionSlider.addEventListener('input', (e) => {
+        quizConfig.questionCount = parseInt(e.target.value);
+        questionValue.textContent = quizConfig.questionCount;
+        updateSummary();
+      });
+
+      // Time limit slider
+      const timeSlider = document.getElementById('timeLimit');
+      const timeValue = document.getElementById('timeLimitValue');
+      timeSlider.addEventListener('input', (e) => {
+        quizConfig.timeLimit = parseInt(e.target.value);
+        timeValue.textContent = quizConfig.timeLimit;
+        updateSummary();
+      });
+
+      // Generate button
+      document.getElementById('generateBtn').addEventListener('click', generateQuiz);
+
+      // Dropdown functionality
+      const dropdown = document.getElementById('userDropdown');
+      const dropdownIcon = dropdown.querySelector('.fa-user');
+
+      dropdownIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove('active');
+        }
+      });
+    }
+
+    // Toggle category selection
+    function toggleCategory(card) {
+      const category = card.dataset.category;
+      
+      card.classList.toggle('selected');
+
+      if (card.classList.contains('selected')) {
+        if (!quizConfig.categories.includes(category)) {
+          quizConfig.categories.push(category);
+        }
+      } else {
+        quizConfig.categories = quizConfig.categories.filter(c => c !== category);
+        // Remove topics from deselected category
+        const categoryTopics = Object.keys(allTopicMeta[category] || {});
+        quizConfig.topics = quizConfig.topics.filter(t => !categoryTopics.includes(t));
+      }
+
+      renderTopics();
+      updateSummary();
+    }
+
+    // Render topics for selected categories
+    function renderTopics() {
+      const container = document.getElementById('topicContainer');
+      const topicSection = document.getElementById('topicSection');
+
+      if (quizConfig.categories.length === 0) {
+        topicSection.style.display = 'none';
+        container.innerHTML = '';
+        return;
+      }
+
+      topicSection.style.display = 'block';
+      container.innerHTML = '';
+
+      quizConfig.categories.forEach(category => {
+        const categoryTopics = allTopicMeta[category] || {};
+        
+        const categorySection = document.createElement('div');
+        categorySection.className = 'topic-category-section';
+        
+        // Category header
+        const categoryHeader = document.createElement('div');
+        categoryHeader.className = 'topic-category-header';
+        
+        const iconMap = {
+          'aptitude': 'fa-brain',
+          'reasoning': 'fa-lightbulb',
+          'coding': 'fa-code',
+          'technical': 'fa-laptop-code'
+        };
+        
+        categoryHeader.innerHTML = `
+          <i class="fa-solid ${iconMap[category]}"></i>
+          <h4>${category}</h4>
+        `;
+        
+        // Topics grid
+        const topicGrid = document.createElement('div');
+        topicGrid.className = 'topic-grid';
+        
+        Object.entries(categoryTopics).forEach(([topicKey, topicData]) => {
+          const topicOption = document.createElement('div');
+          topicOption.className = 'topic-option';
+          topicOption.dataset.topic = topicKey;
+          topicOption.dataset.category = category;
+          
+          if (quizConfig.topics.includes(topicKey)) {
+            topicOption.classList.add('selected');
+          }
+          
+          topicOption.innerHTML = `
+            <i class="fa-solid ${topicData.icon}"></i>
+            <div class="topic-info">
+              <h5>${topicKey.replace(/-/g, ' ')}</h5>
+              <p>${topicData.description}</p>
+            </div>
+          `;
+          
+          topicOption.addEventListener('click', () => toggleTopic(topicOption, topicKey));
+          topicGrid.appendChild(topicOption);
+        });
+        
+        categorySection.appendChild(categoryHeader);
+        categorySection.appendChild(topicGrid);
+        container.appendChild(categorySection);
+      });
+    }
+
+    // Toggle topic selection
+    function toggleTopic(element, topicKey) {
+      element.classList.toggle('selected');
+
+      if (element.classList.contains('selected')) {
+        if (!quizConfig.topics.includes(topicKey)) {
+          quizConfig.topics.push(topicKey);
+        }
+      } else {
+        quizConfig.topics = quizConfig.topics.filter(t => t !== topicKey);
+      }
+
+      updateSummary();
+    }
+
+    // Toggle difficulty (allows multiple selections)
+    function toggleDifficulty(card) {
+      const difficulty = card.dataset.difficulty;
+
+      if (difficulty === 'mixed') {
+        // If mixed is selected, clear all others and select mixed
+        document.querySelectorAll('#difficultyGrid .option-card').forEach(c => {
+          c.classList.remove('selected');
+        });
+        card.classList.add('selected');
+        quizConfig.difficulty = ['easy', 'medium', 'hard'];
+      } else {
+        // Remove mixed if individual difficulty is selected
+        document.querySelector('[data-difficulty="mixed"]').classList.remove('selected');
+
+        // Toggle individual difficulty
+        card.classList.toggle('selected');
+
+        // Update difficulty array
+        if (card.classList.contains('selected')) {
+          if (!quizConfig.difficulty.includes(difficulty)) {
+            quizConfig.difficulty.push(difficulty);
+          }
+        } else {
+          quizConfig.difficulty = quizConfig.difficulty.filter(d => d !== difficulty);
+        }
+      }
+
+      updateSummary();
+    }
+
+    // Update summary
+    function updateSummary() {
+      // Categories
+      const categoryText = quizConfig.categories.length > 0 
+        ? quizConfig.categories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')
+        : 'Not selected';
+      document.getElementById('summaryCategory').textContent = categoryText;
+      
+      // Topics
+      const topicText = quizConfig.topics.length > 0 
+        ? `${quizConfig.topics.length} topic${quizConfig.topics.length > 1 ? 's' : ''} selected`
+        : 'Not selected';
+      document.getElementById('summaryTopic').textContent = topicText;
+      
+      // Difficulty
+      const difficultyText = quizConfig.difficulty.length > 0 
+        ? (quizConfig.difficulty.length === 3 ? 'Mixed' : quizConfig.difficulty.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', '))
+        : 'Not selected';
+      document.getElementById('summaryDifficulty').textContent = difficultyText;
+      
+      // Questions and time
+      document.getElementById('summaryQuestions').textContent = quizConfig.questionCount;
+      document.getElementById('summaryTime').textContent = `${quizConfig.timeLimit} minutes`;
+    }
+
+    // Generate quiz
+    async function generateQuiz() {
+      // Validate
+      if (quizConfig.categories.length === 0) {
+        showError('Please select at least one category');
+        return;
+      }
+
+      if (quizConfig.topics.length === 0) {
+        showError('Please select at least one topic');
+        return;
+      }
+
+      if (quizConfig.difficulty.length === 0) {
+        showError('Please select at least one difficulty level');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('loadingOverlay').classList.add('active');
+
+      try {
+        // Store quiz config in localStorage for the quiz page
+        const customQuizData = {
+          categories: quizConfig.categories,
+          topics: quizConfig.topics,
+          difficulty: quizConfig.difficulty,
+          questionCount: quizConfig.questionCount,
+          timeLimit: quizConfig.timeLimit,
+          isCustom: true,
+          createdAt: new Date().toISOString()
+        };
+
+        localStorage.setItem('customQuizConfig', JSON.stringify(customQuizData));
+
+        // Redirect to custom quiz page
+        window.location.href = 'custom-quiz.html';
+
+      } catch (error) {
+        console.error('Error generating quiz:', error);
+        showError('Failed to generate quiz. Please try again.');
+        document.getElementById('loadingOverlay').classList.remove('active');
+      }
+    }
+
+    // Show error message
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.classList.add('active');
+
+      setTimeout(() => {
+        errorDiv.classList.remove('active');
+      }, 5000);
+    }
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

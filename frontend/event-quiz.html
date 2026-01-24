@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Event Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding: 20px;
+      background: var(--bg-primary);
+    }
+    
+    .quiz-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .quiz-header {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .timer {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .timer.warning {
+      color: var(--error);
+      animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .waiting-screen {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 60px;
+      text-align: center;
+    }
+    
+    .waiting-screen i {
+      font-size: 5rem;
+      color: var(--accent-primary);
+      margin-bottom: 20px;
+      animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .debug-info {
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+    
+    .question-number {
+      color: var(--accent-primary);
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    
+    .options-container {
+      display: grid;
+      gap: 12px;
+    }
+    
+    .option {
+      background: var(--bg-tertiary);
+      padding: 15px 20px;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .option:hover {
+      border-color: var(--accent-primary);
+      background: var(--card-bg);
+    }
+    
+    .option.selected {
+      border-color: var(--accent-primary);
+      background: var(--accent-primary);
+      color: white;
+    }
+    
+    .option-label {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .option.selected .option-label {
+      background: white;
+      color: var(--accent-primary);
+    }
+
+    .warning-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .warning-content {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .warning-content i {
+      font-size: 4rem;
+      color: var(--error);
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Warning Modal for Tab Switch -->
+  <div id="warningModal" class="warning-modal">
+    <div class="warning-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h2>Quiz Auto-Submitted!</h2>
+      <p style="margin: 20px 0;">You left the quiz window or exited fullscreen. Your quiz has been automatically submitted.</p>
+      <button class="btn btn-primary" onclick="goToResults()">View Results</button>
+    </div>
+  </div>
+
+  <div class="quiz-container">
+    <!-- Waiting Screen -->
+    <div id="waitingScreen" class="waiting-screen">
+      <i class="fas fa-spinner"></i>
+      <h1>Waiting for quiz to start...</h1>
+      <p id="waitingInfo" style="color: var(--text-secondary); margin-top: 20px;">
+        The administrator will activate the quiz shortly. Please wait.
+      </p>
+      <button class="btn btn-secondary" onclick="checkAgain()" style="margin-top: 30px;">
+        <i class="fas fa-sync"></i> Check Again
+      </button>
+      
+      <!-- Debug Info -->
+      <div class="debug-info" id="debugInfo">
+        <div>🔍 Initializing debug mode...</div>
+      </div>
+    </div>
+
+    <!-- Quiz Interface (Hidden by default) -->
+    <div id="quizInterface" style="display: none;">
+      <div class="quiz-header">
+        <div>
+          <h2 id="quizTitle">Event Quiz</h2>
+          <p id="quizInfo" style="color: var(--text-secondary); margin: 5px 0 0 0;"></p>
+        </div>
+        <div class="timer" id="timer">
+          <i class="fas fa-clock"></i>
+          <span id="timeDisplay">00:00</span>
+        </div>
+      </div>
+
+      <div id="questionsContainer"></div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn btn-success" id="submitBtn" onclick="submitQuiz()" style="min-width: 200px;">
+          <i class="fas fa-check"></i> Submit Quiz
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from "./js/firebase.js";
+    import { eventAPI } from "./js/api.js";
+
+    // Get URL params
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('eventId');
+    const participantId = params.get('participantId');
+
+    let currentSet = null;
+    let questions = [];
+    let answers = [];
+    let timeRemaining = 0;
+    let timerInterval = null;
+    let pollInterval = null;
+    let quizActive = false;
+    let autoSubmitted = false;
+    let pollAttempts = 0;
+
+    // Debug logging
+    function addDebugLog(message, data = null) {
+      const debugDiv = document.getElementById('debugInfo');
+      if (debugDiv) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.innerHTML = `[${timestamp}] ${message}`;
+        if (data) {
+          logEntry.innerHTML += `<br><span style="color: #00ffff">${JSON.stringify(data, null, 2)}</span>`;
+        }
+        debugDiv.appendChild(logEntry);
+        debugDiv.scrollTop = debugDiv.scrollHeight;
+      }
+      console.log(message, data || '');
+    }
+
+    // ---------------- AUTH & INIT ----------------
+    function waitForAuthAndInit() {
+      addDebugLog('🔐 Waiting for authentication...');
+      
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          addDebugLog('✅ User authenticated', { uid: user.uid, email: user.email });
+          init();
+        } else {
+          addDebugLog('❌ Not authenticated, redirecting...');
+          window.location.href = "index.html";
+        }
+      });
+    }
+
+    waitForAuthAndInit();
+
+    // ---------------- QUIZ LOGIC ----------------
+    async function init() {
+      addDebugLog('🎯 Initializing quiz...');
+      addDebugLog('📋 URL Parameters', { eventId, participantId });
+      
+      if (!eventId || !participantId) {
+        addDebugLog('❌ Missing required parameters!');
+        alert("Missing eventId or participantId in URL!");
+        return;
+      }
+      
+      try {
+        addDebugLog('⏰ Starting polling (every 3 seconds)');
+        pollInterval = setInterval(checkForActiveSet, 3000);
+        await checkForActiveSet();
+      } catch (error) {
+        addDebugLog('❌ Initialization error', { error: error.message });
+        alert("Error: " + error.message);
+      }
+    }
+
+    async function checkForActiveSet() {
+      try {
+        pollAttempts++;
+        addDebugLog(`🔍 Poll attempt #${pollAttempts}`, { eventId });
+        
+        // Update waiting screen
+        const waitingInfo = document.getElementById('waitingInfo');
+        if (waitingInfo) {
+          waitingInfo.innerHTML = `
+            Checking for active quiz... (Attempt ${pollAttempts})<br>
+            <small style="display: block; margin-top: 10px; opacity: 0.7;">
+              Last checked: ${new Date().toLocaleTimeString()}
+            </small>
+          `;
+        }
+        
+        const response = await eventAPI.getActiveSet(eventId);
+        addDebugLog('📦 Response received', response);
+
+        // Check multiple possible response formats
+        const activeSet = response.activeSet || response.set || response.data?.activeSet;
+        
+        if (activeSet) {
+          addDebugLog('✅ Active set found!', {
+            id: activeSet._id,
+            name: activeSet.setName,
+            isActive: activeSet.isActive,
+            timeLimit: activeSet.timeLimit,
+            questionCount: activeSet.questions?.length
+          });
+          
+          clearInterval(pollInterval);
+          await startQuiz(activeSet);
+        } else {
+          addDebugLog('⏳ No active set yet', { responseKeys: Object.keys(response) });
+        }
+      } catch (error) {
+        addDebugLog('❌ Poll error', { error: error.message, stack: error.stack });
+      }
+    }
+
+    window.checkAgain = function() {
+      addDebugLog('🔄 Manual refresh requested');
+      checkForActiveSet();
+    };
+
+    // ---------------- START QUIZ ----------------
+    async function startQuiz(activeSet) {
+      try {
+        addDebugLog('🚀 Starting quiz...', { setId: activeSet._id });
+        
+        const result = await eventAPI.startSet({
+          participantId,
+          setId: activeSet._id
+        });
+
+        addDebugLog('📋 Start set result', result);
+        
+        currentSet = activeSet;
+        questions = result.questions || [];
+        
+        addDebugLog(`📝 Loaded ${questions.length} questions`);
+        
+        if (questions.length === 0) {
+          addDebugLog('❌ No questions available!');
+          alert("No questions available for this quiz!");
+          return;
+        }
+
+        answers = new Array(questions.length).fill(null);
+        timeRemaining = result.timeRemaining || result.timeLimit * 60;
+
+        addDebugLog(`⏱️ Time remaining: ${timeRemaining} seconds`);
+
+        // Show quiz, hide waiting
+        document.getElementById('waitingScreen').style.display = 'none';
+        document.getElementById('quizInterface').style.display = 'block';
+
+        // Update header
+        document.getElementById('quizTitle').textContent = activeSet.setName;
+        document.getElementById('quizInfo').textContent =
+          `${questions.length} Questions | ${activeSet.timeLimit} Minutes`;
+
+        // Render questions
+        renderQuestions();
+
+        // Mark quiz as active
+        quizActive = true;
+
+        // Start timer
+        startTimer();
+
+        // Enter fullscreen
+        await enterFullscreen();
+
+        // Setup monitoring
+        setupVisibilityMonitoring();
+        setupFullscreenMonitoring();
+
+        addDebugLog('✅ Quiz started successfully!');
+
+      } catch (error) {
+        addDebugLog('❌ Error starting quiz', { error: error.message, stack: error.stack });
+        alert("Error starting quiz: " + error.message);
+      }
+    }
+
+    // ---------------- RENDER QUESTIONS ----------------
+    function renderQuestions() {
+      const optionLabels = ['A', 'B', 'C', 'D'];
+      
+      const questionsHTML = questions.map((q, index) => `
+        <div class="question-card">
+          <div class="question-number">
+            <i class="fas fa-question-circle"></i>
+            Question ${index + 1} of ${questions.length}
+          </div>
+          <div class="question-text">${escapeHtml(q.question)}</div>
+          <div class="options-container">
+            ${q.options.map((option, optIndex) => `
+              <div class="option" data-question="${index}" data-option="${escapeHtml(option)}">
+                <div class="option-label">${optionLabels[optIndex]}</div>
+                <div>${escapeHtml(option)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('questionsContainer').innerHTML = questionsHTML;
+
+      // Add click handlers
+      document.querySelectorAll('.option').forEach(el => {
+        el.addEventListener('click', function() {
+          const qIndex = parseInt(this.dataset.question);
+          const option = this.dataset.option;
+          selectOption(qIndex, option);
+        });
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---------------- SELECT OPTION ----------------
+    function selectOption(questionIndex, option) {
+      answers[questionIndex] = option;
+
+      const questionCards = document.querySelectorAll('.question-card');
+      const optionElements = questionCards[questionIndex].querySelectorAll('.option');
+
+      optionElements.forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.option === option) {
+          el.classList.add('selected');
+        }
+      });
+    }
+
+    // ---------------- TIMER ----------------
+    function startTimer() {
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining <= 60) {
+          document.getElementById('timer').classList.add('warning');
+        }
+
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          autoSubmitQuiz("Time's up!");
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      document.getElementById('timeDisplay').textContent =
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    // ---------------- FULLSCREEN ----------------
+    async function enterFullscreen() {
+      const elem = document.documentElement;
+      try {
+        if (elem.requestFullscreen) {
+          await elem.requestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          await elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) {
+          await elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          await elem.msRequestFullscreen();
+        }
+      } catch (error) {
+        console.error("Fullscreen error:", error);
+      }
+    }
+
+    function setupFullscreenMonitoring() {
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    }
+
+    function handleFullscreenChange() {
+      const isFullscreen = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+
+      if (!isFullscreen && quizActive && !autoSubmitted) {
+        autoSubmitQuiz("Exited fullscreen mode");
+      }
+    }
+
+    // ---------------- VISIBILITY MONITORING ----------------
+    function setupVisibilityMonitoring() {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('blur', handleWindowBlur);
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden && quizActive && !autoSubmitted) {
+        autoSubmitQuiz("Left quiz tab");
+      }
+    }
+
+    function handleWindowBlur() {
+      if (quizActive && !autoSubmitted) {
+        autoSubmitQuiz("Switched windows or applications");
+      }
+    }
+
+    // ---------------- AUTO SUBMIT ----------------
+    async function autoSubmitQuiz(reason) {
+      if (autoSubmitted) return;
+      
+      autoSubmitted = true;
+      quizActive = false;
+      clearInterval(timerInterval);
+
+      console.log("Auto-submitting quiz:", reason);
+
+      try {
+        const score = calculateScore();
+
+        await eventAPI.submitSet({
+          participantId,
+          setId: currentSet._id,
+          score,
+          answers
+        });
+
+        document.getElementById('warningModal').style.display = 'flex';
+        
+      } catch (error) {
+        console.error("Auto-submit error:", error);
+        alert("Quiz auto-submitted due to: " + reason);
+        window.location.href = 'challenge.html';
+      }
+    }
+
+    // ---------------- MANUAL SUBMIT ----------------
+    window.submitQuiz = async function() {
+      if (autoSubmitted) return;
+
+      try {
+        clearInterval(timerInterval);
+
+        const unanswered = answers.filter(a => a === null).length;
+        
+        if (unanswered > 0) {
+          if (!confirm(`You have ${unanswered} unanswered questions. Submit anyway?`)) {
+            startTimer();
+            return;
+          }
+        }
+
+        quizActive = false;
+        const score = calculateScore();
+
+        await eventAPI.submitSet({
+          participantId,
+          setId: currentSet._id,
+          score,
+          answers
+        });
+
+        alert(`Quiz submitted successfully! Your score: ${score}/${questions.length}`);
+        window.location.href = 'challenge.html';
+      } catch (error) {
+        console.error("Error submitting quiz:", error);
+        alert("Error submitting: " + error.message);
+      }
+    };
+
+    function calculateScore() {
+      let score = 0;
+      answers.forEach((answer, index) => {
+        if (answer && questions[index] && answer === questions[index].correctAnswer) {
+          score++;
+        }
+      });
+      return score;
+    }
+
+    window.goToResults = function() {
+      window.location.href = 'challenge.html';
+    };
+
+    // ---------------- PREVENT NAVIGATION ----------------
+    window.addEventListener('beforeunload', (e) => {
+      if (quizActive) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    document.addEventListener('contextmenu', (e) => {
+      if (quizActive) {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (quizActive) {
+        if (e.key === 'F11' || e.key === 'Escape') {
+          e.preventDefault();
+        }
+      }
+    });
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

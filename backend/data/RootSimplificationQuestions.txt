@@ -1,0 +1,1064 @@
+Easy Level Questions
+These questions involve basic square root, cube root, and simple arithmetic simplifications.
+
+1. The square root of 0.0081 is:
+A) 0.9
+B) 0.09
+C) 0.009
+D) 9
+
+2. The cube root of 0.001 is:
+A) 0.1
+B) 0.01
+C) 1
+D) 10
+
+3. Simplify: sqrt(25) × sqrt(4)
+A) 10
+B) 20
+C) 5
+D) 100
+
+4. The square root of 144 is:
+A) 12
+B) 14
+C) 16
+D) 18
+
+5. The cube root of 64 is:
+A) 2
+B) 4
+C) 6
+D) 8
+
+6. Find the value of: sqrt(16) + sqrt[3](8)
+A) 6
+B) 8
+C) 10
+D) 12
+
+7. If sqrt(49) = 7, then sqrt(49) ÷ sqrt(7) is:
+A) 1
+B) 7
+C) 49
+D) 343
+
+8. The square root of 0.36 is:
+A) 0.6
+B) 0.06
+C) 6
+D) 36
+
+9. Simplify: sqrt(9 × 16)
+A) 12
+B) 24
+C) 48
+D) 72
+
+10. The cube root of 216 is:
+A) 4
+B) 6
+C) 8
+D) 10
+
+11. Find the value of: sqrt(100) - sqrt(25)
+A) 5
+B) 10
+C) 15
+D) 25
+
+12. If x^2 = 64, then x is:
+A) 6
+B) 8
+C) 10
+D) 12
+
+13. Simplify: sqrt[3](27) × 3
+A) 9
+B) 12
+C) 15
+D) 18
+
+14. The square root of 169 is:
+A) 11
+B) 13
+C) 15
+D) 17
+
+15. The cube root of 0.027 is:
+A) 0.3
+B) 0.03
+C) 3
+D) 30
+
+16. Simplify: sqrt(36 ÷ 9)
+A) 2
+B) 3
+C) 4
+D) 6
+
+17. Find the value of: sqrt(81) + sqrt[3](8)
+A) 9
+B) 11
+C) 13
+D) 15
+
+18. If sqrt(16) = 4, then sqrt(16 ÷ 4) is:
+A) 1
+B) 2
+C) 4
+D) 8
+
+19. The square root of 625 is:
+A) 15
+B) 20
+C) 25
+D) 30
+
+20. The cube root of 125 is:
+A) 3
+B) 5
+C) 7
+D) 9
+
+21. Simplify: sqrt(4) × sqrt[3](27)
+A) 6
+B) 8
+C) 10
+D) 12
+
+22. Find the value of: sqrt(49) - sqrt(16)
+A) 3
+B) 5
+C) 7
+D) 9
+
+23. The square root of 0.49 is:
+A) 0.7
+B) 0.07
+C) 7
+D) 49
+
+24. Simplify: sqrt(25 × 4)
+A) 10
+B) 20
+C) 25
+D) 50
+
+25. The cube root of 512 is:
+A) 6
+B) 8
+C) 10
+D) 12
+
+26. Find the value of: sqrt(9) + sqrt[3](64)
+A) 7
+B) 9
+C) 11
+D) 13
+
+27. If x^2 = 81, then x is:
+A) 7
+B) 9
+C) 11
+D) 13
+
+28. Simplify: sqrt(100 ÷ 25)
+A) 2
+B) 4
+C) 5
+D) 10
+
+29. The square root of 256 is:
+A) 14
+B) 16
+C) 18
+D) 20
+
+30. The cube root of 0.008 is:
+A) 0.2
+B) 0.02
+C) 2
+D) 20
+
+31. Simplify: sqrt(16) × sqrt(25)
+A) 20
+B) 40
+C) 80
+D) 100
+
+32. Find the value of: sqrt[3](27) ÷ sqrt(9)
+A) 1
+B) 2
+C) 3
+D) 4
+
+33. The square root of 400 is:
+A) 16
+B) 18
+C) 20
+D) 22
+
+34. Simplify: sqrt(36) + sqrt[3](8)
+A) 6
+B) 8
+C) 10
+D) 12
+
+35. If sqrt(25) = 5, then sqrt(25 ÷ 5) is:
+A) 1
+B) 2
+C) 5
+D) 10
+
+36. The cube root of 729 is:
+A) 7
+B) 9
+C) 11
+D) 13
+
+37. Simplify: sqrt(9 × 4)
+A) 6
+B) 12
+C) 18
+D) 24
+
+38. Find the value of: sqrt(64) - sqrt[3](27)
+A) 5
+B) 6
+C) 7
+D) 8
+
+39. The square root of 0.64 is:
+A) 0.8
+B) 0.08
+C) 8
+D) 64
+
+40. Simplify: sqrt(100) ÷ sqrt(4)
+A) 5
+B) 10
+C) 20
+D) 25
+
+41. The cube root of 1000 is:
+A) 8
+B) 10
+C) 12
+D) 14
+
+42. Find the value of: sqrt(16) + sqrt(25)
+A) 7
+B) 9
+C) 11
+D) 13
+
+43. If x^2 = 36, then x is:
+A) 4
+B) 6
+C) 8
+D) 10
+
+44. Simplify: sqrt[3](64) × 2
+A) 6
+B) 8
+C) 10
+D) 12
+
+45. The square root of 324 is:
+A) 16
+B) 18
+C) 20
+D) 22
+
+46. Find the value of: sqrt(49) ÷ sqrt(7)
+A) 1
+B) 7
+C) 49
+D) 343
+
+47. Simplify: sqrt(9) × sqrt[3](8)
+A) 6
+B) 9
+C) 12
+D) 15
+
+48. The cube root of 0.125 is:
+A) 0.5
+B) 0.05
+C) 5
+D) 50
+
+49. Simplify: sqrt(25 ÷ 5)
+A) 1
+B) 2
+C) 5
+D) 10
+
+50. Find the value of: sqrt(81) - sqrt[3](64)
+A) 5
+B) 7
+C) 9
+D) 11
+
+Easy Level Answers
+1. B) 0.09
+2. A) 0.1
+3. A) 10
+4. A) 12
+5. B) 4
+6. A) 6
+7. B) 7
+8. A) 0.6
+9. A) 12
+10. B) 6
+11. A) 5
+12. B) 8
+13. A) 9
+14. B) 13
+15. A) 0.3
+16. A) 2
+17. B) 11
+18. B) 2
+19. C) 25
+20. B) 5
+21. A) 6
+22. A) 3
+23. A) 0.7
+24. A) 10
+25. B) 8
+26. A) 7
+27. B) 9
+28. B) 4
+29. B) 16
+30. A) 0.2
+31. A) 20
+32. A) 1
+33. C) 20
+34. B) 8
+35. B) 2
+36. B) 9
+37. A) 6
+38. A) 5
+39. A) 0.8
+40. A) 5
+41. B) 10
+42. B) 9
+43. B) 6
+44. B) 8
+45. B) 18
+46. B) 7
+47. A) 6
+48. A) 0.5
+49. B) 2
+50. A) 5
+
+Medium Level Questions
+These questions involve square roots, cube roots, arithmetic operations, and basic applications of root properties.
+
+1. Simplify: sqrt(16 × 25) ÷ sqrt(4)
+A) 10
+B) 20
+C) 25
+D) 50
+
+2. Find the value of: sqrt[3](27) × (sqrt(9) + 2)
+A) 15
+B) 18
+C) 21
+D) 24
+
+3. If x = sqrt(16) and y = sqrt[3](8), then x + y is:
+A) 4
+B) 6
+C) 8
+D) 10
+
+4. Simplify: sqrt(100 ÷ 25) × sqrt[3](64)
+A) 8
+B) 12
+C) 16
+D) 20
+
+5. The least perfect square divisible by 6 and 8 is:
+A) 36
+B) 64
+C) 144
+D) 256
+
+6. Find the value of: sqrt(49) × sqrt(4) + sqrt[3](27)
+A) 17
+B) 20
+C) 23
+D) 26
+
+7. If sqrt(36) = 6, then sqrt(36 ÷ 9) × sqrt(25) is:
+A) 10
+B) 15
+C) 20
+D) 25
+
+8. Simplify: sqrt(81 × 4) ÷ sqrt(9)
+A) 12
+B) 18
+C) 24
+D) 36
+
+9. The cube root of 0.064 is:
+A) 0.4
+B) 0.04
+C) 4
+D) 40
+
+10. Find the value of: sqrt(16) × (sqrt[3](8) + 3)
+A) 16
+B) 20
+C) 24
+D) 28
+
+11. If x^2 = 196, then sqrt(x^2 ÷ 49) is:
+A) 2
+B) 4
+C) 6
+D) 8
+
+12. Simplify: sqrt(25 × 16) ÷ sqrt[3](8)
+A) 10
+B) 15
+C) 20
+D) 25
+
+13. Find the value of: sqrt(100) - sqrt(25) × sqrt[3](27)
+A) 0
+B) 5
+C) 10
+D) 15
+
+14. The square root of 0.0121 is:
+A) 0.11
+B) 0.011
+C) 1.1
+D) 11
+
+15. Simplify: sqrt(9) × sqrt[3](64) ÷ sqrt(4)
+A) 6
+B) 8
+C) 10
+D) 12
+
+16. If x = sqrt(25) and y = sqrt[3](125), then x × y is:
+A) 25
+B) 30
+C) 35
+D) 40
+
+17. Find the value of: sqrt(36 × 4) ÷ sqrt(9)
+A) 8
+B) 12
+C) 16
+D) 20
+
+18. The least perfect square divisible by 12 and 15 is:
+A) 36
+B) 144
+C) 225
+D) 900
+
+19. Simplify: sqrt(16) + sqrt[3](8) × sqrt(25)
+A) 14
+B) 16
+C) 18
+D) 20
+
+20. Find the value of: sqrt(49 ÷ 7) × sqrt[3](27)
+A) 9
+B) 12
+C) 15
+D) 18
+
+21. If sqrt(64) = 8, then sqrt(64 ÷ 16) + sqrt(9) is:
+A) 5
+B) 7
+C) 9
+D) 11
+
+22. Simplify: sqrt(100 × 9) ÷ sqrt(25)
+A) 6
+B) 12
+C) 18
+D) 24
+
+23. The cube root of 0.343 is:
+A) 0.7
+B) 0.07
+C) 7
+D) 70
+
+24. Find the value of: sqrt(81) ÷ sqrt(9) + sqrt[3](64)
+A) 7
+B) 9
+C) 11
+D) 13
+
+25. The square root of 576 is:
+A) 22
+B) 24
+C) 26
+D) 28
+
+26. Simplify: sqrt(25) × (sqrt(4) + sqrt[3](8))
+A) 20
+B) 25
+C) 30
+D) 35
+
+27. If x^2 = 225, then x ÷ sqrt(25) is:
+A) 3
+B) 4
+C) 5
+D) 6
+
+28. Find the value of: sqrt[3](27) × sqrt(16) ÷ 2
+A) 6
+B) 8
+C) 10
+D) 12
+
+29. Simplify: sqrt(36 × 25) ÷ sqrt(9)
+A) 10
+B) 20
+C) 30
+D) 50
+
+30. The cube root of 1000 is:
+A) 8
+B) 10
+C) 12
+D) 14
+
+31. Find the value of: sqrt(16) × sqrt[3](125) - sqrt(25)
+A) 15
+B) 20
+C) 25
+D) 30
+
+32. If sqrt(49) = 7, then sqrt(49 ÷ 7) × sqrt(4) is:
+A) 6
+B) 8
+C) 10
+D) 14
+
+33. Simplify: sqrt(81 ÷ 9) × sqrt(16)
+A) 12
+B) 16
+C) 20
+D) 24
+
+34. Find the value of: sqrt(100) ÷ sqrt(25) + sqrt[3](8)
+A) 7
+B) 9
+C) 11
+D) 13
+
+35. The square root of 0.04 is:
+A) 0.2
+B) 0.02
+C) 2
+D) 20
+
+36. Simplify: sqrt(9 × 16) × sqrt[3](27)
+A) 36
+B) 48
+C) 60
+D) 72
+
+37. Find the value of: sqrt(36) + sqrt(25) - sqrt[3](64)
+A) 7
+B) 8
+C) 9
+D) 10
+
+38. If x = sqrt(16) and y = sqrt[3](8), then x^2 + y^2 is:
+A) 18
+B) 20
+C) 22
+D) 24
+
+39. Simplify: sqrt(25 × 4) ÷ sqrt(5)
+A) 5
+B) 10
+C) 15
+D) 20
+
+40. The cube root of 0.008 is:
+A) 0.2
+B) 0.02
+C) 2
+D) 20
+
+41. Find the value of: sqrt(64) ÷ sqrt(16) × sqrt[3](27)
+A) 6
+B) 9
+C) 12
+D) 15
+
+42. The least perfect square divisible by 9 and 12 is:
+A) 36
+B) 144
+C) 324
+D) 576
+
+43. Simplify: sqrt(16 × 9) ÷ sqrt(4)
+A) 6
+B) 12
+C) 18
+D) 24
+
+44. Find the value of: sqrt[3](125) × sqrt(25) ÷ 5
+A) 5
+B) 10
+C) 15
+D) 20
+
+45. If sqrt(81) = 9, then sqrt(81 ÷ 9) + sqrt(4) is:
+A) 5
+B) 7
+C) 9
+D) 11
+
+46. Simplify: sqrt(49 × 25) ÷ sqrt[3](8)
+A) 35
+B) 40
+C) 45
+D) 50
+
+47. The square root of 784 is:
+A) 26
+B) 28
+C) 30
+D) 32
+
+48. Find the value of: sqrt(16) × (sqrt[3](27) + 2)
+A) 20
+B) 24
+C) 28
+D) 32
+
+49. Simplify: sqrt(100 ÷ 4) × sqrt(9)
+A) 15
+B) 20
+C) 25
+D) 30
+
+50. The cube root of 343 is:
+A) 5
+B) 7
+C) 9
+D) 11
+
+Medium Level Answers
+1. A) 10
+2. A) 15
+3. B) 6
+4. A) 8
+5. C) 144
+6. A) 17
+7. A) 10
+8. A) 12
+9. A) 0.4
+10. A) 16
+11. A) 2
+12. A) 10
+13. A) 0
+14. A) 0.11
+15. A) 6
+16. A) 25
+17. A) 8
+18. D) 900
+19. A) 14
+20. A) 9
+21. A) 5
+22. C) 18
+23. A) 0.7
+24. A) 7
+25. B) 24
+26. A) 20
+27. A) 3
+28. A) 6
+29. C) 30
+30. B) 10
+31. A) 15
+32. D) 14
+33. A) 12
+34. A) 7
+35. A) 0.2
+36. A) 36
+37. A) 7
+38. B) 20
+39. B) 10
+40. A) 0.2
+41. A) 6
+42. B) 144
+43. B) 12
+44. A) 5
+45. A) 5
+46. A) 35
+47. B) 28
+48. A) 20
+49. A) 15
+50. B) 7
+
+Hard Level Questions
+These questions involve complex operations, nested roots, perfect square divisibility, or advanced applications of root properties.
+
+1. Simplify: sqrt(16 × 25) ÷ (sqrt(9) + sqrt[3](8))
+A) 10
+B) 20
+C) 25
+D) 50
+
+2. Find the value of: sqrt[3](27) × (sqrt(36) + sqrt(4)) ÷ 2
+A) 12
+B) 15
+C) 18
+D) 21
+
+3. If a = 0.04, then the value of 4a^2 - 4a + 1 + 3a is:
+A) 0.04
+B) 0.44
+C) 0.84
+D) 1.24
+
+4. The least perfect square divisible by 15, 25, and 35 is:
+A) 225
+B) 625
+C) 1225
+D) 5625
+
+5. Simplify: sqrt(49 × 16) ÷ (sqrt(25) - sqrt[3](27))
+A) 28
+B) 56
+C) 84
+D) 112
+
+6. Find the value of: sqrt(100 ÷ 25) × (sqrt[3](8) + sqrt(9)) ÷ 2
+A) 5
+B) 10
+C) 15
+D) 20
+
+7. If x = sqrt(9) + 1 and y = sqrt(9) - 1, then x^2 + y^2 is:
+A) 10
+B) 12
+C) 14
+D) 16
+
+8. Simplify: sqrt(81 × 4) ÷ (sqrt(16) + sqrt[3](64))
+A) 6
+B) 9
+C) 12
+D) 18
+
+9. A group collects as many paise as the number of members squared. If the total is Rs. 92.16, the number of members is:
+A) 86
+B) 94
+C) 96
+D) 98
+
+10. Find the value of: sqrt(25) × sqrt[3](125) ÷ (sqrt(16) + 1)
+A) 5
+B) 10
+C) 15
+D) 20
+
+11. Simplify: sqrt(16 × 36) ÷ (sqrt(9) × sqrt[3](8))
+A) 8
+B) 12
+C) 16
+D) 20
+
+12. If sqrt(5) = 2.236, then sqrt(5) ÷ 5 + sqrt(125) is:
+A) 7.483
+B) 8.483
+C) 9.483
+D) 10.483
+
+13. Simplify: sqrt(9 × 25) ÷ (sqrt(16) - sqrt[3](27))
+A) 15
+B) 25
+C) 35
+D) 45
+
+14. Find the value of: sqrt[3](64) × (sqrt(25) + sqrt(4)) ÷ 3
+A) 7
+B) 9
+C) 11
+D) 13
+
+15. The least perfect square divisible by 8, 12, and 18 is:
+A) 144
+B) 324
+C) 576
+D) 1296
+
+16. Simplify: sqrt(100 × 9) ÷ (sqrt(25) + sqrt[3](8))
+A) 10
+B) 15
+C) 20
+D) 25
+
+17. Find the value of: sqrt(36) × sqrt[3](27) ÷ (sqrt(4) + 2)
+A) 4.5
+B) 5.5
+C) 6.5
+D) 7.5
+
+18. If x = sqrt(16) + sqrt(4) and y = sqrt(16) - sqrt(4), then x^2 - y^2 is:
+A) 16
+B) 24
+C) 32
+D) 40
+
+19. Simplify: sqrt(25 × 49) ÷ (sqrt(9) × sqrt[3](64))
+A) 10
+B) 15
+C) 20
+D) 25
+
+20. Find the value of: sqrt(81) ÷ (sqrt[3](8) + sqrt(25)) ÷ 2
+A) 0.75
+B) 1
+C) 1.25
+D) 1.5
+
+21. The square root of (5 + 3sqrt(5)) × (5 - 3sqrt(5)) is:
+A) 2
+B) 3
+C) 4
+D) 5
+
+22. If sqrt(7) = 2.645, then sqrt(7) - 7 ÷ sqrt(7) is:
+A) 0
+B) 1
+C) 2
+D) 3
+
+23. Simplify: sqrt(16 × 25) ÷ (sqrt(36) - sqrt[3](8))
+A) 10
+B) 20
+C) 25
+D) 50
+
+24. Find the value of: sqrt[3](125) × sqrt(16) ÷ (sqrt(9) + 1)
+A) 5
+B) 10
+C) 15
+D) 20
+
+25. A group collects as many paise as the number of members squared. If the total is Rs. 132.25, the number of members is:
+A) 105
+B) 115
+C) 125
+D) 135
+
+26. Simplify: sqrt(36 × 4) ÷ (sqrt(25) + sqrt[3](27))
+A) 6
+B) 8
+C) 10
+D) 12
+
+27. Find the value of: sqrt(100) × sqrt[3](8) ÷ (sqrt(16) + 2)
+A) 5
+B) 10
+C) 15
+D) 20
+
+28. If x^2 = 324, then what should replace x in x ÷ sqrt(9) = sqrt(324) ÷ x?
+A) 9
+B) 12
+C) 15
+D) 18
+
+29. Simplify: sqrt(9 × 16) ÷ (sqrt(25) - sqrt[3](64))
+A) 12
+B) 18
+C) 24
+D) 36
+
+30. Find the value of: sqrt(49) × (sqrt(4) + sqrt[3](125)) ÷ 3
+A) 7
+B) 14
+C) 21
+D) 28
+
+31. The least perfect square divisible by 6, 9, and 15 is:
+A) 36
+B) 81
+C) 225
+D) 900
+
+32. Simplify: sqrt(25 × 36) ÷ (sqrt(16) × sqrt[3](8))
+A) 15
+B) 20
+C) 25
+D) 30
+
+33. Find the value of: sqrt[3](27) × sqrt(25) ÷ (sqrt(4) + 3)
+A) 3
+B) 5
+C) 7
+D) 9
+
+34. If sqrt(5) = 2.236, then sqrt(5) + 25 ÷ sqrt(5) is:
+A) 12.387
+B) 13.387
+C) 14.387
+D) 15.387
+
+35. Simplify: sqrt(81 × 4) ÷ (sqrt(9) + sqrt[3](27))
+A) 9
+B) 12
+C) 15
+D) 18
+
+36. Find the value of: sqrt(16) × sqrt[3](64) ÷ (sqrt(25) - 1)
+A) 4
+B) 6
+C) 8
+D) 10
+
+37. How many two-digit numbers have a square with the last digit as 5?
+A) 1
+B) 2
+C) 3
+D) 4
+
+38. Simplify: sqrt(100 × 16) ÷ (sqrt(25) × sqrt[3](8))
+A) 8
+B) 10
+C) 12
+D) 16
+
+39. Find the value of: sqrt(36) ÷ (sqrt[3](8) + sqrt(4)) + 5
+A) 6
+B) 7
+C) 8
+D) 9
+
+40. The square root of (6 + 2sqrt(5)) × (6 - 2sqrt(5)) is:
+A) 2
+B) 3
+C) 4
+D) 5
+
+41. If a = 0.09, then the value of 4a^2 - 4a + 1 + 3a is:
+A) 0.09
+B) 0.19
+C) 0.29
+D) 0.39
+
+42. Simplify: sqrt(49 × 25) ÷ (sqrt(16) + sqrt[3](27))
+A) 25
+B) 35
+C) 45
+D) 55
+
+43. Find the value of: sqrt[3](125) × sqrt(9) ÷ (sqrt(25) + 2)
+A) 3
+B) 5
+C) 7
+D) 9
+
+44. The least perfect square divisible by 10, 15, and 20 is:
+A) 100
+B) 225
+C) 400
+D) 900
+
+45. Simplify: sqrt(16 × 9) ÷ (sqrt(4) + sqrt[3](8))
+A) 6
+B) 9
+C) 12
+D) 18
+
+46. Find the value of: sqrt(81) × sqrt[3](64) ÷ (sqrt(16) + 3)
+A) 6
+B) 8
+C) 10
+D) 12
+
+47. If x = sqrt(25) + 2 and y = sqrt(25) - 2, then x^2 - y^2 is:
+A) 20
+B) 30
+C) 40
+D) 50
+
+48. Simplify: sqrt(25 × 4) ÷ (sqrt(9) × sqrt[3](27))
+A) 5
+B) 10
+C) 15
+D) 20
+
+49. Find the value of: sqrt(100) ÷ (sqrt[3](8) + sqrt(25)) + 3
+A) 4
+B) 5
+C) 6
+D) 7
+
+50. The square root of 7744 is:
+A) 86
+B) 88
+C) 90
+D) 92
+
+Hard Level Answers
+1. A) 10
+2. A) 12
+3. C) 0.84
+4. D) 5625
+5. A) 28
+6. A) 5
+7. C) 14
+8. A) 6
+9. C) 96
+10. A) 5
+11. B) 12
+12. A) 7.483
+13. A) 15
+14. A) 7
+15. B) 324
+16. A) 10
+17. A) 4.5
+18. B) 24
+19. C) 20
+20. A) 0.75
+21. C) 4
+22. A) 0
+23. A) 10
+24. A) 5
+25. B) 115
+26. A) 6
+27. A) 5
+28. A) 9
+29. A) 12
+30. C) 21
+31. D) 900
+32. A) 15
+33. A) 3
+34. B) 13.387
+35. A) 9
+36. A) 4
+37. B) 2
+38. B) 10
+39. A) 6
+40. C) 4
+41. D) 0.39
+42. A) 25
+43. A) 3
+44. D) 900
+45. B) 9
+46. A) 6
+47. C) 40
+48. A) 5
+49. B) 5
+50. B) 88

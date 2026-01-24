@@ -1,0 +1,1064 @@
+Easy Level Questions
+These questions involve basic percentage calculations and conversions.
+
+1. What is 25% of 80?
+A) 10
+B) 20
+C) 25
+D) 30
+
+2. Express 0.75 as a percentage:
+A) 7.5%
+B) 75%
+C) 750%
+D) 0.75%
+
+3. A shopkeeper sells 30% of his stock and is left with 140 items. How many items did he originally have?
+A) 180
+B) 200
+C) 220
+D) 240
+
+4. If 15% of a number is 45, what is the number?
+A) 300
+B) 250
+C) 200
+D) 150
+
+5. What percentage of 50 is 10?
+A) 10%
+B) 20%
+C) 30%
+D) 40%
+
+6. A student scores 80 marks out of 100. What is his percentage score?
+A) 80%
+B) 85%
+C) 90%
+D) 95%
+
+7. If 40% of x = 20, what is x?
+A) 40
+B) 50
+C) 60
+D) 70
+
+8. Express 3/5 as a percentage:
+A) 40%
+B) 50%
+C) 60%
+D) 70%
+
+9. A book costs Rs. 200 after a 20% discount. What was the original price?
+A) Rs. 240
+B) Rs. 250
+C) Rs. 260
+D) Rs. 270
+
+10. What is 10% of 500?
+A) 40
+B) 50
+C) 60
+D) 70
+
+11. If 25% of a class of 40 students are girls, how many girls are there?
+A) 8
+B) 10
+C) 12
+D) 14
+
+12. Express 0.4 as a percentage:
+A) 4%
+B) 40%
+C) 400%
+D) 0.4%
+
+13. If 60% of a number is 120, what is the number?
+A) 180
+B) 200
+C) 220
+D) 240
+
+14. What percentage of 200 is 50?
+A) 20%
+B) 25%
+C) 30%
+D) 35%
+
+15. A shirt is sold for Rs. 360 after a 10% discount. What was the original price?
+A) Rs. 380
+B) Rs. 390
+C) Rs. 400
+D) Rs. 410
+
+16. If 5% of x = 15, what is x?
+A) 200
+B) 250
+C) 300
+D) 350
+
+17. Express 2/25 as a percentage:
+A) 8%
+B) 10%
+C) 12%
+D) 14%
+
+18. A vendor sells 50% of his fruits and has 100 left. How many fruits did he originally have?
+A) 150
+B) 180
+C) 200
+D) 220
+
+19. What is 75% of 120?
+A) 80
+B) 90
+C) 100
+D) 110
+
+20. If 20% of a number is 40, what is the number?
+A) 160
+B) 180
+C) 200
+D) 220
+
+21. Express 0.125 as a percentage:
+A) 12.5%
+B) 1.25%
+C) 125%
+D) 0.125%
+
+22. A student scores 45 out of 50. What is the percentage score?
+A) 80%
+B) 85%
+C) 90%
+D) 95%
+
+23. If 30% of x = 90, what is x?
+A) 270
+B) 280
+C) 290
+D) 300
+
+24. What percentage of 80 is 20?
+A) 20%
+B) 25%
+C) 30%
+D) 35%
+
+25. A product costs Rs. 150 after a 25% discount. What was the original price?
+A) Rs. 180
+B) Rs. 190
+C) Rs. 200
+D) Rs. 210
+
+26. If 8% of x = 24, what is x?
+A) 250
+B) 300
+C) 350
+D) 400
+
+27. Express 4/5 as a percentage:
+A) 70%
+B) 75%
+C) 80%
+D) 85%
+
+28. A shop sells 40% of its stock and has 180 items left. How many items were there originally?
+A) 280
+B) 300
+C) 320
+D) 340
+
+29. What is 15% of 200?
+A) 25
+B) 30
+C) 35
+D) 40
+
+30. If 10% of a number is 25, what is the number?
+A) 200
+B) 225
+C) 250
+D) 275
+
+31. Express 1/8 as a percentage:
+A) 12.5%
+B) 10%
+C) 8%
+D) 6.25%
+
+32. A student scores 72 out of 80. What is the percentage score?
+A) 85%
+B) 90%
+C) 95%
+D) 100%
+
+33. If 25% of x = 50, what is x?
+A) 150
+B) 175
+C) 200
+D) 225
+
+34. What percentage of 150 is 30?
+A) 15%
+B) 20%
+C) 25%
+D) 30%
+
+35. A toy costs Rs. 120 after a 20% discount. What was the original price?
+A) Rs. 140
+B) Rs. 150
+C) Rs. 160
+D) Rs. 170
+
+36. If 12% of x = 36, what is x?
+A) 250
+B) 300
+C) 350
+D) 400
+
+37. Express 3/20 as a percentage:
+A) 12%
+B) 15%
+C) 18%
+D) 20%
+
+38. A store sells 60% of its items and has 80 left. How many items were there originally?
+A) 180
+B) 190
+C) 200
+D) 210
+
+39. What is 50% of 180?
+A) 80
+B) 90
+C) 100
+D) 110
+
+40. If 15% of a number is 60, what is the number?
+A) 350
+B) 400
+C) 450
+D) 500
+
+41. Express 0.6 as a percentage:
+A) 6%
+B) 60%
+C) 600%
+D) 0.6%
+
+42. A student scores 90 out of 120. What is the percentage score?
+A) 70%
+B) 75%
+C) 80%
+D) 85%
+
+43. If 20% of x = 80, what is x?
+A) 350
+B) 400
+C) 450
+D) 500
+
+44. What percentage of 250 is 50?
+A) 20%
+B) 25%
+C) 30%
+D) 35%
+
+45. A phone costs Rs. 800 after a 20% discount. What was the original price?
+A) Rs. 900
+B) Rs. 950
+C) Rs. 1000
+D) Rs. 1050
+
+46. If 5% of x = 20, what is x?
+A) 350
+B) 400
+C) 450
+D) 500
+
+47. Express 7/10 as a percentage:
+A) 60%
+B) 65%
+C) 70%
+D) 75%
+
+48. A vendor sells 25% of his stock and has 150 items left. How many items were there originally?
+A) 180
+B) 190
+C) 200
+D) 210
+
+49. What is 30% of 300?
+A) 80
+B) 90
+C) 100
+D) 110
+
+50. If 10% of a number is 15, what is the number?
+A) 100
+B) 125
+C) 150
+D) 175
+
+Easy Level Answers
+1. B) 20
+2. B) 75%
+3. B) 200
+4. A) 300
+5. B) 20%
+6. A) 80%
+7. B) 50
+8. C) 60%
+9. B) Rs. 250
+10. B) 50
+11. B) 10
+12. B) 40%
+13. B) 200
+14. B) 25%
+15. C) Rs. 400
+16. C) 300
+17. A) 8%
+18. C) 200
+19. B) 90
+20. C) 200
+21. A) 12.5%
+22. C) 90%
+23. D) 300
+24. B) 25%
+25. C) Rs. 200
+26. B) 300
+27. C) 80%
+28. B) 300
+29. B) 90
+30. C) 250
+31. A) 12.5%
+32. B) 90%
+33. C) 200
+34. B) 20%
+35. B) Rs. 150
+36. B) 300
+37. B) 15%
+38. C) 200
+39. B) 90
+40. B) 400
+41. B) 60%
+42. B) 75%
+43. B) 400
+44. A) 20%
+45. C) Rs. 1000
+46. B) 400
+47. C) 70%
+48. C) 200
+49. B) 90
+50. C) 150
+
+Medium Level Questions
+These questions involve percentage increase/decrease, basic population/depreciation, and simple relationships.
+
+1. If the price of a book increases by 20%, what is the reduction in consumption to keep expenditure constant?
+A) 16.67%
+B) 20%
+C) 25%
+D) 30%
+
+2. A student scored 60 marks, which is 75% of the total marks. What is the total number of marks?
+A) 70
+B) 80
+C) 90
+D) 100
+
+3. If 30% of a = b, then b% of 30 is the same as:
+A) 9% of a
+B) 10% of a
+C) 12% of a
+D) 15% of a
+
+4. The population of a town is 5000 and increases at 5% per year. What will be the population after 2 years?
+A) 5500
+B) 5512.5
+C) 5525
+D) 5537.5
+
+5. A machine’s value is Rs. 10000 and depreciates at 10% per year. What will be its value after 1 year?
+A) Rs. 9000
+B) Rs. 9100
+C) Rs. 9200
+D) Rs. 9300
+
+6. If A is 25% more than B, then B is less than A by:
+A) 20%
+B) 25%
+C) 30%
+D) 35%
+
+7. A shopkeeper gives a 15% discount on a product, and the sale price is Rs. 170. What was the original price?
+A) Rs. 190
+B) Rs. 200
+C) Rs. 210
+D) Rs. 220
+
+8. In a class, 40% of students are boys, and there are 24 boys. What is the total number of students?
+A) 50
+B) 60
+C) 70
+D) 80
+
+9. If the price of an item decreases by 10%, what is the increase in consumption to maintain expenditure?
+A) 10%
+B) 11.11%
+C) 12.5%
+D) 15%
+
+10. A number is mistakenly divided by 4 instead of 5. What is the percentage error in the calculation?
+A) 20%
+B) 25%
+C) 30%
+D) 35%
+
+11. If 20% of x = 40% of y, what is the ratio of x to y?
+A) 1:2
+B) 2:1
+C) 3:2
+D) 2:3
+
+12. A town’s population is 20000 and increases at 8% per year. What was the population 1 year ago?
+A) 18426
+B) 18518
+C) 18622
+D) 18750
+
+13. A product costs Rs. 500 after a 20% discount and a 5% sales tax. What was the original price?
+A) Rs. 595
+B) Rs. 600
+C) Rs. 625
+D) Rs. 650
+
+14. If 15% of a number is 75, and 25% of the same number is added to it, what is the final value?
+A) 475
+B) 500
+C) 525
+D) 550
+
+15. Express 5/8 as a percentage:
+A) 60%
+B) 62.5%
+C) 65%
+D) 67.5%
+
+16. If A is 10% less than B, then B is more than A by:
+A) 10%
+B) 11.11%
+C) 12.5%
+D) 15%
+
+17. A student’s marks increased by 20% to 120. What were the original marks?
+A) 90
+B) 95
+C) 100
+D) 105
+
+18. A machine’s value is Rs. 8000 and depreciates at 5% per year. What was its value 2 years ago?
+A) Rs. 8800
+B) Rs. 8888
+C) Rs. 8976
+D) Rs. 9066
+
+19. What percentage of numbers from 1 to 50 have 5 in the unit’s digit?
+A) 10%
+B) 12%
+C) 14%
+D) 16%
+
+20. If 25% of a = 50% of b, then b% of 25 is the same as:
+A) 12.5% of a
+B) 15% of a
+C) 20% of a
+D) 25% of a
+
+21. A shop sells 60% of its stock and has 120 items left. Originally, it had:
+A) 280
+B) 290
+C) 300
+D) 310
+
+22. The population of a city is 10000 and grows at 10% per year. What will be the population after 3 years?
+A) 13000
+B) 13100
+C) 13210
+D) 13310
+
+23. If 5% of x = 10% of y, what is the ratio of x to y?
+A) 1:2
+B) 2:1
+C) 3:2
+D) 2:3
+
+24. A product’s price increases by 25%, and consumption is reduced by:
+A) 20%
+B) 22%
+C) 24%
+D) 25%
+
+25. A student scores 90 marks, which is 60% of the total. What is the total number of marks?
+A) 140
+B) 150
+C) 160
+D) 170
+
+26. If a number is multiplied by 2/3 instead of 3/2, what is the percentage error?
+A) 50%
+B) 55.56%
+C) 60%
+D) 66.67%
+
+27. A machine’s value is Rs. 12000 and depreciates at 12% per year. What will be its value after 2 years?
+A) Rs. 9360
+B) Rs. 9472
+C) Rs. 9584
+D) Rs. 9696
+
+28. If 30% of a number is 90, and 20% of the same number is subtracted, what is the result?
+A) 180
+B) 210
+C) 240
+D) 270
+
+29. Express 7/25 as a percentage:
+A) 24%
+B) 26%
+C) 28%
+D) 30%
+
+30. If A is 20% more than B, then B is less than A by:
+A) 16.67%
+B) 18%
+C) 20%
+D) 22%
+
+31. A shopkeeper sells an item for Rs. 400 after a 20% discount. What was the original price?
+A) Rs. 480
+B) Rs. 500
+C) Rs. 520
+D) Rs. 540
+
+32. In an exam, 25% of students failed, and 60 passed. How many students appeared?
+A) 70
+B) 75
+C) 80
+D) 85
+
+33. If the price of an item decreases by 15%, what is the increase in consumption to maintain expenditure?
+A) 15%
+B) 17.65%
+C) 20%
+D) 22.5%
+
+34. A town’s population is 15000 and increases at 6% per year. What was the population 2 years ago?
+A) 13328
+B) 13428
+C) 13528
+D) 13628
+
+35. If 10% of x = 20% of y, what is the ratio of x to y?
+A) 1:2
+B) 2:1
+C) 3:2
+D) 2:3
+
+36. A product costs Rs. 600 after a 10% discount and a 5% sales tax. What was the original price?
+A) Rs. 650
+B) Rs. 660
+C) Rs. 670
+D) Rs. 680
+
+37. What percentage of numbers from 1 to 100 have 0 in the unit’s digit?
+A) 8%
+B) 9%
+C) 10%
+D) 11%
+
+38. If 40% of a = b, then b% of 40 is the same as:
+A) 16% of a
+B) 18% of a
+C) 20% of a
+D) 22% of a
+
+39. A machine’s value is Rs. 5000 and depreciates at 8% per year. What will be its value after 1 year?
+A) Rs. 4600
+B) Rs. 4700
+C) Rs. 4800
+D) Rs. 4900
+
+40. If 20% of a number is 50, and 30% of the same number is added, what is the result?
+A) 275
+B) 300
+C) 325
+D) 350
+
+41. Express 9/20 as a percentage:
+A) 40%
+B) 45%
+C) 50%
+D) 55%
+
+42. A student’s score is 80, which is 40% of the total marks. What is the total?
+A) 180
+B) 190
+C) 200
+D) 210
+
+43. If A is 15% less than B, then B is more than A by:
+A) 15%
+B) 17.65%
+C) 20%
+D) 22.5%
+
+44. A town’s population is 8000 and grows at 4% per year. What will be the population after 2 years?
+A) 8640
+B) 8652
+C) 8664
+D) 8676
+
+45. If 25% of x = 50% of y, what is the ratio of x to y?
+A) 1:2
+B) 2:1
+C) 3:2
+D) 2:3
+
+46. A product’s price increases by 10%, and consumption is reduced by:
+A) 9.09%
+B) 10%
+C) 11%
+D) 12%
+
+47. A shop sells 50% of its items and has 150 left. Originally, it had:
+A) 280
+B) 290
+C) 300
+D) 310
+
+48. If a number is multiplied by 4/5 instead of 5/4, what is the percentage error?
+A) 36%
+B) 40%
+C) 44%
+D) 48%
+
+49. A machine’s value is Rs. 20000 and depreciates at 15% per year. What was its value 1 year ago?
+A) Rs. 23000
+B) Rs. 23529
+C) Rs. 24000
+D) Rs. 24529
+
+50. If 20% of a number is 60, and 10% of the same number is subtracted, what is the result?
+A) 240
+B) 270
+C) 300
+D) 330
+
+Medium Level Answers
+1. A) 16.67%
+2. B) 80
+3. A) 9% of a
+4. B) 5512.5
+5. A) Rs. 9000
+6. A) 20%
+7. B) Rs. 200
+8. B) 60
+9. B) 11.11%
+10. A) 20%
+11. B) 2:1
+12. B) 18518
+13. C) Rs. 625
+14. B) 500
+15. B) 62.5%
+16. B) 11.11%
+17. C) 100
+18. C) Rs. 8976
+19. A) 10%
+20. A) 12.5% of a
+21. C) 300
+22. D) 13310
+23. B) 2:1
+24. A) 20%
+25. B) 150
+26. B) 55.56%
+27. B) Rs. 9472
+28. B) 210
+29. C) 28%
+30. A) 16.67%
+31. B) Rs. 500
+32. C) 80
+33. B) 17.65%
+34. A) 13328
+35. B) 2:1
+36. A) Rs. 650
+37. C) 10%
+38. A) 16% of a
+39. A) Rs. 4600
+40. C) 325
+41. B) 45%
+42. C) 200
+43. B) 17.65%
+44. C) 8664
+45. B) 2:1
+46. A) 9.09%
+47. C) 300
+48. A) 36%
+49. B) Rs. 23529
+50. B) 270
+
+Hard Level Questions
+These questions involve complex percentage calculations, population/depreciation over multiple years, or intricate relationships.
+
+1. In a cricket match, a player scores 150 runs, including 5 boundaries and 10 sixes. What percentage of his score came from running between the wickets?
+A) 46%
+B) 48%
+C) 50%
+D) 52%
+
+2. Two students’ marks differ by 12, and the higher score is 60% of their sum. What are their marks?
+A) 42, 30
+B) 44, 32
+C) 46, 34
+D) 48, 36
+
+3. A shop sells 45% of its stock and has 330 items left. How many items did it originally have?
+A) 580
+B) 600
+C) 620
+D) 640
+
+4. If A = 30% of B and B = 20% of C, then A% of C is the same as:
+A) 6% of C
+B) 8% of C
+C) 10% of C
+D) 12% of C
+
+5. The population of a town is 12000 and increases at 7% per year. What will be the population after 3 years?
+A) 14641
+B) 14701
+C) 14761
+D) 14821
+
+6. A machine’s value is Rs. 15000 and depreciates at 12% per year. What was its value 2 years ago?
+A) Rs. 19230
+B) Rs. 19330
+C) Rs. 19430
+D) Rs. 19530
+
+7. In an election, a candidate gets 60% of valid votes, and 15% of votes are invalid. If the total votes are 10000, how many valid votes did the other candidate get?
+A) 3200
+B) 3400
+C) 3600
+D) 3800
+
+8. If A is 40% more than B, and B is 20% less than C, what is the ratio of A to C?
+A) 4:5
+B) 5:4
+C) 3:4
+D) 4:3
+
+9. A number is multiplied by 2/5 instead of 5/2. What is the percentage error in the calculation?
+A) 80%
+B) 84%
+C) 88%
+D) 92%
+
+10. A shopkeeper buys goods for Rs. 8000, gets a 10% discount, and pays 8% sales tax. What is the final amount paid?
+A) Rs. 7776
+B) Rs. 7872
+C) Rs. 7968
+D) Rs. 8064
+
+11. Three candidates receive 1500, 2500, and 3500 votes. What percentage of total votes did the winner get?
+A) 43.75%
+B) 44.75%
+C) 45.75%
+D) 46.75%
+
+12. Two workers earn Rs. 900 weekly. If X earns 125% of Y’s pay, how much does Y earn?
+A) Rs. 400
+B) Rs. 410
+C) Rs. 420
+D) Rs. 430
+
+13. A buyer purchases items worth Rs. 50, with 50 paise as 5% sales tax on taxable items. What is the cost of tax-free items?
+A) Rs. 39.50
+B) Rs. 40
+C) Rs. 40.50
+D) Rs. 41
+
+14. If 25% of a = 40% of b, then b% of 25 is the same as:
+A) 15.625% of a
+B) 16% of a
+C) 16.5% of a
+D) 17% of a
+
+15. The population of a city increased from 20000 to 28800 over 2 years. What is the average annual percentage increase?
+A) 20%
+B) 21%
+C) 22%
+D) 23%
+
+16. If A is 15% of B and B is 30% of C, then A% of C is the same as:
+A) 4.5% of C
+B) 5% of C
+C) 5.5% of C
+D) 6% of C
+
+17. A machine’s value is Rs. 10000 and depreciates at 10% per year. What will be its value after 3 years?
+A) Rs. 7290
+B) Rs. 7390
+C) Rs. 7490
+D) Rs. 7590
+
+18. In a test, 30% of students scored below 40 marks, and 56 scored 40 or above. How many students took the test?
+A) 70
+B) 75
+C) 80
+D) 85
+
+19. If a number is divided by 3/4 instead of 4/3, what is the percentage error?
+A) 40%
+B) 42.86%
+C) 44%
+D) 46%
+
+20. A shop sells 35% of its items and has 260 left. How many items were there originally?
+A) 380
+B) 390
+C) 400
+D) 410
+
+21. If A is 50% more than B, and C is 20% more than A, then C is more than B by:
+A) 70%
+B) 80%
+C) 90%
+D) 100%
+
+22. A town’s population is 25000 and grows at 6% per year. What was the population 3 years ago?
+A) 20970
+B) 21070
+C) 21170
+D) 21270
+
+23. A product costs Rs. 1200 after a 15% discount and 10% sales tax. What was the original price?
+A) Rs. 1350
+B) Rs. 1400
+C) Rs. 1450
+D) Rs. 1500
+
+24. What percentage of numbers from 1 to 80 have 2 or 8 in the unit’s digit?
+A) 18%
+B) 20%
+C) 22%
+D) 24%
+
+25. If 20% of a = 50% of b, then b% of 20 is the same as:
+A) 8% of a
+B) 10% of a
+C) 12% of a
+D) 14% of a
+
+26. Two numbers A and B have their sum of 5% of A and 10% of B equal to 2/3 of the sum of 10% of A and 5% of B. What is the ratio of A to B?
+A) 1:2
+B) 2:1
+C) 3:2
+D) 2:3
+
+27. A machine’s value is Rs. 20000 and depreciates at 8% per year. What will be its value after 2 years?
+A) Rs. 16928
+B) Rs. 17028
+C) Rs. 17128
+D) Rs. 17228
+
+28. If 40% of a number is 120, and 25% of the same number is added, what is the result?
+A) 375
+B) 400
+C) 425
+D) 450
+
+29. In an election, a candidate gets 52% of valid votes, and 10% of votes are invalid. If the total votes are 5000, how many valid votes did the other candidate get?
+A) 2100
+B) 2160
+C) 2220
+D) 2280
+
+30. If A is 25% less than B, and B is 20% more than C, what is the ratio of A to C?
+A) 3:4
+B) 4:5
+C) 5:4
+D) 4:3
+
+31. A number is multiplied by 3/5 instead of 5/3. What is the percentage error?
+A) 60%
+B) 64%
+C) 68%
+D) 72%
+
+32. A shopkeeper buys goods for Rs. 10000, gets a 5% discount, and pays 6% sales tax. What is the final amount paid?
+A) Rs. 10070
+B) Rs. 10170
+C) Rs. 10270
+D) Rs. 10370
+
+33. Three candidates receive 2000, 3000, and 4000 votes. What percentage of total votes did the winner get?
+A) 44.44%
+B) 45.44%
+C) 46.44%
+D) 47.44%
+
+34. The population of a city increased from 50000 to 72000 over 2 years. What is the average annual percentage increase?
+A) 18%
+B) 19%
+C) 20%
+D) 21%
+
+35. If A = 40% of B and B = 25% of C, then A% of C is the same as:
+A) 10% of C
+B) 12% of C
+C) 14% of C
+D) 16% of C
+
+36. A machine’s value is Rs. 16000 and depreciates at 15% per year. What was its value 3 years ago?
+A) Rs. 24998
+B) Rs. 25098
+C) Rs. 25198
+D) Rs. 25298
+
+37. In a class, 25% of students scored below 50 marks, and 60 scored 50 or above. How many students took the class?
+A) 75
+B) 80
+C) 85
+D) 90
+
+38. If a number is divided by 2/3 instead of 3/2, what is the percentage error?
+A) 50%
+B) 55.56%
+C) 60%
+D) 66.67%
+
+39. A shop sells 30% of its stock and has 490 items left. How many items were there originally?
+A) 680
+B) 690
+C) 700
+D) 710
+
+40. If A is 10% more than B, and C is 20% less than B, then C is less than A by:
+A) 27.27%
+B) 28.27%
+C) 29.27%
+D) 30.27%
+
+41. A town’s population is 30000 and grows at 5% per year. What will be the population after 4 years?
+A) 36450
+B) 36550
+C) 36650
+D) 36750
+
+42. A product costs Rs. 2000 after a 20% discount and 12% sales tax. What was the original price?
+A) Rs. 2400
+B) Rs. 2500
+C) Rs. 2600
+D) Rs. 2700
+
+43. What percentage of numbers from 1 to 60 have 3 or 7 in the unit’s digit?
+A) 18%
+B) 20%
+C) 22%
+D) 24%
+
+44. If 30% of a = 60% of b, then b% of 30 is the same as:
+A) 15% of a
+B) 18% of a
+C) 20% of a
+D) 22% of a
+
+45. Two numbers A and B have their sum of 6% of A and 12% of B equal to 3/4 of the sum of 8% of A and 6% of B. What is the ratio of A to B?
+A) 1:2
+B) 2:1
+C) 3:2
+D) 2:3
+
+46. A machine’s value is Rs. 9000 and depreciates at 10% per year. What will be its value after 2 years?
+A) Rs. 7200
+B) Rs. 7290
+C) Rs. 7380
+D) Rs. 7470
+
+47. In an election, a candidate gets 65% of valid votes, and 20% of votes are invalid. If the total votes are 8000, how many valid votes did the other candidate get?
+A) 2080
+B) 2180
+C) 2280
+D) 2380
+
+48. If A is 20% less than B, and B is 25% less than C, what is the ratio of A to C?
+A) 3:5
+B) 4:5
+C) 5:4
+D) 3:4
+
+49. A number is multiplied by 5/6 instead of 6/5. What is the percentage error?
+A) 30%
+B) 31.25%
+C) 32%
+D) 33.33%
+
+50. A shopkeeper buys goods for Rs. 12000, gets a 15% discount, and pays 7% sales tax. What is the final amount paid?
+A) Rs. 10863
+B) Rs. 10963
+C) Rs. 11063
+D) Rs. 11163
+
+Hard Level Answers
+1. B) 48%
+2. D) 48, 36
+3. B) 600
+4. A) 6% of C
+5. B) 14701
+6. A) Rs. 19230
+7. B) 3400
+8. A) 4:5
+9. C) 88%
+10. B) Rs. 7872
+11. A) 44.44%
+12. A) Rs. 400
+13. B) Rs. 40
+14. A) 15.625% of a
+15. A) 20%
+16. A) 4.5% of C
+17. A) Rs. 7290
+18. C) 80
+19. B) 42.86%
+20. C) 400
+21. B) 80%
+22. A) 20970
+23. B) Rs. 1400
+24. B) 20%
+25. A) 8% of a
+26. B) 2:1
+27. A) Rs. 16928
+28. A) 375
+29. B) 2160
+30. A) 3:5
+31. B) 64%
+32. B) Rs. 10170
+33. A) 44.44%
+34. B) 19%
+35. A) 10% of C
+36. A) Rs. 24998
+37. B) 80
+38. B) 55.56%
+39. C) 700
+40. A) 27.27%
+41. C) 36650
+42. B) Rs. 2500
+43. B) 20%
+44. A) 15% of a
+45. A) 1:2
+46. B) Rs. 7290
+47. B) 2180
+48. A) 3:5
+49. B) 31.25%
+50. B) Rs. 10963

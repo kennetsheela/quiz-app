@@ -1,0 +1,38 @@
+{
+  "name": "quiz-app-backend",
+  "version": "1.0.0",
+  "description": "Quiz Application Backend with MongoDB and Firebase",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "load-questions": "node scripts/loadQuestionBank.js",
+    "generate-sets": "node scripts/generatePracticeSets.js",
+    "populate": "node scripts/populateSampleQuestions.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.5.1",
+    "express-validator": "^7.3.1",
+    "firebase-admin": "^13.6.0",
+    "helmet": "^7.2.0",
+    "mammoth": "^1.11.0",
+    "mongoose": "^7.6.3",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.4"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.4"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

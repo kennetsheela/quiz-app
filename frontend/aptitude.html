@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Aptitude Practice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    
+    .breadcrumb {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .breadcrumb a {
+      color: var(--accent-primary);
+    }
+    
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+    
+    .topic-card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 24px;
+      border: 2px solid var(--border-color);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .topic-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+      box-shadow: 0 10px 20px var(--shadow);
+    }
+    
+    .topic-card h3 {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .topic-card h3 i {
+      color: var(--accent-primary);
+    }
+    
+    .topic-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    
+    .level-selector {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      justify-content: center;
+    }
+    
+    .level-btn {
+      padding: 10px 20px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .level-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+    
+    .sets-container {
+      margin-top: 30px;
+    }
+    
+    .set-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px solid var(--border-color);
+    }
+    
+    .set-card.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .set-card.completed {
+      border-color: var(--success);
+    }
+    
+    .set-info h4 {
+      margin: 0 0 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .set-info p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    
+    .badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .badge-completed {
+      background: var(--success);
+      color: white;
+    }
+    
+    .badge-locked {
+      background: var(--error);
+      color: white;
+    }
+    
+    .badge-available {
+      background: var(--accent-primary);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Appbar -->
+  <div class="appbar">
+    <h2>AptioGen</h2>
+    
+    <div class="nav-links">
+      <a href="explore.html">Explore</a>
+      <a href="challenge.html">Challenge</a>
+      <a href="level-up.html">Level Up</a>
+    </div>
+    
+    <div class="right-icons">
+      <i class="fa-solid fa-moon theme-toggle"></i>
+      <div class="dropdown">
+        <button class="dropbtn">
+          <i class="fa-solid fa-user"></i>
+        </button>
+        <div class="dropdown-content">
+          <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
+          <hr>
+          <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="explore.html">Home</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Aptitude</span>
+      <span id="topicBreadcrumb"></span>
+    </div>
+
+    <!-- Topic Selection View -->
+    <div id="topicsView">
+      <h1><i class="fas fa-brain"></i> Aptitude Practice</h1>
+      <p style="color: var(--text-secondary); margin-bottom: 30px;">
+        Select a topic to start practicing
+      </p>
+
+      <div id="topicsGrid" class="topic-grid">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading topics...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sets View (Hidden by default) -->
+    <div id="setsView" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 id="topicTitle"></h1>
+        <button class="btn btn-secondary" onclick="backToTopics()">
+          <i class="fas fa-arrow-left"></i> Back to Topics
+        </button>
+      </div>
+
+      <div class="level-selector">
+        <button class="level-btn active" data-level="easy">
+          <i class="fas fa-smile"></i> Easy
+        </button>
+        <button class="level-btn" data-level="medium">
+          <i class="fas fa-meh"></i> Medium
+        </button>
+        <button class="level-btn" data-level="hard">
+          <i class="fas fa-fire"></i> Hard
+        </button>
+      </div>
+
+      <div id="setsContainer" class="sets-container">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading practice sets...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, setupLogoutButton } from "./js/auth.js";
+    import { practiceAPI } from "./js/api.js";
+
+    requireAuth();
+    setupLogoutButton();
+
+    const CATEGORY = "aptitude";
+    let currentTopic = null;
+    let currentLevel = "easy";
+
+    // Topic metadata with icons
+    const topicMeta = {
+      "percentages": { icon: "fa-percent", description: "Calculate percentages and related problems" },
+      "profit-loss": { icon: "fa-chart-line", description: "Profit, loss, and discount calculations" },
+      "time-work": { icon: "fa-clock", description: "Time and work problems" },
+      "speed-distance": { icon: "fa-running", description: "Speed, distance, and time" },
+      "averages": { icon: "fa-equals", description: "Mean, median, and average calculations" },
+      "ratio-proportion": { icon: "fa-balance-scale", description: "Ratios and proportions" },
+      "simple-interest": { icon: "fa-money-bill-wave", description: "Simple and compound interest" },
+      "probability": { icon: "fa-dice", description: "Basic probability concepts" },
+      "permutation-combination": { icon: "fa-random", description: "Arrangements and selections" },
+      "number-series": { icon: "fa-sort-numeric-up", description: "Number patterns and sequences" }
+    };
+
+    // Load topics on page load
+    async function loadTopics() {
+      try {
+        const response = await fetch(`http://localhost:5000/api/practice/categories/${CATEGORY}/topics`);
+        const data = await response.json();
+
+        if (data.topics.length === 0) {
+          document.getElementById("topicsGrid").innerHTML = 
+            '<p class="text-center">No topics available yet. Check back soon!</p>';
+          return;
+        }
+
+        const topicsHTML = data.topics.map(topic => {
+          const meta = topicMeta[topic] || { icon: "fa-book", description: "Practice questions" };
+          return `
+            <div class="topic-card" onclick="selectTopic('${topic}')">
+              <h3>
+                <i class="fas ${meta.icon}"></i>
+                ${formatTopicName(topic)}
+              </h3>
+              <p>${meta.description}</p>
+              <div class="topic-stats">
+                <span><i class="fas fa-layer-group"></i> Multiple sets</span>
+                <span><i class="fas fa-question-circle"></i> 10 Qs/set</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById("topicsGrid").innerHTML = topicsHTML;
+      } catch (error) {
+        console.error("Error loading topics:", error);
+        document.getElementById("topicsGrid").innerHTML = 
+          '<p class="text-center">Error loading topics. Please try again.</p>';
+      }
+    }
+
+    // Select topic and load sets
+    window.selectTopic = async function(topic) {
+      currentTopic = topic;
+      document.getElementById("topicsView").style.display = "none";
+      document.getElementById("setsView").style.display = "block";
+      document.getElementById("topicTitle").innerHTML = 
+        `<i class="fas ${topicMeta[topic]?.icon || 'fa-book'}"></i> ${formatTopicName(topic)}`;
+      document.getElementById("topicBreadcrumb").innerHTML = 
+        `<i class="fas fa-chevron-right"></i> ${formatTopicName(topic)}`;
+
+      await loadSets();
+    };
+
+    // Back to topics view
+    window.backToTopics = function() {
+      document.getElementById("topicsView").style.display = "block";
+      document.getElementById("setsView").style.display = "none";
+      document.getElementById("topicBreadcrumb").innerHTML = "";
+      currentTopic = null;
+    };
+
+    // Load practice sets
+    async function loadSets() {
+      try {
+        const { sets } = await practiceAPI.getSets(CATEGORY, currentTopic, currentLevel);
+
+        if (sets.length === 0) {
+          document.getElementById("setsContainer").innerHTML = 
+            '<p class="text-center">No practice sets available for this level yet.</p>';
+          return;
+        }
+
+        const setsHTML = sets.map(set => {
+          let statusBadge = '';
+          let statusIcon = '';
+          let actionBtn = '';
+
+          if (set.completed) {
+            statusBadge = `<span class="badge badge-completed">Completed (${set.score}/${set.questionCount})</span>`;
+            statusIcon = '<i class="fas fa-check-circle" style="color: var(--success);"></i>';
+            actionBtn = `<button class="btn btn-secondary" onclick="startSet(${set.setNumber})">
+              <i class="fas fa-redo"></i> Retry
+            </button>`;
+          } else if (set.locked) {
+            statusBadge = '<span class="badge badge-locked"><i class="fas fa-lock"></i> Locked</span>';
+            statusIcon = '<i class="fas fa-lock" style="color: var(--error);"></i>';
+            actionBtn = '<button class="btn btn-secondary" disabled>Complete previous set</button>';
+          } else {
+            statusBadge = '<span class="badge badge-available">Available</span>';
+            statusIcon = '<i class="fas fa-play-circle" style="color: var(--accent-primary);"></i>';
+            actionBtn = `<button class="btn btn-primary" onclick="startSet(${set.setNumber})">
+              <i class="fas fa-play"></i> Start Quiz
+            </button>`;
+          }
+
+          return `
+            <div class="set-card ${set.locked ? 'locked' : ''} ${set.completed ? 'completed' : ''}">
+              <div class="set-info">
+                <h4>
+                  ${statusIcon}
+                  Set ${set.setNumber}
+                  ${statusBadge}
+                </h4>
+                <p><i class="fas fa-clock"></i> ${set.timeLimit} minutes | <i class="fas fa-question-circle"></i> ${set.questionCount} questions</p>
+              </div>
+              <div>
+                ${actionBtn}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById("setsContainer").innerHTML = setsHTML;
+      } catch (error) {
+        console.error("Error loading sets:", error);
+        document.getElementById("setsContainer").innerHTML = 
+          '<p class="text-center">Error loading practice sets. Please try again.</p>';
+      }
+    }
+
+    // Start quiz
+    window.startSet = function(setNumber) {
+      const url = `quiz.html?category=${CATEGORY}&topic=${currentTopic}&level=${currentLevel}&set=${setNumber}`;
+      window.location.href = url;
+    };
+
+    // Level selector
+    document.querySelectorAll(".level-btn").forEach(btn => {
+      btn.addEventListener("click", async function() {
+        document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+        currentLevel = this.dataset.level;
+        await loadSets();
+      });
+    });
+
+    // Helper functions
+    function formatTopicName(topic) {
+      return topic.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+
+    // Initialize
+    loadTopics();
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

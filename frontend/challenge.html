@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Challenges</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Appbar -->
+  <div class="appbar">
+    <h2>AptioGen</h2>
+    
+    <div class="nav-links">
+      <a href="explore.html">Explore</a>
+      <a href="challenge.html" class="active">Challenge</a>
+      <a href="level-up.html">Level Up</a>
+    </div>
+    
+    <div class="right-icons">
+      <i class="fa-solid fa-moon theme-toggle"></i>
+      <div class="dropdown">
+        <button class="dropbtn">
+          <i class="fa-solid fa-user"></i>
+        </button>
+        <div class="dropdown-content">
+          <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
+          <hr>
+          <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="header">
+      <h2>Available Challenges</h2>
+      <button class="btn btn-primary" onclick="window.location.href='create-event.html'">
+        <i class="fas fa-plus"></i> Create Event
+      </button>
+    </div>
+
+    <div id="eventList" class="event-grid">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading events...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Join Event</h3>
+      <form id="loginForm">
+        <input type="text" id="rollNo" placeholder="Roll Number" required>
+        <input type="text" id="department" placeholder="Department" required>
+        <input type="password" id="password" placeholder="Event Password" required>
+        <button type="submit" class="btn btn-primary">Join Event</button>
+        <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, setupLogoutButton } from "./js/auth.js";
+    import { eventAPI } from "./js/api.js";
+
+    let currentEventId = null;
+
+    requireAuth();
+    setupLogoutButton();
+
+    async function loadEvents() {
+      try {
+        const { events } = await eventAPI.getAll();
+        const eventList = document.getElementById("eventList");
+        
+        if (events.length === 0) {
+          eventList.innerHTML = '<p class="text-center">No events available</p>';
+          return;
+        }
+
+        eventList.innerHTML = events.map(event => `
+          <div class="event-card">
+            <h3>${event.eventName}</h3>
+            <div class="event-date">
+              <i class="fas fa-calendar"></i>
+              ${new Date(event.startTime).toLocaleDateString()} - ${new Date(event.endTime).toLocaleDateString()}
+            </div>
+            <div class="event-date">
+              <i class="fas fa-clock"></i>
+              ${new Date(event.startTime).toLocaleTimeString()}
+            </div>
+            <div class="event-actions">
+              <button class="btn btn-primary" onclick="joinEvent('${event._id}')">
+                <i class="fas fa-sign-in-alt"></i> Join Event
+              </button>
+              <button class="btn btn-secondary" onclick="manageEvent('${event._id}')">
+                <i class="fas fa-cog"></i> Manage
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error("Error loading events:", error);
+        document.getElementById("eventList").innerHTML = 
+          '<p class="text-center">Error loading events. Please try again.</p>';
+      }
+    }
+
+    window.joinEvent = function(eventId) {
+      currentEventId = eventId;
+      document.getElementById("loginModal").classList.add("active");
+    };
+
+    window.manageEvent = function(eventId) {
+      window.location.href = `admin-panel.html?eventId=${eventId}`;
+    };
+
+    window.closeLoginModal = function() {
+      document.getElementById("loginModal").classList.remove("active");
+      currentEventId = null;
+    };
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const rollNo = document.getElementById("rollNo").value;
+      const department = document.getElementById("department").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const result = await eventAPI.studentLogin({
+          eventId: currentEventId,
+          rollNo,
+          department,
+          password
+        });
+
+        alert("Joined successfully!");
+        window.location.href = `event-quiz.html?eventId=${currentEventId}&participantId=${result.participantId}`;
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
+
+    loadEvents();
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>

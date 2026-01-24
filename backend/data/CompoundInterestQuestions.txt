@@ -1,0 +1,1064 @@
+Easy Level Questions
+These questions involve basic calculations of compound interest, principal, rate, or time using the formula A = P(1 + R/100)^n.
+
+1. What is the compound interest on Rs. 5000 at 4% p.a. for 2 years, compounded annually?
+A) Rs. 408
+B) Rs. 416
+C) Rs. 424
+D) Rs. 432
+
+2. A sum of Rs. 10000 amounts to Rs. 12100 in 2 years at compound interest. What is the rate of interest per annum?
+A) 10%
+B) 11%
+C) 12%
+D) 13%
+
+3. A sum of Rs. 8000 earns Rs. 1320 compound interest in 2 years, compounded annually. What is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+4. How much will Rs. 6000 amount to in 2 years at 5% p.a. compound interest, compounded annually?
+A) Rs. 6615
+B) Rs. 6625
+C) Rs. 6635
+D) Rs. 6645
+
+5. The compound interest on Rs. 4000 for 3 years at 6% p.a. is:
+A) Rs. 764.93
+B) Rs. 774.93
+C) Rs. 784.93
+D) Rs. 794.93
+
+6. A sum of Rs. 12000 becomes Rs. 14400 in 2 years at compound interest. What is the rate of interest?
+A) 8%
+B) 9%
+C) 10%
+D) 11%
+
+7. What is the principal if the compound interest for 2 years at 5% p.a. is Rs. 1025?
+A) Rs. 10000
+B) Rs. 10500
+C) Rs. 11000
+D) Rs. 11500
+
+8. How long will it take for Rs. 5000 to amount to Rs. 6050 at 10% p.a. compound interest, compounded annually?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+9. The compound interest on Rs. 2000 at 8% p.a. for 2 years, compounded annually, is:
+A) Rs. 326.40
+B) Rs. 332.80
+C) Rs. 339.20
+D) Rs. 345.60
+
+10. A sum of Rs. 15000 amounts to Rs. 18030 in 2 years at compound interest. What is the rate of interest?
+A) 9%
+B) 10%
+C) 11%
+D) 12%
+
+11. What is the compound interest on Rs. 10000 at 6% p.a. for 3 years, compounded annually?
+A) Rs. 1910.16
+B) Rs. 1920.16
+C) Rs. 1930.16
+D) Rs. 1940.16
+
+12. A sum amounts to Rs. 17280 in 3 years at 8% p.a. compound interest. What is the principal?
+A) Rs. 13000
+B) Rs. 13500
+C) Rs. 14000
+D) Rs. 14500
+
+13. The compound interest on Rs. 3000 for 2 years at 10% p.a., compounded annually, is:
+A) Rs. 630
+B) Rs. 640
+C) Rs. 650
+D) Rs. 660
+
+14. A sum of Rs. 5000 becomes Rs. 6050 in 2 years at compound interest. What is the rate of interest?
+A) 8%
+B) 9%
+C) 10%
+D) 11%
+
+15. What is the principal if the compound interest for 3 years at 5% p.a. is Rs. 1576.25?
+A) Rs. 10000
+B) Rs. 10500
+C) Rs. 11000
+D) Rs. 11500
+
+16. How much will Rs. 8000 amount to in 3 years at 7% p.a. compound interest, compounded annually?
+A) Rs. 9801.22
+B) Rs. 9811.22
+C) Rs. 9821.22
+D) Rs. 9831.22
+
+17. The compound interest on Rs. 6000 for 2 years at 5% p.a., compounded annually, is:
+A) Rs. 615
+B) Rs. 625
+C) Rs. 635
+D) Rs. 645
+
+18. A sum of Rs. 12000 amounts to Rs. 14641 in 2 years at compound interest. What is the rate of interest?
+A) 10%
+B) 11%
+C) 12%
+D) 13%
+
+19. What is the compound interest on Rs. 4000 at 7% p.a. for 2 years, compounded annually?
+A) Rs. 576.40
+B) Rs. 586.40
+C) Rs. 596.40
+D) Rs. 606.40
+
+20. A sum of Rs. 10000 becomes Rs. 13310 in 3 years at compound interest. What is the rate of interest?
+A) 10%
+B) 11%
+C) 12%
+D) 13%
+
+21. What is the principal if the compound interest for 2 years at 8% p.a. is Rs. 1664?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+22. How much will Rs. 5000 amount to in 2 years at 6% p.a. compound interest, compounded annually?
+A) Rs. 5618
+B) Rs. 5628
+C) Rs. 5638
+D) Rs. 5648
+
+23. The compound interest on Rs. 7000 for 3 years at 6% p.a., compounded annually, is:
+A) Rs. 1336.23
+B) Rs. 1346.23
+C) Rs. 1356.23
+D) Rs. 1366.23
+
+24. A sum of Rs. 8000 amounts to Rs. 9261 in 2 years at compound interest. What is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+25. What is the principal if the compound interest for 3 years at 10% p.a. is Rs. 3310?
+A) Rs. 10000
+B) Rs. 10500
+C) Rs. 11000
+D) Rs. 11500
+
+26. The compound interest on Rs. 10000 at 4% p.a. for 2 years, compounded annually, is:
+A) Rs. 816
+B) Rs. 826
+C) Rs. 836
+D) Rs. 846
+
+27. A sum of Rs. 6000 becomes Rs. 7200 in 2 years at compound interest. What is the rate of interest?
+A) 8%
+B) 9%
+C) 10%
+D) 11%
+
+28. How much will Rs. 4000 amount to in 3 years at 5% p.a. compound interest, compounded annually?
+A) Rs. 4630.50
+B) Rs. 4640.50
+C) Rs. 4650.50
+D) Rs. 4660.50
+
+29. The compound interest on Rs. 5000 for 2 years at 7% p.a., compounded annually, is:
+A) Rs. 714.50
+B) Rs. 724.50
+C) Rs. 734.50
+D) Rs. 744.50
+
+30. A sum of Rs. 15000 amounts to Rs. 18522 in 3 years at compound interest. What is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+31. What is the principal if the compound interest for 2 years at 6% p.a. is Rs. 1236?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+32. How much will Rs. 7000 amount to in 2 years at 8% p.a. compound interest, compounded annually?
+A) Rs. 8164.80
+B) Rs. 8174.80
+C) Rs. 8184.80
+D) Rs. 8194.80
+
+33. The compound interest on Rs. 8000 for 3 years at 5% p.a., compounded annually, is:
+A) Rs. 1261
+B) Rs. 1271
+C) Rs. 1281
+D) Rs. 1291
+
+34. A sum of Rs. 10000 amounts to Rs. 12430 in 3 years at compound interest. What is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+35. What is the principal if the compound interest for 2 years at 10% p.a. is Rs. 2100?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+36. The compound interest on Rs. 6000 at 6% p.a. for 2 years, compounded annually, is:
+A) Rs. 735.60
+B) Rs. 745.60
+C) Rs. 755.60
+D) Rs. 765.60
+
+37. A sum of Rs. 5000 becomes Rs. 6050 in 2 years at compound interest. What is the rate of interest?
+A) 9%
+B) 10%
+C) 11%
+D) 12%
+
+38. How much will Rs. 10000 amount to in 3 years at 7% p.a. compound interest, compounded annually?
+A) Rs. 12250.43
+B) Rs. 12350.43
+C) Rs. 12450.43
+D) Rs. 12550.43
+
+39. The compound interest on Rs. 4000 for 2 years at 8% p.a., compounded annually, is:
+A) Rs. 665.60
+B) Rs. 675.60
+C) Rs. 685.60
+D) Rs. 695.60
+
+40. A sum of Rs. 12000 amounts to Rs. 14930.88 in 3 years at compound interest. What is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+41. What is the principal if the compound interest for 3 years at 6% p.a. is Rs. 1910.16?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+42. How much will Rs. 8000 amount to in 2 years at 9% p.a. compound interest, compounded annually?
+A) Rs. 9496.16
+B) Rs. 9506.16
+C) Rs. 9516.16
+D) Rs. 9526.16
+
+43. The compound interest on Rs. 5000 for 3 years at 7% p.a., compounded annually, is:
+A) Rs. 1125.43
+B) Rs. 1135.43
+C) Rs. 1145.43
+D) Rs. 1155.43
+
+44. A sum of Rs. 10000 amounts to Rs. 11576.25 in 3 years at compound interest. What is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+45. What is the principal if the compound interest for 2 years at 7% p.a. is Rs. 1449?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+46. The compound interest on Rs. 7000 at 5% p.a. for 2 years, compounded annually, is:
+A) Rs. 717.50
+B) Rs. 727.50
+C) Rs. 737.50
+D) Rs. 747.50
+
+47. A sum of Rs. 6000 becomes Rs. 7940.80 in 3 years at compound interest. What is the rate of interest?
+A) 9%
+B) 10%
+C) 11%
+D) 12%
+
+48. How much will Rs. 5000 amount to in 2 years at 10% p.a. compound interest, compounded annually?
+A) Rs. 6050
+B) Rs. 6060
+C) Rs. 6070
+D) Rs. 6080
+
+49. The compound interest on Rs. 8000 for 2 years at 6% p.a., compounded annually, is:
+A) Rs. 969.60
+B) Rs. 979.60
+C) Rs. 989.60
+D) Rs. 999.60
+
+50. A sum of Rs. 10000 amounts to Rs. 13310 in 3 years at compound interest. What is the rate of interest?
+A) 10%
+B) 11%
+C) 12%
+D) 13%
+
+Easy Level Answers
+1. B) Rs. 416
+2. A) 10%
+3. B) 8%
+4. A) Rs. 6615
+5. A) Rs. 764.93
+6. B) 9%
+7. A) Rs. 10000
+8. A) 2 years
+9. C) Rs. 339.20
+10. B) 10%
+11. A) Rs. 1910.16
+12. C) Rs. 14000
+13. A) Rs. 630
+14. C) 10%
+15. A) Rs. 10000
+16. A) Rs. 9801.22
+17. B) Rs. 625
+18. A) 10%
+19. C) Rs. 596.40
+20. A) 10%
+21. C) Rs. 10000
+22. A) Rs. 5618
+23. C) Rs. 1356.23
+24. B) 8%
+25. A) Rs. 10000
+26. A) Rs. 816
+27. C) 10%
+28. A) Rs. 4630.50
+29. C) Rs. 734.50
+30. B) 8%
+31. C) Rs. 10000
+32. A) Rs. 8164.80
+33. A) Rs. 1261
+34. A) 7%
+35. C) Rs. 10000
+36. A) Rs. 735.60
+37. B) 10%
+38. A) Rs. 12250.43
+39. A) Rs. 665.60
+40. B) 8%
+41. C) Rs. 10000
+42. A) Rs. 9496.16
+43. C) Rs. 1145.43
+44. A) 5%
+45. C) Rs. 10000
+46. A) Rs. 717.50
+47. A) 9%
+48. A) Rs. 6050
+49. C) Rs. 989.60
+50. A) 10%
+
+Medium Level Questions
+These questions involve calculations with half-yearly or quarterly compounding, comparisons between simple and compound interest, or multiple investments.
+
+1. What is the compound interest on Rs. 10000 at 8% p.a. for 2 years, compounded half-yearly?
+A) Rs. 1716.59
+B) Rs. 1726.59
+C) Rs. 1736.59
+D) Rs. 1746.59
+
+2. A sum amounts to Rs. 13310 in 3 years at 10% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+3. The compound interest on Rs. 5000 for 1 year at 10% p.a., compounded half-yearly, is:
+A) Rs. 512.50
+B) Rs. 522.50
+C) Rs. 532.50
+D) Rs. 542.50
+
+4. A sum of Rs. 8000 becomes Rs. 10046.56 in 2 years at compound interest, compounded annually. What is the rate of interest?
+A) 11%
+B) 12%
+C) 13%
+D) 14%
+
+5. The difference between simple and compound interest on Rs. 10000 for 2 years at 5% p.a., compounded annually, is:
+A) Rs. 25
+B) Rs. 30
+C) Rs. 35
+D) Rs. 40
+
+6. A sum of Rs. 12000 earns Rs. 3972 compound interest in 3 years at a certain rate, compounded annually. What is the simple interest on the same sum at the same rate for 3 years?
+A) Rs. 3600
+B) Rs. 3700
+C) Rs. 3800
+D) Rs. 3900
+
+7. What is the effective annual rate of interest for 8% p.a. compounded half-yearly?
+A) 8.16%
+B) 8.24%
+C) 8.32%
+D) Rs. 8.40%
+
+8. A sum of Rs. 6000 at 10% p.a. compound interest, compounded annually, becomes how much in 2 years?
+A) Rs. 7260
+B) Rs. 7270
+C) Rs. 7280
+D) Rs. 7290
+
+9. The compound interest on Rs. 15000 for 2 years at 6% p.a., compounded half-yearly, is:
+A) Rs. 1887.32
+B) Rs. 1897.32
+C) Rs. 1907.32
+D) Rs. 1917.32
+
+10. A sum amounts to Rs. 15625 in 2 years at 25% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 10000
+B) Rs. 10500
+C) Rs. 11000
+D) Rs. 11500
+
+11. The simple interest on a sum for 3 years at 6% p.a. is Rs. 1800. What is the compound interest on the same sum at the same rate for 3 years, compounded annually?
+A) Rs. 1910.16
+B) Rs. 1920.16
+C) Rs. 1930.16
+D) Rs. 1940.16
+
+12. What is the compound interest on Rs. 8000 at 5% p.a. for 2 years, compounded half-yearly?
+A) Rs. 820.25
+B) Rs. 830.25
+C) Rs. 840.25
+D) Rs. 850.25
+
+13. The difference between compound and simple interest on Rs. 5000 for 2 years at 10% p.a., compounded annually, is:
+A) Rs. 50
+B) Rs. 55
+C) Rs. 60
+D) Rs. 65
+
+14. A sum of Rs. 10000 becomes Rs. 12100 in 2 years at compound interest, compounded annually. What is the simple interest on the same sum for 4 years at the same rate?
+A) Rs. 4000
+B) Rs. 4100
+C) Rs. 4200
+D) Rs. 4300
+
+15. The compound interest on Rs. 12000 for 1 year at 8% p.a., compounded half-yearly, is:
+A) Rs. 979.20
+B) Rs. 989.20
+C) Rs. 999.20
+D) Rs. 1009.20
+
+16. A sum amounts to Rs. 17280 in 3 years at 8% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 13000
+B) Rs. 13500
+C) Rs. 14000
+D) Rs. 14500
+
+17. The compound interest on Rs. 4000 for 2 years at 12% p.a., compounded annually, is:
+A) Rs. 1075.20
+B) Rs. 1085.20
+C) Rs. 1095.20
+D) Rs. 1105.20
+
+18. A sum of Rs. 6000 becomes Rs. 7940.80 in 3 years at compound interest, compounded annually. What is the rate of interest?
+A) 9%
+B) 10%
+C) 11%
+D) 12%
+
+19. The difference between simple and compound interest on Rs. 8000 for 2 years at 6% p.a., compounded annually, is:
+A) Rs. 28.80
+B) Rs. 29.80
+C) Rs. 30.80
+D) Rs. 31.80
+
+20. A sum of Rs. 10000 at 10% p.a. compound interest, compounded half-yearly, becomes how much in 2 years?
+A) Rs. 12155.06
+B) Rs. 12255.06
+C) Rs. 12355.06
+D) Rs. 12455.06
+
+21. What is the compound interest on Rs. 5000 at 7% p.a. for 3 years, compounded annually?
+A) Rs. 1125.43
+B) Rs. 1135.43
+C) Rs. 1145.43
+D) Rs. 1155.43
+
+22. A sum amounts to Rs. 14641 in 2 years at 10% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 11000
+B) Rs. 11500
+C) Rs. 12000
+D) Rs. 12500
+
+23. The compound interest on Rs. 10000 for 1 year at 10% p.a., compounded quarterly, is:
+A) Rs. 1038.13
+B) Rs. 1048.13
+C) Rs. 1058.13
+D) Rs. 1068.13
+
+24. A sum of Rs. 15000 becomes Rs. 18522 in 3 years at compound interest, compounded annually. What is the simple interest on the same sum for 3 years at the same rate?
+A) Rs. 4500
+B) Rs. 4600
+C) Rs. 4700
+D) Rs. 4800
+
+25. The effective annual rate of interest for 6% p.a. compounded half-yearly is:
+A) 6.09%
+B) 6.10%
+C) 6.11%
+D) 6.12%
+
+26. The compound interest on Rs. 7000 for 2 years at 8% p.a., compounded half-yearly, is:
+A) Rs. 1197.44
+B) Rs. 1207.44
+C) Rs. 1217.44
+D) Rs. 1227.44
+
+27. A sum amounts to Rs. 9261 in 2 years at 8% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 7000
+B) Rs. 7500
+C) Rs. 8000
+D) Rs. 8500
+
+28. The difference between compound and simple interest on Rs. 12000 for 2 years at 5% p.a., compounded annually, is:
+A) Rs. 30
+B) Rs. 35
+C) Rs. 40
+D) Rs. 45
+
+29. A sum of Rs. 5000 at 10% p.a. compound interest, compounded annually, becomes how much in 3 years?
+A) Rs. 6655
+B) Rs. 6665
+C) Rs. 6675
+D) Rs. 6685
+
+30. The compound interest on Rs. 6000 for 2 years at 7% p.a., compounded half-yearly, is:
+A) Rs. 874.90
+B) Rs. 884.90
+C) Rs. 894.90
+D) Rs. 904.90
+
+31. A sum amounts to Rs. 11576.25 in 3 years at 5% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+32. The compound interest on Rs. 8000 for 1 year at 8% p.a., compounded half-yearly, is:
+A) Rs. 652.80
+B) Rs. 662.80
+C) Rs. 672.80
+D) Rs. 682.80
+
+33. The difference between simple and compound interest on Rs. 10000 for 2 years at 7% p.a., compounded annually, is:
+A) Rs. 49
+B) Rs. 50
+C) Rs. 51
+D) Rs. 52
+
+34. A sum of Rs. 12000 becomes Rs. 15901.20 in 3 years at compound interest, compounded annually. What is the rate of interest?
+A) 9%
+B) 10%
+C) 11%
+D) 12%
+
+35. The compound interest on Rs. 5000 for 2 years at 6% p.a., compounded half-yearly, is:
+A) Rs. 618.36
+B) Rs. 628.36
+C) Rs. 638.36
+D) Rs. 648.36
+
+36. A sum amounts to Rs. 13310 in 3 years at 10% p.a. compound interest, compounded annually. What is the simple interest on the same sum for 3 years at the same rate?
+A) Rs. 3000
+B) Rs. 3100
+C) Rs. 3200
+D) Rs. 3300
+
+37. The effective annual rate of interest for 10% p.a. compounded half-yearly is:
+A) 10.25%
+B) 10.35%
+C) 10.45%
+D) 10.55%
+
+38. The compound interest on Rs. 10000 for 2 years at 5% p.a., compounded half-yearly, is:
+A) Rs. 1038.13
+B) Rs. 1048.13
+C) Rs. 1058.13
+D) Rs. 1068.13
+
+39. A sum amounts to Rs. 14641 in 2 years at 10% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 11000
+B) Rs. 11500
+C) Rs. 12000
+D) Rs. 12500
+
+40. The difference between compound and simple interest on Rs. 15000 for 2 years at 8% p.a., compounded annually, is:
+A) Rs. 96
+B) Rs. 97
+C) Rs. 98
+D) Rs. 99
+
+41. A sum of Rs. 8000 at 6% p.a. compound interest, compounded annually, becomes how much in 3 years?
+A) Rs. 9538.24
+B) Rs. 9548.24
+C) Rs. 9558.24
+D) Rs. 9568.24
+
+42. The compound interest on Rs. 12000 for 1 year at 12% p.a., compounded quarterly, is:
+A) Rs. 1509.34
+B) Rs. 1519.34
+C) Rs. 1529.34
+D) Rs. 1539.34
+
+43. A sum amounts to Rs. 18522 in 3 years at 8% p.a. compound interest, compounded annually. What is the simple interest on the same sum for 3 years at the same rate?
+A) Rs. 3600
+B) Rs. 3700
+C) Rs. 3800
+D) Rs. 3900
+
+44. The effective annual rate of interest for 4% p.a. compounded half-yearly is:
+A) 4.04%
+B) 4.06%
+C) 4.08%
+D) 4.10%
+
+45. The compound interest on Rs. 7000 for 2 years at 10% p.a., compounded half-yearly, is:
+A) Rs. 1507.50
+B) Rs. 1517.50
+C) Rs. 1527.50
+D) Rs. 1537.50
+
+46. A sum amounts to Rs. 9261 in 2 years at 8% p.a. compound interest, compounded annually. What is the principal?
+A) Rs. 7000
+B) Rs. 7500
+C) Rs. 8000
+D) Rs. 8500
+
+47. The difference between simple and compound interest on Rs. 12000 for 2 years at 10% p.a., compounded annually, is:
+A) Rs. 120
+B) Rs. 125
+C) Rs. 130
+D) Rs. 135
+
+48. A sum of Rs. 5000 at 12% p.a. compound interest, compounded annually, becomes how much in 2 years?
+A) Rs. 6272
+B) Rs. 6282
+C) Rs. 6292
+D) Rs. 6302
+
+49. The compound interest on Rs. 10000 for 2 years at 7% p.a., compounded half-yearly, is:
+A) Rs. 1455.98
+B) Rs. 1465.98
+C) Rs. 1475.98
+D) Rs. 1485.98
+
+50. A sum amounts to Rs. 12100 in 2 years at 10% p.a. compound interest, compounded annually. What is the simple interest on the same sum for 4 years at the same rate?
+A) Rs. 4000
+B) Rs. 4100
+C) Rs. 4200
+D) Rs. 4300
+
+Medium Level Answers
+1. A) Rs. 1716.59
+2. C) Rs. 10000
+3. B) Rs. 522.50
+4. B) 12%
+5. A) Rs. 25
+6. A) Rs. 3600
+7. A) 8.16%
+8. A) Rs. 7260
+9. C) Rs. 1907.32
+10. A) Rs. 10000
+11. A) Rs. 1910.16
+12. A) Rs. 820.25
+13. A) Rs. 50
+14. A) Rs. 4000
+15. A) Rs. 979.20
+16. C) Rs. 14000
+17. A) Rs. 1075.20
+18. A) 9%
+19. A) Rs. 28.80
+20. A) Rs. 12155.06
+21. C) Rs. 1145.43
+22. C) Rs. 12000
+23. A) Rs. 1038.13
+24. A) Rs. 4500
+25. A) 6.09%
+26. A) Rs. 1197.44
+27. C) Rs. 8000
+28. A) Rs. 30
+29. A) Rs. 6655
+30. A) Rs. 874.90
+31. C) Rs. 10000
+32. A) Rs. 652.80
+33. A) Rs. 49
+34. B) 10%
+35. A) Rs. 618.36
+36. A) Rs. 3000
+37. A) 10.25%
+38. A) Rs. 1038.13
+39. C) Rs. 12000
+40. A) Rs. 96
+41. A) Rs. 9538.24
+42. A) Rs. 1509.34
+43. A) Rs. 3600
+44. A) 4.04%
+45. A) Rs. 1507.50
+46. C) Rs. 8000
+47. A) Rs. 120
+48. A) Rs. 6272
+49. A) Rs. 1455.98
+50. A) Rs. 4000
+
+Hard Level Questions
+These questions involve complex scenarios with fractional time periods, different rates for different years, present worth, or multiple deposits.
+
+1. A sum of Rs. 10000 is deposited on 1st January and Rs. 10000 on 1st July at 8% p.a. compound interest, compounded half-yearly. What is the total interest at the end of the year?
+A) Rs. 1232
+B) Rs. 1242
+C) Rs. 1252
+D) Rs. 1262
+
+2. The difference between simple and compound interest on Rs. 20000 for 2 years at 10% p.a., compounded half-yearly, is:
+A) Rs. 410
+B) Rs. 420
+C) Rs. 430
+D) Rs. 440
+
+3. A sum has a 50% increase in 5 years at simple interest. What is the compound interest on Rs. 10000 for 3 years at the same rate, compounded annually?
+A) Rs. 3310
+B) Rs. 3410
+C) Rs. 3510
+D) Rs. 3610
+
+4. What is the difference between compound interest on Rs. 10000 for 1 year at 10% p.a., compounded annually and half-yearly?
+A) Rs. 25
+B) Rs. 26
+C) Rs. 27
+D) Rs. 28
+
+5. The compound interest on Rs. 50000 at 8% p.a. for 2.5 years, compounded annually, is:
+A) Rs. 10816
+B) Rs. 10916
+C) Rs. 11016
+D) Rs. 11116
+
+6. A sum of Rs. 10000 amounts to Rs. 13310 in 3 years at compound interest with rates 10%, 11%, and 12% for the 1st, 2nd, and 3rd years, respectively. What is the principal?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+7. At what rate of compound interest per annum will Rs. 8000 become Rs. 10000 in 2 years, compounded annually?
+A) 11.80%
+B) 11.85%
+C) 11.90%
+D) 11.95%
+
+8. The least number of complete years for a sum at 25% p.a. compound interest to become more than tripled is:
+A) 4
+B) 5
+C) 6
+D) 7
+
+9. A sum of Rs. 12000 is invested for 2 years at 6% p.a. compound interest, compounded half-yearly. What is the amount at maturity?
+A) Rs. 13530.98
+B) Rs. 13630.98
+C) Rs. 13730.98
+D) Rs. 13830.98
+
+10. The effective annual rate of interest for 8% p.a. compounded quarterly is:
+A) 8.24%
+B) 8.25%
+C) 8.26%
+D) 8.27%
+
+11. The simple interest on a sum for 3 years at 10% p.a. is Rs. 3000. What is the compound interest on the same sum for 2 years at 10% p.a., compounded annually?
+A) Rs. 2100
+B) Rs. 2200
+C) Rs. 2300
+D) Rs. 2400
+
+12. The difference between simple and compound interest on Rs. 15000 for 1 year at 8% p.a., compounded half-yearly, is:
+A) Rs. 24
+B) Rs. 25
+C) Rs. 26
+D) Rs. 27
+
+13. A sum of Rs. 20000 amounts to Rs. 25920 in 2 years at compound interest with rates 20% and 30% for the 1st and 2nd years, respectively. What is the principal?
+A) Rs. 15000
+B) Rs. 16000
+C) Rs. 17000
+D) Rs. 18000
+
+14. The compound interest on Rs. 10000 for 2 years at 10% p.a., compounded half-yearly, is Rs. 2155.06. What is the simple interest on the same sum for 4 years at 5% p.a.?
+A) Rs. 2000
+B) Rs. 2100
+C) Rs. 2200
+D) Rs. 2300
+
+15. The present worth of Rs. 12100 due in 2 years at 10% p.a. compound interest, compounded annually, is:
+A) Rs. 10000
+B) Rs. 10100
+C) Rs. 10200
+D) Rs. 10300
+
+16. A sum of Rs. 5000 is deposited on 1st January and Rs. 5000 on 1st July at 6% p.a. compound interest, compounded half-yearly. What is the total interest at the end of the year?
+A) Rs. 609
+B) Rs. 619
+C) Rs. 629
+D) Rs. 639
+
+17. The difference between simple and compound interest on Rs. 25000 for 2 years at 12% p.a., compounded annually, is:
+A) Rs. 360
+B) Rs. 370
+C) Rs. 380
+D) Rs. 390
+
+18. A sum has a 40% increase in 4 years at simple interest. What is the compound interest on Rs. 15000 for 2 years at the same rate, compounded annually?
+A) Rs. 3150
+B) Rs. 3250
+C) Rs. 3350
+D) Rs. 3450
+
+19. What is the difference between compound interest on Rs. 8000 for 1 year at 10% p.a., compounded annually and quarterly?
+A) Rs. 28.13
+B) Rs. 29.13
+C) Rs. 30.13
+D) Rs. 31.13
+
+20. The compound interest on Rs. 40000 at 7% p.a. for 2.5 years, compounded annually, is:
+A) Rs. 7737.29
+B) Rs. 7837.29
+C) Rs. 7937.29
+D) Rs. 8037.29
+
+21. A sum of Rs. 10000 amounts to Rs. 13604.90 in 3 years at compound interest with rates 8%, 9%, and 10% for the 1st, 2nd, and 3rd years, respectively. What is the principal?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+22. At what rate of compound interest per annum will Rs. 10000 become Rs. 14641 in 2 years, compounded annually?
+A) 20%
+B) 21%
+C) 22%
+D) 23%
+
+23. The least number of complete years for a sum at 15% p.a. compound interest to become more than doubled is:
+A) 4
+B) 5
+C) 6
+D) 7
+
+24. A sum of Rs. 15000 is invested for 2 years at 8% p.a. compound interest, compounded half-yearly. What is the amount at maturity?
+A) Rs. 17161.98
+B) Rs. 17261.98
+C) Rs. 17361.98
+D) Rs. 17461.98
+
+25. The effective annual rate of interest for 10% p.a. compounded quarterly is:
+A) 10.38%
+B) 10.39%
+C) 10.40%
+D) 10.41%
+
+26. The simple interest on a sum for 4 years at 8% p.a. is Rs. 3200. What is the compound interest on the same sum for 2 years at 8% p.a., compounded annually?
+A) Rs. 1664
+B) Rs. 1674
+C) Rs. 1684
+D) Rs. 1694
+
+27. The difference between simple and compound interest on Rs. 20000 for 1 year at 12% p.a., compounded half-yearly, is:
+A) Rs. 36
+B) Rs. 37
+C) Rs. 38
+D) Rs. 39
+
+28. A sum of Rs. 18000 amounts to Rs. 25920 in 2 years at compound interest with rates 10% and 20% for the 1st and 2nd years, respectively. What is the principal?
+A) Rs. 15000
+B) Rs. 15500
+C) Rs. 16000
+D) Rs. 16500
+
+29. The compound interest on Rs. 15000 for 2 years at 10% p.a., compounded half-yearly, is Rs. 3155.06. What is the simple interest on the same sum for 4 years at 5% p.a.?
+A) Rs. 3000
+B) Rs. 3100
+C) Rs. 3200
+D) Rs. 3300
+
+30. The present worth of Rs. 16105.10 due in 3 years at 10% p.a. compound interest, compounded annually, is:
+A) Rs. 12000
+B) Rs. 12100
+C) Rs. 12200
+D) Rs. 12300
+
+31. A sum of Rs. 8000 is deposited on 1st January and Rs. 8000 on 1st July at 10% p.a. compound interest, compounded half-yearly. What is the total interest at the end of the year?
+A) Rs. 1260
+B) Rs. 1270
+C) Rs. 1280
+D) Rs. 1290
+
+32. The difference between simple and compound interest on Rs. 30000 for 2 years at 15% p.a., compounded annually, is:
+A) Rs. 675
+B) Rs. 685
+C) Rs. 695
+D) Rs. 705
+
+33. A sum has a 60% increase in 5 years at simple interest. What is the compound interest on Rs. 20000 for 3 years at the same rate, compounded annually?
+A) Rs. 7956.48
+B) Rs. 8056.48
+C) Rs. 8156.48
+D) Rs. 8256.48
+
+34. What is the difference between compound interest on Rs. 12000 for 1 year at 8% p.a., compounded annually and quarterly?
+A) Rs. 19.48
+B) Rs. 20.48
+C) Rs. 21.48
+D) Rs. 22.48
+
+35. The compound interest on Rs. 60000 at 6% p.a. for 2.5 years, compounded annually, is:
+A) Rs. 9753.15
+B) Rs. 9853.15
+C) Rs. 9953.15
+D) Rs. 10053.15
+
+36. A sum of Rs. 15000 amounts to Rs. 19448.10 in 3 years at compound interest with rates 8%, 9%, and 10% for the 1st, 2nd, and 3rd years, respectively. What is the principal?
+A) Rs. 12000
+B) Rs. 12500
+C) Rs. 13000
+D) Rs. 13500
+
+37. At what rate of compound interest per annum will Rs. 5000 become Rs. 7320.50 in 3 years, compounded annually?
+A) 12%
+B) 13%
+C) 14%
+D) 15%
+
+38. The least number of complete years for a sum at 20% p.a. compound interest to become more than tripled is:
+A) 5
+B) 6
+C) 7
+D) 8
+
+39. A sum of Rs. 10000 is invested for 2 years at 10% p.a. compound interest, compounded half-yearly. What is the amount at maturity?
+A) Rs. 12155.06
+B) Rs. 12255.06
+C) Rs. 12355.06
+D) Rs. 12455.06
+
+40. The effective annual rate of interest for 12% p.a. compounded quarterly is:
+A) 12.55%
+B) 12.56%
+C) 12.57%
+D) 12.58%
+
+41. The simple interest on a sum for 3 years at 12% p.a. is Rs. 3600. What is the compound interest on the same sum for 2 years at 12% p.a., compounded annually?
+A) Rs. 2540.80
+B) Rs. 2550.80
+C) Rs. 2560.80
+D) Rs. 2570.80
+
+42. The difference between simple and compound interest on Rs. 25000 for 1 year at 10% p.a., compounded half-yearly, is:
+A) Rs. 25
+B) Rs. 26
+C) Rs. 27
+D) Rs. 28
+
+43. A sum of Rs. 20000 amounts to Rs. 29160 in 2 years at compound interest with rates 15% and 20% for the 1st and 2nd years, respectively. What is the principal?
+A) Rs. 15000
+B) Rs. 15500
+C) Rs. 16000
+D) Rs. 16500
+
+44. The compound interest on Rs. 20000 for 2 years at 8% p.a., compounded half-yearly, is Rs. 3455.98. What is the simple interest on the same sum for 4 years at 4% p.a.?
+A) Rs. 3200
+B) Rs. 3300
+C) Rs. 3400
+D) Rs. 3500
+
+45. The present worth of Rs. 14641 due in 2 years at 10% p.a. compound interest, compounded annually, is:
+A) Rs. 12000
+B) Rs. 12100
+C) Rs. 12200
+D) Rs. 12300
+
+46. A sum of Rs. 10000 is deposited on 1st January and Rs. 10000 on 1st July at 12% p.a. compound interest, compounded half-yearly. What is the total interest at the end of the year?
+A) Rs. 1872
+B) Rs. 1882
+C) Rs. 1892
+D) Rs. 1902
+
+47. The difference between simple and compound interest on Rs. 40000 for 2 years at 15% p.a., compounded annually, is:
+A) Rs. 900
+B) Rs. 910
+C) Rs. 920
+D) Rs. 930
+
+48. A sum has a 50% increase in 5 years at simple interest. What is the compound interest on Rs. 25000 for 3 years at the same rate, compounded annually?
+A) Rs. 8275
+B) Rs. 8375
+C) Rs. 8475
+D) Rs. 8575
+
+49. What is the difference between compound interest on Rs. 15000 for 1 year at 12% p.a., compounded annually and quarterly?
+A) Rs. 33.10
+B) Rs. 34.10
+C) Rs. 35.10
+D) Rs. 36.10
+
+50. The compound interest on Rs. 80000 at 5% p.a. for 2.5 years, compounded annually, is:
+A) Rs. 10415.63
+B) Rs. 10515.63
+C) Rs. 10615.63
+D) Rs. 10715.63
+
+Hard Level Answers
+1. A) Rs. 1232
+2. A) Rs. 410
+3. A) Rs. 3310
+4. A) Rs. 25
+5. A) Rs. 10816
+6. C) Rs. 10000
+7. A) 11.80%
+8. A) 5
+9. A) Rs. 13530.98
+10. A) 8.24%
+11. A) Rs. 2100
+12. A) Rs. 24
+13. A) Rs. 15000
+14. A) Rs. 2000
+15. A) Rs. 10000
+16. A) Rs. 609
+17. A) Rs. 360
+18. A) Rs. 3150
+19. A) Rs. 28.13
+20. A) Rs. 7737.29
+21. C) Rs. 10000
+22. A) 20%
+23. A) 5
+24. A) Rs. 17161.98
+25. A) 10.38%
+26. A) Rs. 1664
+27. A) Rs. 36
+28. A) Rs. 15000
+29. A) Rs. 3000
+30. A) Rs. 12000
+31. A) Rs. 1260
+32. A) Rs. 675
+33. A) Rs. 7956.48
+34. A) Rs. 19.48
+35. A) Rs. 9753.15
+36. A) Rs. 12000
+37. A) 12%
+38. A) 5
+39. A) Rs. 12155.06
+40. A) 12.55%
+41. A) Rs. 2540.80
+42. A) Rs. 25
+43. A) Rs. 15000
+44. A) Rs. 3200
+45. A) Rs. 12000
+46. A) Rs. 1872
+47. A) Rs. 900
+48. A) Rs. 8275
+49. A) Rs. 33.10
+50. A) Rs. 10415.63

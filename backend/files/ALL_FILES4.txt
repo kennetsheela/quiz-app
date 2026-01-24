@@ -1,0 +1,552 @@
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\services>(
+echo =====================================  
+ echo FILE NAME: evaluationService.js  
+ echo =====================================  
+ type "evaluationService.js"  
+ echo.
+) 
+=====================================
+FILE NAME: evaluationService.js
+=====================================
+function calculateScore(answers, correctAnswers) {
+  let score = 0;
+  answers.forEach((ans, i) => {
+    if (ans === correctAnswers[i]) score++;
+  });
+  return score;
+}
+
+module.exports = { calculateScore };
+
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\services>(
+echo =====================================  
+ echo FILE NAME: eventService.js  
+ echo =====================================  
+ type "eventService.js"  
+ echo.
+) 
+=====================================
+FILE NAME: eventService.js
+=====================================
+const Event = require("../models/Event");
+const EventParticipant = require("../models/EventParticipant");
+const bcrypt = require("bcrypt");
+const fs = require("fs");
+const path = require("path");
+const pdfParse = require("pdf-parse");
+const parseStrict = require("../utils/parseStrict");
+
+async function createEvent(data, files, userId) {
+  const { eventName, adminPassword, studentPassword, startTime, endTime, sets } = data;
+
+  if (!eventName || !adminPassword || !studentPassword || !startTime || !endTime || !sets) {
+    throw new Error("All fields are required");
+  }
+
+  const parsedSets = JSON.parse(sets);
+
+  const eventSets = parsedSets.map((set, index) => ({
+    setName: set.setName,
+    timeLimit: set.timeLimit,
+    isActive: false,
+    questionsFile: files[index]?.path || ""
+  }));
+
+  const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
+  const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
+
+  return await Event.create({
+    eventName,
+    adminPassword: hashedAdminPassword,
+    studentPassword: hashedStudentPassword,
+    startTime: new Date(startTime),
+    endTime: new Date(endTime),
+    sets: eventSets,
+    createdBy: userId
+  });
+}
+
+async function studentLogin({ eventId, userId, rollNo, department, password }) {
+  const event = await Event.findById(eventId);
+  
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  const now = new Date();
+  if (now < event.startTime || now > event.endTime) {
+    throw new Error("Event is not active at this time");
+  }
+
+  const match = await bcrypt.compare(password, event.studentPassword);
+  if (!match) {
+    throw new Error("Invalid password");
+  }
+
+  let participant = await EventParticipant.findOne({
+    eventId: event._id,
+    userId
+  });
+
+  if (!participant) {
+    participant = await EventParticipant.create({
+      eventId: event._id,
+      userId,
+      rollNo,
+      department,
+      setResults: []
+    });
+  }
+
+  return participant;
+}
+
+// ✅ FIX: Added function to get questions from PDF
+async function getSetQuestions(setId, eventId) {
+  const event = await Event.findById(eventId);
+  if (!event) throw new Error("Event not found");
+
+  const set = event.sets.id(setId);
+  if (!set) throw new Error("Set not found");
+
+  // Read PDF file
+  const filePath = path.join(__dirname, "..", set.questionsFile);
+  
+  if (!fs.existsSync(filePath)) {
+    throw new Error("Questions file not found");
+  }
+
+  const dataBuffer = fs.readFileSync(filePath);
+  const data = await pdfParse(dataBuffer);
+  
+  // Parse questions using parseStrict utility
+  const questions = parseStrict(data.text);
+  
+  if (questions.length === 0) {
+    throw new Error("No questions found in PDF");
+  }
+
+  return questions;
+}
+
+async function startSet(participantId, setId, userId) {
+  const participant = await EventParticipant.findById(participantId);
+  
+  if (!participant) {
+    throw new Error("Participant not found");
+  }
+
+  if (participant.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const event = await Event.findById(participant.eventId);
+  
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  const set = event.sets.id(setId);
+  
+  if (!set) {
+    throw new Error("Set not found");
+  }
+
+  if (!set.isActive) {
+    throw new Error("Set is not active");
+  }
+
+  // Remove old attempt (allow retakes)
+  participant.setResults = participant.setResults.filter(
+    r => r.setId.toString() !== setId
+  );
+
+  const startTime = new Date();
+  const autoSubmitAt = new Date(startTime.getTime() + set.timeLimit * 60000);
+
+  participant.setResults.push({
+    setId,
+    startedAt: startTime,
+    completedAt: null,
+    score: null,
+    autoSubmitAt
+  });
+
+  await participant.save();
+
+  // ✅ FIX: Get questions from PDF when starting
+  const questions = await getSetQuestions(setId, participant.eventId);
+
+  return {
+    message: "Set started successfully",
+    timeLimit: set.timeLimit,
+    autoSubmitAt,
+    questions: questions.map(q => ({
+      question: q.question,
+      options: q.options
+      // Don't send correctAnswer to frontend
+    }))
+  };
+}
+
+async function submitSet({ participantId, setId, userId, answers }) {
+  const participant = await EventParticipant.findById(participantId);
+  
+  if (!participant) {
+    throw new Error("Participant not found");
+  }
+
+  if (participant.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const resultIndex = participant.setResults.findIndex(
+    r => r.setId.toString() === setId && !r.completedAt
+  );
+
+  if (resultIndex < 0) {
+    throw new Error("Set not started or already completed");
+  }
+
+  const event = await Event.findById(participant.eventId);
+  const set = event.sets.id(setId);
+
+  // Check if time limit exceeded
+  const elapsed = (new Date() - participant.setResults[resultIndex].startedAt) / 60000;
+  if (elapsed > set.timeLimit) {
+    throw new Error("Time limit exceeded");
+  }
+
+  // ✅ FIX: Get questions with answers for evaluation
+  const questions = await getSetQuestions(setId, participant.eventId);
+  
+  // Calculate score
+  let score = 0;
+  const results = [];
+  
+  questions.forEach((question, index) => {
+    const userAnswer = answers[index];
+    const isCorrect = userAnswer === question.correctAnswer;
+    
+    if (isCorrect) score++;
+    
+    results.push({
+      question: question.question,
+      selectedAnswer: userAnswer,
+      correctAnswer: question.correctAnswer,
+      isCorrect
+    });
+  });
+
+  participant.setResults[resultIndex].score = score;
+  participant.setResults[resultIndex].completedAt = new Date();
+  participant.setResults[resultIndex].totalQuestions = answers.length;
+
+  await participant.save();
+
+  return {
+    score,
+    totalQuestions: questions.length,
+    results
+  };
+}
+
+async function toggleSet({ eventId, setId, adminPassword, enable, userId }) {
+  const event = await Event.findById(eventId);
+  
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  if (event.createdBy !== userId) {
+    throw new Error("Unauthorized - Only event creator can manage sets");
+  }
+
+  const match = await bcrypt.compare(adminPassword, event.adminPassword);
+  if (!match) {
+    throw new Error("Invalid admin password");
+  }
+
+  // Disable all sets first, then enable the selected one
+  event.sets.forEach(set => {
+    set.isActive = enable && set._id.toString() === setId;
+  });
+
+  await event.save();
+}
+
+async function deleteEvent(eventId, adminPassword, userId) {
+  const event = await Event.findById(eventId);
+  
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  if (event.createdBy !== userId) {
+    throw new Error("Unauthorized - Only event creator can delete");
+  }
+
+  const match = await bcrypt.compare(adminPassword, event.adminPassword);
+  if (!match) {
+    throw new Error("Invalid admin password");
+  }
+
+  // Delete uploaded files
+  event.sets.forEach(set => {
+    if (set.questionsFile) {
+      const filePath = path.join(__dirname, "..", set.questionsFile);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+  });
+
+  // Delete participants
+  await EventParticipant.deleteMany({ eventId: event._id });
+
+  // Delete event
+  await Event.findByIdAndDelete(event._id);
+
+  return true;
+}
+
+async function getEventStats(eventId) {
+  const participants = await EventParticipant.find({ eventId });
+
+  let totalParticipants = participants.length;
+  let totalSubmissions = 0;
+  let above80 = 0;
+  let above50 = 0;
+  let departmentStats = {};
+
+  participants.forEach(p => {
+    // Track department stats
+    if (!departmentStats[p.department]) {
+      departmentStats[p.department] = { count: 0, totalScore: 0 };
+    }
+    departmentStats[p.department].count++;
+
+    p.setResults.forEach(r => {
+      if (r.completedAt && r.score !== null) {
+        totalSubmissions++;
+        const percentage = (r.score / (r.totalQuestions || 1)) * 100;
+        
+        if (percentage >= 80) above80++;
+        else if (percentage >= 50) above50++;
+
+        departmentStats[p.department].totalScore += percentage;
+      }
+    });
+  });
+
+  // Calculate department averages
+  Object.keys(departmentStats).forEach(dept => {
+    const stats = departmentStats[dept];
+    stats.avgScore = stats.count > 0 ? stats.totalScore / stats.count : 0;
+  });
+
+  return {
+    totalParticipants,
+    totalSubmissions,
+    above80,
+    above50,
+    below50: totalSubmissions - above80 - above50,
+    departmentStats
+  };
+}
+
+module.exports = {
+  createEvent,
+  studentLogin,
+  startSet,
+  submitSet,
+  toggleSet,
+  deleteEvent,
+  getEventStats,
+  getSetQuestions // ✅ Export for use in routes
+};
+
+C:\Users\J KENNETSHEELA\quiz-app\backend\services>(
+echo =====================================  
+ echo FILE NAME: practiceService.js  
+ echo =====================================  
+ type "practiceService.js"  
+ echo.
+) 
+=====================================
+FILE NAME: practiceService.js
+=====================================
+const PracticeSet = require("../models/PracticeSet");
+const PracticeProgress = require("../models/PracticeProgress");
+const QuestionBank = require("../models/QuestionBank");
+
+async function getSetsWithLock(userId, category, topic, level) {
+  const sets = await PracticeSet.find({ category, topic, level })
+    .sort({ setNumber: 1 });
+  
+  const progress = await PracticeProgress.find({ 
+    userId, 
+    category, 
+    topic, 
+    level 
+  });
+
+  return sets.map((set, index) => {
+    const completed = progress.find(
+      p => p.setNumber === set.setNumber && p.completed
+    );
+
+    const previousCompleted = index === 0 || progress.find(
+      p => p.setNumber === sets[index - 1].setNumber && p.completed
+    );
+
+    return {
+      _id: set._id,
+      setNumber: set.setNumber,
+      timeLimit: set.timeLimit,
+      questionCount: set.questions.length,
+      completed: !!completed,
+      locked: index > 0 && !previousCompleted,
+      score: completed ? completed.score : null,
+      completedAt: completed ? completed.completedAt : null
+    };
+  });
+}
+
+async function startSet({ userId, category, topic, level, setNumber }) {
+  const set = await PracticeSet.findOne({ 
+    category, 
+    topic, 
+    level, 
+    setNumber 
+  });
+
+  if (!set) {
+    throw new Error("Practice set not found");
+  }
+
+  // Check if previous set is completed (for locked sets)
+  if (setNumber > 1) {
+    const previousProgress = await PracticeProgress.findOne({
+      userId,
+      category,
+      topic,
+      level,
+      setNumber: setNumber - 1,
+      completed: true
+    });
+
+    if (!previousProgress) {
+      throw new Error("Complete the previous set first");
+    }
+  }
+
+  const progress = await PracticeProgress.findOneAndUpdate(
+    { userId, category, topic, level, setNumber },
+    {
+      startedAt: new Date(),
+      completed: false,
+      score: null,
+      completedAt: null,
+      totalQuestions: set.questions.length,
+      answers: []
+    },
+    {
+      upsert: true,
+      new: true
+    }
+  );
+
+  return progress;
+}
+
+async function submitSet({ userId, category, topic, level, setNumber, answers }) {
+  const progress = await PracticeProgress.findOne({
+    userId,
+    category,
+    topic,
+    level,
+    setNumber
+  });
+
+  if (!progress) {
+    throw new Error("Set not started");
+  }
+
+  if (progress.completed) {
+    throw new Error("Set already completed");
+  }
+
+  const set = await PracticeSet.findOne({ 
+    category, 
+    topic, 
+    level, 
+    setNumber 
+  }).populate("questions");
+
+  if (!set) {
+    throw new Error("Practice set not found");
+  }
+
+  // Check time limit
+  const elapsedMinutes = (new Date() - progress.startedAt) / 60000;
+  if (elapsedMinutes > set.timeLimit) {
+    throw new Error("Time limit exceeded");
+  }
+
+  // Calculate score
+  let score = 0;
+  const results = [];
+
+  set.questions.forEach((question, index) => {
+    const userAnswer = answers[index];
+    const isCorrect = userAnswer === question.correctAnswer;
+    
+    if (isCorrect) score++;
+
+    results.push({
+      questionId: question._id,
+      question: question.question,
+      selectedAnswer: userAnswer,
+      correctAnswer: question.correctAnswer,
+      isCorrect,
+      explanation: question.explanation
+    });
+  });
+
+  // Update progress
+  progress.completed = true;
+  progress.score = score;
+  progress.completedAt = new Date();
+  progress.answers = results.map(r => ({
+    questionId: r.questionId,
+    selectedAnswer: r.selectedAnswer,
+    isCorrect: r.isCorrect
+  }));
+
+  await progress.save();
+
+  return {
+    score,
+    totalQuestions: set.questions.length,
+    results,
+    completedAt: progress.completedAt
+  };
+}
+
+async function getUserProgress(userId) {
+  const progress = await PracticeProgress.find({ userId })
+    .sort({ completedAt: -1 })
+    .limit(50);
+
+  return progress;
+}
+
+module.exports = {
+  getSetsWithLock,
+  startSet,
+  submitSet,
+  getUserProgress
+};

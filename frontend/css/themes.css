@@ -1,0 +1,263 @@
+/* ========================================
+   THEME VARIABLES - Light & Dark
+======================================== */
+
+:root {
+  /* Light Theme (Default) */
+  --primary-color: #5DDBF9;
+  --primary-hover: #3BC9F0;
+  --primary-light: rgba(93, 219, 249, 0.1);
+  
+  --secondary-color: #4A90E2;
+  --accent-color: #FF6B9D;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F9FA;
+  --bg-tertiary: #E9ECEF;
+  --bg-card: #FFFFFF;
+  --bg-overlay: rgba(255, 255, 255, 0.95);
+  
+  --text-primary: #1A1A1A;
+  --text-secondary: #6C757D;
+  --text-tertiary: #ADB5BD;
+  --text-inverse: #FFFFFF;
+  
+  --border-color: #DEE2E6;
+  --border-light: #E9ECEF;
+  --border-focus: #5DDBF9;
+  
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.25);
+  
+  --gradient-primary: linear-gradient(135deg, #5DDBF9 0%, #4A90E2 100%);
+  --gradient-secondary: linear-gradient(135deg, #FF6B9D 0%, #FFA07A 100%);
+  --gradient-bg: linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%);
+  
+  --success: #28A745;
+  --warning: #FFC107;
+  --error: #DC3545;
+  --info: #17A2B8;
+  
+  --transition-speed: 0.3s;
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-lg: 16px;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --primary-color: #5DDBF9;
+  --primary-hover: #7DE4FF;
+  --primary-light: rgba(93, 219, 249, 0.15);
+  
+  --secondary-color: #6BA3E8;
+  --accent-color: #FF8AB8;
+  
+  --bg-primary: #0F0F0F;
+  --bg-secondary: #1A1A1A;
+  --bg-tertiary: #252525;
+  --bg-card: #1E1E1E;
+  --bg-overlay: rgba(30, 30, 30, 0.95);
+  
+  --text-primary: #F0F0F0;
+  --text-secondary: #B0B0B0;
+  --text-tertiary: #808080;
+  --text-inverse: #1A1A1A;
+  
+  --border-color: #333333;
+  --border-light: #2A2A2A;
+  --border-focus: #5DDBF9;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 70px rgba(0, 0, 0, 0.6);
+  
+  --gradient-primary: linear-gradient(135deg, #5DDBF9 0%, #3BA8D4 100%);
+  --gradient-secondary: linear-gradient(135deg, #FF8AB8 0%, #FFB8A8 100%);
+  --gradient-bg: linear-gradient(135deg, #1A1A1A 0%, #0F0F0F 100%);
+  
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --error: #F87171;
+  --info: #38BDF8;
+}
+
+/* ========================================
+   GLOBAL STYLES
+======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background var(--transition-speed), color var(--transition-speed);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Smooth theme transition */
+body * {
+  transition: background-color var(--transition-speed), 
+              color var(--transition-speed), 
+              border-color var(--transition-speed);
+}
+
+/* ========================================
+   THEME TOGGLE BUTTON
+======================================== */
+
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 80px;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-speed);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1) rotate(20deg);
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.theme-toggle i {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  transition: color var(--transition-speed);
+}
+
+.theme-toggle:hover i {
+  color: var(--text-inverse);
+}
+
+/* Sun/Moon icon animation */
+[data-theme="light"] .theme-toggle .fa-moon {
+  display: block;
+}
+
+[data-theme="light"] .theme-toggle .fa-sun {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle .fa-sun {
+  display: block;
+}
+
+[data-theme="dark"] .theme-toggle .fa-moon {
+  display: none;
+}
+
+/* ========================================
+   GLASSMORPHISM EFFECT
+======================================== */
+
+.glass {
+  background: var(--bg-overlay);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
+}
+
+/* ========================================
+   ANIMATED BACKGROUND
+======================================== */
+
+.animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--gradient-bg);
+}
+
+.animated-bg::before,
+.animated-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.3;
+  animation: float 20s infinite ease-in-out;
+}
+
+.animated-bg::before {
+  width: 500px;
+  height: 500px;
+  background: var(--primary-color);
+  top: -200px;
+  right: -200px;
+  animation-delay: 0s;
+}
+
+.animated-bg::after {
+  width: 400px;
+  height: 400px;
+  background: var(--secondary-color);
+  bottom: -150px;
+  left: -150px;
+  animation-delay: 5s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-50px, 50px) scale(0.9);
+  }
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+======================================== */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) var(--bg-secondary);
+}

@@ -1,0 +1,930 @@
+Easy Level Questions
+These questions involve basic calculations of simple interest, principal, rate, or time using the formula S.I. = (P × R × T)/100.
+
+1. A sum of Rs. 600 yields Rs. 90 as simple interest at 5% p.a. in how many years?
+A) 2
+B) 3
+C) 4
+D) 5
+
+2. What is the simple interest on Rs. 1000 at 4% p.a. for 2 years?
+A) Rs. 80
+B) Rs. 90
+C) Rs. 100
+D) Rs. 110
+
+3. A sum of Rs. 5000 amounts to Rs. 5600 in 2 years at simple interest. What is the rate of interest?
+A) 4%
+B) 5%
+C) 6%
+D) 7%
+
+4. If the simple interest on Rs. 2000 for 3 years is Rs. 360, what is the rate of interest per annum?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+5. A loan of Rs. 800 at 10% p.a. simple interest is taken. How much interest is paid after 5 years?
+A) Rs. 400
+B) Rs. 450
+C) Rs. 500
+D) Rs. 550
+
+6. A sum of Rs. 1500 earns Rs. 450 simple interest in 3 years. What is the rate of interest?
+A) 8%
+B) 9%
+C) 10%
+D) 11%
+
+7. How long will it take for Rs. 1200 to yield Rs. 240 as simple interest at 5% p.a.?
+A) 3 years
+B) 4 years
+C) 5 years
+D) 6 years
+
+8. A sum of Rs. 4000 at 6% p.a. simple interest amounts to Rs. 4720. In how many years?
+A) 2
+B) 3
+C) 4
+D) 5
+
+9. If the simple interest on Rs. 2500 for 4 years is Rs. 600, what is the principal if the rate is 6% p.a. for the same time?
+A) Rs. 2000
+B) Rs. 2250
+C) Rs. 2500
+D) Rs. 2750
+
+10. A sum of Rs. 3000 at 8% p.a. simple interest yields how much interest in 2 years?
+A) Rs. 460
+B) Rs. 480
+C) Rs. 500
+D) Rs. 520
+
+11. What is the principal if the simple interest is Rs. 200 at 5% p.a. for 2 years?
+A) Rs. 2000
+B) Rs. 2100
+C) Rs. 2200
+D) Rs. 2300
+
+12. A sum amounts to Rs. 1800 in 3 years at 4% p.a. simple interest. What is the principal?
+A) Rs. 1500
+B) Rs. 1550
+C) Rs. 1600
+D) Rs. 1650
+
+13. If Rs. 5000 earns Rs. 1000 simple interest in 4 years, what is the rate of interest?
+A) 4%
+B) 5%
+C) 6%
+D) 7%
+
+14. A loan of Rs. 2000 at 7% p.a. simple interest yields how much interest in 3 years?
+A) Rs. 400
+B) Rs. 420
+C) Rs. 440
+D) Rs. 460
+
+15. How long will it take for Rs. 1000 to yield Rs. 150 as simple interest at 3% p.a.?
+A) 4 years
+B) 5 years
+C) 6 years
+D) 7 years
+
+16. A sum of Rs. 6000 at 5% p.a. simple interest amounts to Rs. 6900. In how many years?
+A) 2
+B) 3
+C) 4
+D) 5
+
+17. If the simple interest on Rs. 1500 for 2 years is Rs. 240, what is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+18. What is the principal if the simple interest is Rs. 360 at 6% p.a. for 3 years?
+A) Rs. 1800
+B) Rs. 1900
+C) Rs. 2000
+D) Rs. 2100
+
+19. A sum of Rs. 2500 earns Rs. 500 simple interest in 5 years. What is the rate of interest?
+A) 3%
+B) 4%
+C) 5%
+D) 6%
+
+20. A loan of Rs. 4000 at 10% p.a. simple interest yields how much interest in 4 years?
+A) Rs. 1500
+B) Rs. 1600
+C) Rs. 1700
+D) Rs. 1800
+
+21. How long will it take for Rs. 800 to yield Rs. 120 as simple interest at 5% p.a.?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+22. A sum of Rs. 5000 amounts to Rs. 5900 in 3 years at simple interest. What is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+23. If the simple interest on Rs. 3000 for 2 years is Rs. 480, what is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+24. What is the principal if the simple interest is Rs. 450 at 9% p.a. for 2 years?
+A) Rs. 2500
+B) Rs. 2600
+C) Rs. 2700
+D) Rs. 2800
+
+25. A sum of Rs. 2000 at 4% p.a. simple interest yields how much interest in 5 years?
+A) Rs. 400
+B) Rs. 420
+C) Rs. 440
+D) Rs. 460
+
+26. A sum amounts to Rs. 2400 in 4 years at 5% p.a. simple interest. What is the principal?
+A) Rs. 1800
+B) Rs. 1900
+C) Rs. 2000
+D) Rs. 2100
+
+27. If Rs. 4000 earns Rs. 800 simple interest in 5 years, what is the rate of interest?
+A) 4%
+B) 5%
+C) 6%
+D) 7%
+
+28. A loan of Rs. 1000 at 8% p.a. simple interest yields how much interest in 3 years?
+A) Rs. 220
+B) Rs. 240
+C) Rs. 260
+D) Rs. 280
+
+29. How long will it take for Rs. 1500 to yield Rs. 360 as simple interest at 6% p.a.?
+A) 3 years
+B) 4 years
+C) 5 years
+D) 6 years
+
+30. A sum of Rs. 7000 at 7% p.a. simple interest amounts to Rs. 8470. In how many years?
+A) 2
+B) 3
+C) 4
+D) 5
+
+31. If the simple interest on Rs. 2000 for 4 years is Rs. 640, what is the rate of interest?
+A) 8%
+B) 9%
+C) 10%
+D) 11%
+
+32. What is the principal if the simple interest is Rs. 300 at 5% p.a. for 3 years?
+A) Rs. 1800
+B) Rs. 1900
+C) Rs. 2000
+D) Rs. 2100
+
+33. A sum of Rs. 3000 earns Rs. 720 simple interest in 3 years. What is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+34. A loan of Rs. 5000 at 6% p.a. simple interest yields how much interest in 2 years?
+A) Rs. 600
+B) Rs. 620
+C) Rs. 640
+D) Rs. 660
+
+35. How long will it take for Rs. 2500 to yield Rs. 750 as simple interest at 10% p.a.?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+36. A sum amounts to Rs. 3600 in 5 years at 4% p.a. simple interest. What is the principal?
+A) Rs. 2800
+B) Rs. 2900
+C) Rs. 3000
+D) Rs. 3100
+
+37. If Rs. 6000 earns Rs. 1440 simple interest in 4 years, what is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+38. A loan of Rs. 1500 at 8% p.a. simple interest yields how much interest in 5 years?
+A) Rs. 600
+B) Rs. 620
+C) Rs. 640
+D) Rs. 660
+
+39. What is the principal if the simple interest is Rs. 540 at 6% p.a. for 3 years?
+A) Rs. 3000
+B) Rs. 3100
+C) Rs. 3200
+D) Rs. 3300
+
+40. A sum of Rs. 4000 at 5% p.a. simple interest yields how much interest in 3 years?
+A) Rs. 600
+B) Rs. 620
+C) Rs. 640
+D) Rs. 660
+
+41. How long will it take for Rs. 2000 to yield Rs. 480 as simple interest at 8% p.a.?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+42. A sum amounts to Rs. 4500 in 2 years at 5% p.a. simple interest. What is the principal?
+A) Rs. 4000
+B) Rs. 4100
+C) Rs. 4200
+D) Rs. 4300
+
+43. If the simple interest on Rs. 2500 for 5 years is Rs. 750, what is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+44. A loan of Rs. 3000 at 7% p.a. simple interest yields how much interest in 4 years?
+A) Rs. 820
+B) Rs. 840
+C) Rs. 860
+D) Rs. 880
+
+45. What is the principal if the simple interest is Rs. 400 at 8% p.a. for 2 years?
+A) Rs. 2400
+B) Rs. 2500
+C) Rs. 2600
+D) Rs. 2700
+
+46. A sum of Rs. 5000 at 6% p.a. simple interest amounts to Rs. 6200. In how many years?
+A) 3
+B) 4
+C) 5
+D) 6
+
+47. If Rs. 2000 earns Rs. 600 simple interest in 3 years, what is the rate of interest?
+A) 9%
+B) 10%
+C) 11%
+D) 12%
+
+48. A loan of Rs. 1000 at 9% p.a. simple interest yields how much interest in 2 years?
+A) Rs. 180
+B) Rs. 190
+C) Rs. 200
+D) Rs. 210
+
+49. How long will it take for Rs. 4000 to yield Rs. 960 as simple interest at 6% p.a.?
+A) 3 years
+B) 4 years
+C) 5 years
+D) 6 years
+
+50. A sum amounts to Rs. 2800 in 4 years at 6% p.a. simple interest. What is the principal?
+A) Rs. 2200
+B) Rs. 2300
+C) Rs. 2400
+D) Rs. 2500
+
+Easy Level Answers
+1. B) 3
+2. A) Rs. 80
+3. C) 6%
+4. B) 6%
+5. A) Rs. 400
+6. C) 10%
+7. B) 4 years
+8. B) 3
+9. C) Rs. 2500
+10. B) Rs. 480
+11. A) Rs. 2000
+12. A) Rs. 1500
+13. B) 5%
+14. B) Rs. 420
+15. B) 5 years
+16. B) 3
+17. C) 8%
+18. C) Rs. 2000
+19. B) 4%
+20. B) Rs. 1600
+21. B) 3 years
+22. B) 6%
+23. B) 8%
+24. A) Rs. 2500
+25. A) Rs. 400
+26. C) Rs. 2000
+27. A) 4%
+28. B) Rs. 240
+29. B) 4 years
+30. B) 3
+31. A) 8%
+32. C) Rs. 2000
+33. B) 8%
+34. A) Rs. 600
+35. B) 3 years
+36. C) Rs. 3000
+37. B) 6%
+38. A) Rs. 600
+39. A) Rs. 3000
+40. A) Rs. 600
+41. B) 3 years
+42. A) Rs. 4000
+43. B) 6%
+44. B) Rs. 840
+45. B) Rs. 2500
+46. B) 4
+47. B) 10%
+48. A) Rs. 180
+49. B) 4 years
+50. C) Rs. 2400
+
+Medium Level Questions
+These questions involve calculations with multiple investments, loans, or scenarios requiring manipulation of the simple interest formula.
+
+1. A sum amounts to Rs. 1200 in 2 years and Rs. 1300 in 3 years at simple interest. What is the principal?
+A) Rs. 900
+B) Rs. 950
+C) Rs. 1000
+D) Rs. 1050
+
+2. A person invests Rs. 8000 in two schemes at 5% p.a. and 7% p.a. simple interest. If the total interest in 2 years is Rs. 960, how much was invested at 5%?
+A) Rs. 4000
+B) Rs. 4500
+C) Rs. 5000
+D) Rs. 5500
+
+3. A sum earns Rs. 2520 simple interest at 7% p.a. in 3 years. What is the principal?
+A) Rs. 11000
+B) Rs. 11500
+C) Rs. 12000
+D) Rs. 12500
+
+4. How long will it take for Rs. 3000 to yield Rs. 810 as simple interest at 9% p.a.?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+5. A loan of Rs. 2000 is taken at a simple interest rate equal to the number of years. If the interest paid is Rs. 800, what is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+6. A sum of Rs. 6000 amounts to Rs. 7200 in 3 years at simple interest. What is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+7. A financier charges 8% p.a. simple interest but adds interest to the principal every 6 months. What is the effective annual interest rate?
+A) 8.16%
+B) 8.24%
+C) 8.32%
+D) 8.40%
+
+8. A lends Rs. 4000 to B for 2 years and Rs. 2000 to C for 3 years at the same simple interest rate, receiving Rs. 1100 total interest. What is the rate?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+9. A sum of Rs. 1000 is lent at a certain rate for 6 months. Then Rs. 500 is lent at double the rate for 6 months. If the total interest is Rs. 30, what is the original rate?
+A) 4%
+B) 5%
+C) 6%
+D) 7%
+
+10. A loan at 10% p.a. simple interest results in Rs. 3000 interest after 3 years. What is the principal?
+A) Rs. 10000
+B) Rs. 10500
+C) Rs. 11000
+D) Rs. 11500
+
+11. A sum amounts to Rs. 2500 in 4 years and Rs. 2800 in 5 years at simple interest. What is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+12. What is the ratio of simple interest earned on Rs. 5000 at 6% p.a. for 4 years to that for 6 years?
+A) 2:3
+B) 3:4
+C) 4:6
+D) 5:6
+
+13. A sum earns Rs. 1200 simple interest in 5 years at 6% p.a. If the rate were 8% p.a., how much more interest would it earn?
+A) Rs. 400
+B) Rs. 420
+C) Rs. 440
+D) Rs. 460
+
+14. A person borrows Rs. 6000 at 5% p.a. simple interest for 2 years and lends it at 7% p.a. for 2 years. What is the gain per year?
+A) Rs. 60
+B) Rs. 80
+C) Rs. 100
+D) Rs. 120
+
+15. A sum of Rs. 4500 amounts to Rs. 5400 in 3 years at simple interest. What is the principal if the rate is 5% p.a. for 3 years?
+A) Rs. 4000
+B) Rs. 4100
+C) Rs. 4200
+D) Rs. 4300
+
+16. A person invests Rs. 10000 in two schemes at 6% p.a. and 8% p.a. simple interest. If the total interest in 2 years is Rs. 1400, how much was invested at 6%?
+A) Rs. 4000
+B) Rs. 4500
+C) Rs. 5000
+D) Rs. 5500
+
+17. A sum earns Rs. 3600 simple interest at 8% p.a. in 5 years. What is the principal?
+A) Rs. 8000
+B) Rs. 8500
+C) Rs. 9000
+D) Rs. 9500
+
+18. How long will it take for Rs. 5000 to yield Rs. 1500 as simple interest at 10% p.a.?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+19. A loan of Rs. 3000 is taken at a simple interest rate equal to the number of years. If the interest paid is Rs. 1200, what is the rate?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+20. A sum of Rs. 8000 amounts to Rs. 9200 in 2 years at simple interest. What is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+21. A financier charges 10% p.a. simple interest but adds interest to the principal every 6 months. What is the effective annual interest rate?
+A) 10.25%
+B) 10.50%
+C) 10.75%
+D) 11.00%
+
+22. A lends Rs. 5000 to B for 3 years and Rs. 3000 to C for 2 years at the same simple interest rate, receiving Rs. 1700 total interest. What is the rate?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+23. A sum of Rs. 2000 is lent at a certain rate for 9 months. Then Rs. 1000 is lent at triple the rate for 3 months. If the total interest is Rs. 75, what is the original rate?
+A) 3%
+B) 4%
+C) 5%
+D) 6%
+
+24. A loan at 8% p.a. simple interest results in Rs. 2400 interest after 4 years. What is the principal?
+A) Rs. 7500
+B) Rs. 8000
+C) Rs. 8500
+D) Rs. 9000
+
+25. A sum amounts to Rs. 4000 in 3 years and Rs. 4500 in 4 years at simple interest. What is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+26. What is the ratio of simple interest earned on Rs. 6000 at 5% p.a. for 3 years to that for 5 years?
+A) 3:5
+B) 4:5
+C) 5:6
+D) 6:7
+
+27. A sum earns Rs. 2000 simple interest in 4 years at 5% p.a. If the rate were 7% p.a., how much more interest would it earn?
+A) Rs. 640
+B) Rs. 660
+C) Rs. 680
+D) Rs. 700
+
+28. A person borrows Rs. 8000 at 4% p.a. simple interest for 3 years and lends it at 6% p.a. for 3 years. What is the gain per year?
+A) Rs. 80
+B) Rs. 100
+C) Rs. 120
+D) Rs. 140
+
+29. A sum of Rs. 7000 amounts to Rs. 9100 in 4 years at simple interest. What is the principal if the rate is 7% p.a. for 4 years?
+A) Rs. 6000
+B) Rs. 6200
+C) Rs. 6400
+D) Rs. 6600
+
+30. A person invests Rs. 12000 in two schemes at 4% p.a. and 6% p.a. simple interest. If the total interest in 3 years is Rs. 1920, how much was invested at 4%?
+A) Rs. 6000
+B) Rs. 6500
+C) Rs. 7000
+D) Rs. 7500
+
+31. A sum earns Rs. 1800 simple interest at 6% p.a. in 3 years. What is the principal?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+32. How long will it take for Rs. 4000 to yield Rs. 1440 as simple interest at 12% p.a.?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+33. A loan of Rs. 5000 is taken at a simple interest rate equal to the number of years. If the interest paid is Rs. 2000, what is the rate?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+34. A sum of Rs. 10000 amounts to Rs. 12400 in 3 years at simple interest. What is the rate of interest?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+35. A financier charges 6% p.a. simple interest but adds interest to the principal every 6 months. What is the effective annual interest rate?
+A) 6.09%
+B) 6.18%
+C) 6.27%
+D) 6.36%
+
+36. A lends Rs. 6000 to B for 2 years and Rs. 4000 to C for 4 years at the same simple interest rate, receiving Rs. 2000 total interest. What is the rate?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+37. A sum of Rs. 1500 is lent at a certain rate for 8 months. Then Rs. 750 is lent at double the rate for 4 months. If the total interest is Rs. 45, what is the original rate?
+A) 4%
+B) 5%
+C) 6%
+D) 7%
+
+38. A loan at 9% p.a. simple interest results in Rs. 4050 interest after 3 years. What is the principal?
+A) Rs. 15000
+B) Rs. 15500
+C) Rs. 16000
+D) Rs. 16500
+
+39. A sum amounts to Rs. 3000 in 2 years and Rs. 3300 in 3 years at simple interest. What is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+40. What is the ratio of simple interest earned on Rs. 8000 at 7% p.a. for 2 years to that for 4 years?
+A) 1:2
+B) 2:3
+C) 3:4
+D) 4:5
+
+41. A sum earns Rs. 2400 simple interest in 6 years at 5% p.a. If the rate were 6% p.a., how much more interest would it earn?
+A) Rs. 480
+B) Rs. 500
+C) Rs. 520
+D) Rs. 540
+
+42. A person borrows Rs. 10000 at 3% p.a. simple interest for 2 years and lends it at 5% p.a. for 2 years. What is the gain per year?
+A) Rs. 80
+B) Rs. 100
+C) Rs. 120
+D) Rs. 140
+
+43. A sum of Rs. 9000 amounts to Rs. 10800 in 3 years at simple interest. What is the principal if the rate is 6% p.a. for 3 years?
+A) Rs. 8000
+B) Rs. 8200
+C) Rs. 8400
+D) Rs. 8600
+
+44. A person invests Rs. 15000 in two schemes at 5% p.a. and 9% p.a. simple interest. If the total interest in 2 years is Rs. 2200, how much was invested at 5%?
+A) Rs. 7500
+B) Rs. 8000
+C) Rs. 8500
+D) Rs. 9000
+
+45. A sum earns Rs. 2700 simple interest at 9% p.a. in 3 years. What is the principal?
+A) Rs. 9000
+B) Rs. 9500
+C) Rs. 10000
+D) Rs. 10500
+
+46. How long will it take for Rs. 6000 to yield Rs. 2160 as simple interest at 12% p.a.?
+A) 2 years
+B) 3 years
+C) 4 years
+D) 5 years
+
+47. A loan of Rs. 4000 is taken at a simple interest rate equal to the number of years. If the interest paid is Rs. 1600, what is the rate?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+48. A sum of Rs. 12000 amounts to Rs. 15600 in 5 years at simple interest. What is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+49. A financier charges 12% p.a. simple interest but adds interest to the principal every 6 months. What is the effective annual interest rate?
+A) 12.36%
+B) 12.48%
+C) 12.60%
+D) 12.72%
+
+50. A lends Rs. 7000 to B for 3 years and Rs. 5000 to C for 2 years at the same simple interest rate, receiving Rs. 2500 total interest. What is the rate?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+Medium Level Answers
+1. C) Rs. 1000
+2. A) Rs. 4000
+3. C) Rs. 12000
+4. B) 3 years
+5. C) 7%
+6. B) 6%
+7. A) 8.16%
+8. A) 5%
+9. A) 4%
+10. A) Rs. 10000
+11. A) 6%
+12. A) 2:3
+13. A) Rs. 400
+14. D) Rs. 120
+15. A) Rs. 4000
+16. A) Rs. 4000
+17. C) Rs. 9000
+18. B) 3 years
+19. C) 8%
+20. B) 7%
+21. A) 10.25%
+22. B) 7%
+23. B) 4%
+24. A) Rs. 7500
+25. C) 8%
+26. A) 3:5
+27. A) Rs. 640
+28. C) Rs. 120
+29. A) Rs. 6000
+30. A) Rs. 6000
+31. C) Rs. 10000
+32. B) 3 years
+33. C) 8%
+34. B) 8%
+35. A) 6.09%
+36. B) 6%
+37. A) 4%
+38. A) Rs. 15000
+39. B) 6%
+40. A) 1:2
+41. A) Rs. 480
+42. B) Rs. 100
+43. A) Rs. 8000
+44. A) Rs. 7500
+45. C) Rs. 10000
+46. B) 3 years
+47. C) 8%
+48. B) 6%
+49. A) 12.36%
+50. B) 7%
+
+Hard Level Questions
+These questions involve complex scenarios with multiple investments, loans, effective interest rates, or comparisons over different periods.
+
+1. A sum amounts to Rs. 1500 in 3 years and Rs. 1650 in 4 years at simple interest. What is the principal?
+A) Rs. 900
+B) Rs. 1000
+C) Rs. 1100
+D) Rs. 1200
+
+2. A person invests Rs. 10000 in two schemes at 6% p.a. and 9% p.a. simple interest. If the total interest in 3 years is Rs. 2400, how much was invested at 6%?
+A) Rs. 4000
+B) Rs. 4500
+C) Rs. 5000
+D) Rs. 5500
+
+3. A sum earns Rs. 4860 simple interest at 9% p.a. in 6 years. What is the principal?
+A) Rs. 8000
+B) Rs. 8500
+C) Rs. 9000
+D) Rs. 9500
+
+4. A loan of Rs. 5000 is taken at a simple interest rate equal to the number of years. If the interest paid is Rs. 2450, what is the rate?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+5. A sum of Rs. 8000 amounts to Rs. 10400 in 4 years at simple interest. What is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+6. A financier charges 15% p.a. simple interest but adds interest to the principal every 6 months. What is the effective annual interest rate?
+A) 15.56%
+B) 15.75%
+C) 15.94%
+D) 16.13%
+
+7. A lends Rs. 8000 to B for 2 years and Rs. 6000 to C for 3 years at the same simple interest rate, receiving Rs. 3400 total interest. What is the rate?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+8. A sum of Rs. 2000 is lent at a certain rate for 9 months. Then Rs. 1000 is lent at quadruple the rate for 3 months. If the total interest is Rs. 90, what is the original rate?
+A) 3%
+B) 4%
+C) 5%
+D) 6%
+
+9. A loan at 12% p.a. simple interest results in Rs. 7200 interest after 5 years. What is the principal?
+A) Rs. 12000
+B) Rs. 12500
+C) Rs. 13000
+D) Rs. 13500
+
+10. A sum amounts to Rs. 6000 in 4 years and Rs. 6750 in 5 years at simple interest. What is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+11. What is the ratio of simple interest earned on Rs. 10000 at 8% p.a. for 3 years to that for 5 years?
+A) 3:5
+B) 4:5
+C) 5:6
+D) 6:7
+
+12. A sum earns Rs. 3600 simple interest in 5 years at 8% p.a. If the rate were 10% p.a., how much more interest would it earn?
+A) Rs. 900
+B) Rs. 950
+C) Rs. 1000
+D) Rs. 1050
+
+13. A person borrows Rs. 12000 at 5% p.a. simple interest for 3 years and lends it at 8% p.a. for 3 years. What is the gain per year?
+A) Rs. 120
+B) Rs. 140
+C) Rs. 160
+D) Rs. 180
+
+14. A sum of Rs. 15000 amounts to Rs. 19500 in 5 years at simple interest. What is the principal if the rate is 8% p.a. for 5 years?
+A) Rs. 12000
+B) Rs. 12500
+C) Rs. 13000
+D) Rs. 13500
+
+15. A person invests Rs. 20000 in two schemes at 7% p.a. and 10% p.a. simple interest. If the total interest in 2 years is Rs. 3400, how much was invested at 7%?
+A) Rs. 8000
+B) Rs. 9000
+C) Rs. 10000
+D) Rs. 11000
+
+16. A sum earns Rs. 4200 simple interest at 7% p.a. in 4 years. What is the principal?
+A) Rs. 14000
+B) Rs. 14500
+C) Rs. 15000
+D) Rs. 15500
+
+17. How long will it take for Rs. 8000 to yield Rs. 3600 as simple interest at 9% p.a.?
+A) 4 years
+B) 5 years
+C) 6 years
+D) 7 years
+
+18. A loan of Rs. 6000 is taken at a simple interest rate equal to the number of years. If the interest paid is Rs. 3750, what is the rate?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+19. A sum of Rs. 10000 amounts to Rs. 13000 in 5 years at simple interest. What is the rate of interest?
+A) 5%
+B) 6%
+C) 7%
+D) 8%
+
+20. A financier charges 9% p.a. simple interest but adds interest to the principal every 6 months. What is the effective annual interest rate?
+A) 9.20%
+B) 9.30%
+C) 9.40%
+D) 9.50%
+
+21. A lends Rs. 10000 to B for 3 years and Rs. 8000 to C for 2 years at the same simple interest rate, receiving Rs. 3400 total interest. What is the rate?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+22. A sum of Rs. 3000 is lent at a certain rate for 6 months. Then Rs. 1500 is lent at triple the rate for 6 months. If the total interest is Rs. 90, what is the original rate?
+A) 4%
+B) 5%
+C) 6%
+D) 7%
+
+23. A loan at 10% p.a. simple interest results in Rs. 6000 interest after 4 years. What is the principal?
+A) Rs. 14000
+B) Rs. 14500
+C) Rs. 15000
+D) Rs. 15500
+
+24. A sum amounts to Rs. 5000 in 3 years and Rs. 5600 in 4 years at simple interest. What is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+25. What is the ratio of simple interest earned on Rs. 12000 at 6% p.a. for 4 years to that for 6 years?
+A) 2:3
+B) 3:4
+C) 4:5
+D) 5:6
+
+26. A sum earns Rs. 4800 simple interest in 8 years at 5% p.a. If the rate were 7% p.a., how much more interest would it earn?
+A) Rs. 1920
+B) Rs. 1940
+C) Rs. 1960
+D) Rs. 1980
+
+27. A person borrows Rs. 15000 at 4% p.a. simple interest for 2 years and lends it at 6% p.a. for 2 years. What is the gain per year?
+A) Rs. 150
+B) Rs. 160
+C) Rs. 170
+D) Rs. 180
+
+28. A sum of Rs. 18000 amounts to Rs. 23400 in 5 years at simple interest. What is the principal if the rate is 7% p.a. for 5 years?
+A) Rs. 15000
+B) Rs. 15500
+C) Rs. 16000
+D) Rs. 16500
+
+29. A person invests Rs. 25000 in two schemes at 8% p.a. and 12% p.a. simple interest. If the total interest in 3 years is Rs. 7500, how much was invested at 8%?
+A) Rs. 10000
+B) Rs. 11000
+C) Rs. 12000
+D) Rs. 13000
+
+30. A sum earns Rs. 5400 simple interest at 9% p.a. in 5 years. What is the principal?
+A) Rs. 11000
+B) Rs. 11500
+C) Rs. 12000
+D) Rs. 12500
+
+31. How long will it take for Rs. 10000 to yield Rs. 4500 as simple interest at 9% p.a.?
+A) 4 years
+B) 5 years
+C) 6 years
+D) 7 years
+
+32. A loan of Rs. 8000 is taken at a simple interest rate equal to the number of years. If the interest paid is Rs. 5000, what is the rate?
+A) 8%
+B) 9%
+C) 10%
+D) 11%
+
+33. A sum of Rs. 15000 amounts to Rs. 19500 in 4 years at simple interest. What is the rate of interest?
+A) 6%
+B) 7%
+C) 8%
+D) 9%
+
+34. A financier charges 8% p.a. simple interest but adds interest to the principal every 6 months. What is the effective annual interest rate?
+A) 8.16%
+B) 8.24%
+C) 8.32%
+D) 8.40%
+
+35. A lends Rs. 12000 to B for 4 years and Rs. 10000 to C for 3 years at the same simple interest rate, receiving Rs. 5100 total interest. What is the rate?
+A) 7%
+B) 8%
+C) 9%
+D) 10%
+
+36. A sum of Rs. 4000 is lent at a certain rate for 9 months. Then Rs. 2000 is lent at double the rate for 3 months. If the total interest is Rs. 120, what is the original rate?
+A) 4%
+B) 5%
+C) 6%
+D) 7%
+
+37. A loan at 11% p.a. simple interest results in Rs. 6600 interest after 5

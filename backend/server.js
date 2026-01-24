@@ -1,0 +1,145 @@
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const admin = require("firebase-admin");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const mongoose = require("mongoose");
+
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const practiceRoutes = require("./routes/practiceRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+const { startCleanupScheduler } = require("./services/cleanupService");
+
+/* ================= APP ================= */
+const app = express();
+let server; // ✅ single shared server instance
+
+/* ================= FIREBASE ================= */
+try {
+  const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+  console.log("✅ Firebase Admin initialized");
+} catch (error) {
+  console.error("⚠️ Firebase Admin initialization skipped:", error.message);
+}
+
+/* ================= SECURITY ================= */
+app.use(helmet());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
+});
+
+app.use("/api", limiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/events/student-login", authLimiter);
+
+/* ================= CORS ================= */
+app.use(cors({
+  origin: process.env.NODE_ENV === "production"
+    ? process.env.FRONTEND_URL || "https://yourdomain.com"
+    : ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5500"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+/* ================= MIDDLEWARE ================= */
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(mongoSanitize());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+/* ================= ROUTES ================= */
+app.use("/api/auth", authRoutes);
+app.use("/api/practice", practiceRoutes);
+app.use("/api/events", eventRoutes);
+
+/* ================= HEALTH ================= */
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "OK",
+    mongodb: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
+    uptime: process.uptime()
+  });
+});
+
+/* ================= ERRORS ================= */
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.message);
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === "production"
+      ? "Internal Server Error"
+      : err.message
+  });
+});
+
+/* ================= 404 ================= */
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+/* ================= SERVER START (FIXED) ================= */
+const PORT = process.env.PORT || 5000;
+
+async function startServer() {
+  if (server) return; // ✅ prevents double start
+
+  try {
+    await connectDB();
+
+    server = app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(`🌐 API Base URL: http://localhost:${PORT}`);
+
+      startCleanupScheduler(); // ✅ preserved
+    });
+  } catch (err) {
+    console.error("❌ Failed to start server:", err);
+    process.exit(1);
+  }
+}
+
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}
+
+/* ================= GRACEFUL SHUTDOWN ================= */
+function gracefulShutdown() {
+  console.log("\n🛑 Shutting down gracefully...");
+
+  if (!server) return process.exit(0);
+
+  server.close(() => {
+    mongoose.connection.close(false, () => {
+      console.log("✅ MongoDB connection closed");
+      process.exit(0);
+    });
+  });
+
+  setTimeout(() => {
+    console.error("⚠️ Force shutdown");
+    process.exit(1);
+  }, 10000);
+}
+
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
+
+module.exports = app;

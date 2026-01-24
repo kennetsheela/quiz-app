@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Complete Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --accent-primary: #3b82f6;
+      --accent-secondary: #8b5cf6;
+      --card-bg: #ffffff;
+      --shadow: rgba(0,0,0,0.1);
+      --border-color: #e5e7eb;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .details-container {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      font-size: 2rem;
+      overflow: hidden;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .label-required::after {
+      content: ' *';
+      color: #ef4444;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-group input[readonly] {
+      background: #f9fafb;
+      color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+    
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      gap: 10px;
+    }
+    
+    .step {
+      flex: 1;
+      height: 4px;
+      background: var(--border-color);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .step.active {
+      background: var(--accent-primary);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .success-message {
+      background: #efe;
+      color: #3c3;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .info-message {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      border-left: 3px solid #0369a1;
+    }
+    
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .skip-link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .skip-link a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .skip-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="details-container">
+    <div class="header">
+      <div class="user-avatar" id="userAvatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <h1>Complete Your Profile</h1>
+      <p>Join our community of learners</p>
+    </div>
+    
+    <div class="progress-steps">
+      <div class="step active"></div>
+      <div class="step active"></div>
+      <div class="step active"></div>
+    </div>
+
+    <div class="info-message">
+      <i class="fas fa-info-circle"></i> Complete your profile to access all features and track your progress
+    </div>
+
+    <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
+    
+    <form id="detailsForm">
+      <div class="form-group">
+        <label for="username" class="label-required">Full Name</label>
+        <input type="text" id="username" placeholder="Enter your full name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Your email" readonly>
+      </div>
+      
+      <div class="form-group">
+        <label for="department" class="label-required">Department</label>
+        <select id="department" required>
+          <option value="">Select your department</option>
+          <option value="aids">Artificial Intelligence and Data Science</option>
+          <option value="cs">Computer Science</option>
+          <option value="it">Information Technology</option>
+          <option value="mechanical">Mechanical Engineering</option>
+          <option value="civil">Civil Engineering</option>
+          <option value="ece">Electronics and Communication</option>
+          <option value="eee">Electrical and Electronics</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="college" class="label-required">College</label>
+        <select id="college" required>
+          <option value="">Select your college</option>
+          <option value="NIT Trichy">NIT Trichy</option>
+          <option value="IIT Madras">IIT Madras</option>
+          <option value="Anna University">Anna University</option>
+          <option value="VIT Vellore">VIT Vellore</option>
+          <option value="SRM University">SRM University</option>
+          <option value="SSN College of Engineering">SSN College of Engineering</option>
+          <option value="PSG College of Technology">PSG College of Technology</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="city" class="label-required">City</label>
+        <input type="text" id="city" placeholder="Enter your city" required>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <span id="btnText">Continue to Dashboard</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </form>
+
+    <div class="skip-link">
+      <a href="#" id="skipLink">Skip for now</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from "./js/firebase.js";
+    import { authAPI } from "./js/api.js";
+
+    const detailsForm = document.getElementById("detailsForm");
+    const errorMessage = document.getElementById("errorMessage");
+    const successMessage = document.getElementById("successMessage");
+    const submitBtn = document.getElementById("submitBtn");
+    const btnText = document.getElementById("btnText");
+    const userAvatar = document.getElementById("userAvatar");
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+      setTimeout(() => {
+        errorMessage.style.display = 'none';
+      }, 5000);
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      if (isLoading) {
+        btnText.innerHTML = '<span class="spinner"></span> Saving...';
+      } else {
+        btnText.textContent = 'Continue to Dashboard';
+      }
+    }
+
+    // Load user data
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        console.log("No user authenticated, redirecting to login");
+        window.location.href = "index.html";
+        return;
+      }
+
+      console.log("Loading user data for:", user.uid);
+      console.log("User info:", {
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      });
+
+      // Set email
+      document.getElementById("email").value = user.email;
+
+      // Set avatar
+      if (user.photoURL) {
+        userAvatar.innerHTML = `<img src="${user.photoURL}" alt="Profile">`;
+      } else if (user.displayName) {
+        const initials = user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        userAvatar.textContent = initials;
+      }
+
+      // Pre-fill username if available
+      if (user.displayName) {
+        document.getElementById("username").value = user.displayName;
+      }
+
+      // Try to load existing profile
+      try {
+        const profile = await authAPI.getProfile();
+        console.log("Existing profile found:", profile);
+        
+        if (profile) {
+          // Pre-fill form with existing data
+          if (profile.username) document.getElementById("username").value = profile.username;
+          if (profile.department) document.getElementById("department").value = profile.department;
+          if (profile.college) document.getElementById("college").value = profile.college;
+          if (profile.city) document.getElementById("city").value = profile.city;
+        }
+      } catch (error) {
+        console.log("No existing profile found (this is normal for new users):", error.message);
+      }
+    });
+
+    // Handle form submission
+    detailsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const user = auth.currentUser;
+      if (!user) {
+        showError("Session expired. Please login again.");
+        setTimeout(() => window.location.href = "index.html", 2000);
+        return;
+      }
+
+      errorMessage.style.display = 'none';
+      setLoading(true);
+      
+      const profileData = {
+        username: document.getElementById("username").value.trim(),
+        email: document.getElementById("email").value,
+        department: document.getElementById("department").value,
+        college: document.getElementById("college").value,
+        city: document.getElementById("city").value.trim(),
+        photoURL: user.photoURL || null,
+        provider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'email'
+      };
+
+      console.log("Saving profile data:", profileData);
+
+      try {
+        const result = await authAPI.saveProfile(profileData);
+        console.log("Profile saved successfully:", result);
+        
+        showSuccess("Profile saved successfully! Redirecting...");
+        
+        setTimeout(() => {
+          window.location.href = "explore.html";
+        }, 1500);
+        
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        
+        let errorMsg = "Failed to save profile. ";
+        if (error.message.includes("auth/")) {
+          errorMsg += "Please login again.";
+          setTimeout(() => window.location.href = "index.html", 2000);
+        } else if (error.message.includes("Network")) {
+          errorMsg += "Please check your internet connection.";
+        } else {
+          errorMsg += error.message || "Please try again.";
+        }
+        
+        showError(errorMsg);
+        setLoading(false);
+      }
+    });
+
+    // Handle skip link
+    document.getElementById("skipLink").addEventListener("click", (e) => {
+      e.preventDefault();
+      
+      if (confirm("Are you sure you want to skip? You'll need to complete your profile later to access all features.")) {
+        window.location.href = "explore.html";
+      }
+    });
+  </script>
+</body>
+</html>

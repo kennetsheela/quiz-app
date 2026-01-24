@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Quiz Results</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    
+    .results-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .score-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 50px;
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .score-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    }
+    
+    .score-display {
+      font-size: 5rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 20px 0;
+    }
+    
+    .percentage {
+      font-size: 2rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    
+    .performance-badge {
+      display: inline-block;
+      padding: 10px 30px;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 20px 0;
+    }
+    
+    .badge-excellent {
+      background: linear-gradient(135deg, #48bb78, #38a169);
+      color: white;
+    }
+    
+    .badge-good {
+      background: linear-gradient(135deg, #4299e1, #3182ce);
+      color: white;
+    }
+    
+    .badge-average {
+      background: linear-gradient(135deg, #ed8936, #dd6b20);
+      color: white;
+    }
+    
+    .badge-poor {
+      background: linear-gradient(135deg, #f56565, #e53e3e);
+      color: white;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .stat-box {
+      background: var(--bg-tertiary);
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .stat-box i {
+      font-size: 2.5rem;
+      color: var(--accent-primary);
+      margin-bottom: 10px;
+    }
+    
+    .stat-box h3 {
+      font-size: 2rem;
+      margin: 10px 0 5px 0;
+    }
+    
+    .stat-box p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .questions-review {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .question-item {
+      background: var(--bg-tertiary);
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid transparent;
+    }
+    
+    .question-item.correct {
+      border-left-color: var(--success);
+    }
+    
+    .question-item.incorrect {
+      border-left-color: var(--error);
+    }
+    
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .question-number {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .result-icon {
+      font-size: 1.5rem;
+    }
+    
+    .result-icon.correct {
+      color: var(--success);
+    }
+    
+    .result-icon.incorrect {
+      color: var(--error);
+    }
+    
+    .question-text {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+    
+    .answer-box {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+    
+    .answer-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    
+    .your-answer {
+      color: var(--error);
+    }
+    
+    .correct-answer {
+      color: var(--success);
+    }
+    
+    .explanation {
+      background: var(--bg-tertiary);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border-left: 3px solid var(--accent-primary);
+    }
+    
+    .explanation-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .action-buttons button {
+      min-width: 150px;
+    }
+    
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: var(--accent-primary);
+      position: absolute;
+      animation: confetti-fall 3s linear;
+    }
+    
+    @keyframes confetti-fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="results-container">
+    <div class="score-card">
+      <h1>Quiz Completed! 🎉</h1>
+      <div class="score-display" id="scoreDisplay">-/-</div>
+      <div class="percentage" id="percentageDisplay">-%</div>
+      <div class="performance-badge" id="performanceBadge">Calculating...</div>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <i class="fas fa-check-circle"></i>
+          <h3 id="correctCount">0</h3>
+          <p>Correct Answers</p>
+        </div>
+        
+        <div class="stat-box">
+          <i class="fas fa-times-circle"></i>
+          <h3 id="incorrectCount">0</h3>
+          <p>Incorrect Answers</p>
+        </div>
+        
+        <div class="stat-box">
+          <i class="fas fa-clock"></i>
+          <h3 id="timeSpent">0m 0s</h3>
+          <p>Time Spent</p>
+        </div>
+        
+        <div class="stat-box">
+          <i class="fas fa-chart-line"></i>
+          <h3 id="accuracy">0%</h3>
+          <p>Accuracy</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="questions-review">
+      <h2>Detailed Review</h2>
+      <div id="questionsContainer">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading results...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-secondary" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i> Back to Topics
+      </button>
+      <button class="btn btn-primary" id="retryBtn">
+        <i class="fas fa-redo"></i> Retry Quiz
+      </button>
+      <button class="btn btn-success" id="nextBtn" style="display: none;">
+        <i class="fas fa-arrow-right"></i> Next Set
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.js";
+    import { practiceAPI } from "./js/api.js";
+
+    requireAuth();
+
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category');
+    const topic = params.get('topic');
+    const level = params.get('level');
+    const setNumber = parseInt(params.get('set'));
+
+    let resultsData = null;
+
+    async function loadResults() {
+      try {
+        console.log("📊 Loading results...");
+        
+        const storedResults = sessionStorage.getItem('quizResults');
+        
+        console.log("📦 Raw stored results:", storedResults);
+        
+        if (storedResults) {
+          console.log("✅ Found stored results");
+          resultsData = JSON.parse(storedResults);
+          console.log("📊 Parsed results data:", resultsData);
+          
+          // 🔍 CRITICAL DEBUG: Log the actual structure
+          console.log("🔍 CRITICAL - Score from backend:", resultsData.score);
+          console.log("🔍 CRITICAL - Total questions:", resultsData.totalQuestions);
+          console.log("🔍 CRITICAL - Results array:", resultsData.results);
+          
+          if (resultsData.results && resultsData.results.length > 0) {
+            console.log("🔍 CRITICAL - First result structure:", resultsData.results[0]);
+            console.log("🔍 CRITICAL - First result keys:", Object.keys(resultsData.results[0]));
+          }
+          
+          displayResults(resultsData);
+          sessionStorage.removeItem('quizResults');
+        } else {
+          console.log("⚠️ No stored results, trying to fetch from backend...");
+          
+          try {
+            const progressData = await practiceAPI.getProgress();
+            const thisProgress = progressData.progress.find(p => 
+              p.category === category && 
+              p.topic === topic && 
+              p.level === level && 
+              p.setNumber === setNumber &&
+              p.completed
+            );
+            
+            if (thisProgress) {
+              console.log("✅ Found progress data:", thisProgress);
+              displayBasicResults(thisProgress.score, thisProgress.totalQuestions);
+            } else {
+              console.log("❌ No matching progress found");
+              displayError();
+            }
+          } catch (error) {
+            console.error("❌ Error fetching progress:", error);
+            displayError();
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error loading results:", error);
+        displayError();
+      }
+    }
+
+    function displayResults(data) {
+      console.log("🎨 Displaying full results:", data);
+      
+      // ✅ FIX: Use the score from backend, don't recalculate
+      const score = data.score || 0;
+      const totalQuestions = data.totalQuestions || 0;
+      const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+      
+      console.log("📊 Using score from backend:", score, "/", totalQuestions);
+      
+      // Update score display
+      document.getElementById('scoreDisplay').textContent = `${score}/${totalQuestions}`;
+      document.getElementById('percentageDisplay').textContent = `${percentage}%`;
+      document.getElementById('correctCount').textContent = score;
+      document.getElementById('incorrectCount').textContent = totalQuestions - score;
+      document.getElementById('accuracy').textContent = percentage + '%';
+      
+      // Display time spent
+      const timeSpent = data.timeSpent;
+      console.log("⏱️ Time spent value:", timeSpent);
+      if (timeSpent !== undefined && timeSpent !== null) {
+        const minutes = Math.floor(timeSpent / 60);
+        const seconds = timeSpent % 60;
+        document.getElementById('timeSpent').textContent = `${minutes}m ${seconds}s`;
+        console.log("⏱️ Displayed time:", `${minutes}m ${seconds}s`);
+      } else {
+        console.warn("⚠️ Time spent not provided");
+        document.getElementById('timeSpent').textContent = "N/A";
+      }
+      
+      // Performance badge
+      const badge = document.getElementById('performanceBadge');
+      if (percentage >= 90) {
+        badge.textContent = '🏆 Excellent!';
+        badge.className = 'performance-badge badge-excellent';
+        createConfetti();
+      } else if (percentage >= 70) {
+        badge.textContent = '👍 Good Job!';
+        badge.className = 'performance-badge badge-good';
+      } else if (percentage >= 50) {
+        badge.textContent = '📚 Keep Practicing';
+        badge.className = 'performance-badge badge-average';
+      } else {
+        badge.textContent = '💪 Try Again';
+        badge.className = 'performance-badge badge-poor';
+      }
+      
+      // Display detailed results
+      if (data.results && data.results.length > 0) {
+        const questionsHTML = data.results.map((result, index) => {
+          // ✅ FIX: Try multiple possible field names and normalize strings for comparison
+          const normalizeAnswer = (ans) => ans ? ans.toString().trim().toLowerCase() : '';
+          
+          // Try different field names that backend might use
+          const selectedAnswer = result.selectedAnswer || result.userAnswer || result.answer || null;
+          const correctAnswer = result.correctAnswer || result.correct || null;
+          
+          // Check isCorrect field or calculate it
+          let isCorrect = result.isCorrect;
+          if (isCorrect === undefined || isCorrect === null) {
+            // Calculate it by comparing normalized answers
+            isCorrect = selectedAnswer && correctAnswer && 
+                       normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer);
+          }
+          
+          console.log(`Question ${index + 1}:`, {
+            isCorrect,
+            selectedAnswer,
+            correctAnswer,
+            normalized_selected: normalizeAnswer(selectedAnswer),
+            normalized_correct: normalizeAnswer(correctAnswer),
+            match: normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer)
+          });
+          
+          return `
+            <div class="question-item ${isCorrect ? 'correct' : 'incorrect'}">
+              <div class="question-header">
+                <span class="question-number">Question ${index + 1}</span>
+                <i class="fas ${isCorrect ? 'fa-check-circle' : 'fa-times-circle'} result-icon ${isCorrect ? 'correct' : 'incorrect'}"></i>
+              </div>
+              
+              <div class="question-text">${result.question}</div>
+              
+              ${!isCorrect ? `
+                <div class="answer-box">
+                  <div class="answer-label your-answer">Your Answer:</div>
+                  <div>${selectedAnswer || 'Not answered'}</div>
+                </div>
+              ` : ''}
+              
+              <div class="answer-box">
+                <div class="answer-label correct-answer">Correct Answer:</div>
+                <div>${correctAnswer}</div>
+              </div>
+              
+              ${result.explanation ? `
+                <div class="explanation">
+                  <div class="explanation-label">
+                    <i class="fas fa-lightbulb"></i>
+                    Explanation
+                  </div>
+                  <div>${result.explanation}</div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+        
+        document.getElementById('questionsContainer').innerHTML = questionsHTML;
+      } else {
+        document.getElementById('questionsContainer').innerHTML = 
+          '<p style="text-align: center; color: var(--text-secondary);">Detailed review will be available soon.</p>';
+      }
+      
+      checkNextSet();
+    }
+
+    function displayBasicResults(score, total) {
+      console.log("🎨 Displaying basic results:", score, "/", total);
+      
+      const percentage = Math.round((score / total) * 100);
+      
+      document.getElementById('scoreDisplay').textContent = `${score}/${total}`;
+      document.getElementById('percentageDisplay').textContent = `${percentage}%`;
+      document.getElementById('correctCount').textContent = score;
+      document.getElementById('incorrectCount').textContent = total - score;
+      document.getElementById('accuracy').textContent = percentage + '%';
+      
+      const badge = document.getElementById('performanceBadge');
+      if (percentage >= 90) {
+        badge.textContent = '🏆 Excellent!';
+        badge.className = 'performance-badge badge-excellent';
+        createConfetti();
+      } else if (percentage >= 70) {
+        badge.textContent = '👍 Good Job!';
+        badge.className = 'performance-badge badge-good';
+      } else if (percentage >= 50) {
+        badge.textContent = '📚 Keep Practicing';
+        badge.className = 'performance-badge badge-average';
+      } else {
+        badge.textContent = '💪 Try Again';
+        badge.className = 'performance-badge badge-poor';
+      }
+      
+      document.getElementById('questionsContainer').innerHTML = 
+        '<p style="text-align: center; color: var(--text-secondary);">Detailed review is not available for this quiz.</p>';
+      
+      checkNextSet();
+    }
+
+    function displayError() {
+      document.getElementById('questionsContainer').innerHTML = 
+        '<p style="text-align: center; color: var(--error);">Could not load results. Please try again.</p>';
+    }
+
+    async function checkNextSet() {
+      try {
+        const { sets } = await practiceAPI.getSets(category, topic, level);
+        const nextSet = sets.find(s => s.setNumber === setNumber + 1 && !s.locked);
+        
+        if (nextSet) {
+          document.getElementById('nextBtn').style.display = 'block';
+          document.getElementById('nextBtn').onclick = () => {
+            window.location.href = `quiz.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber + 1}`;
+          };
+        }
+      } catch (error) {
+        console.error("Error checking next set:", error);
+      }
+    }
+
+    function createConfetti() {
+      const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe'];
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * window.innerWidth + 'px';
+          confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.animationDelay = Math.random() * 3 + 's';
+          document.body.appendChild(confetti);
+          
+          setTimeout(() => confetti.remove(), 3000);
+        }, i * 30);
+      }
+    }
+
+    window.goBack = function() {
+      window.location.href = `${category}.html`;
+    };
+
+    document.getElementById('retryBtn').onclick = function() {
+      window.location.href = `quiz.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber}`;
+    };
+
+    loadResults();
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>
