@@ -232,10 +232,10 @@
       </div>
     </div>
   </div>
-
   <script type="module">
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
     import { practiceAPI } from "./js/api.js";
+    const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
 
     requireAuth();
     setupLogoutButton();
@@ -261,7 +261,7 @@
     // Load topics on page load
     async function loadTopics() {
       try {
-        const response = await fetch(`http://localhost:5000/api/practice/categories/${CATEGORY}/topics`);
+        const response = await fetch(`${API_BASE_URL}/practice/categories/${CATEGORY}/topics`);
         const data = await response.json();
 
         if (data.topics.length === 0) {
