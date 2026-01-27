@@ -20,11 +20,21 @@ let server; // ✅ single shared server instance
 
 /* ================= FIREBASE ================= */
 try {
-  const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-  console.log("✅ Firebase Admin initialized");
+  // Check if FIREBASE_SERVICE_ACCOUNT env variable exists (for production)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("✅ Firebase Admin initialized from environment variable");
+  } else {
+    // Use file for local development
+    const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH || "./serviceAccountKey.json");
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("✅ Firebase Admin initialized from file");
+  }
 } catch (error) {
   console.error("⚠️ Firebase Admin initialization skipped:", error.message);
 }
@@ -51,14 +61,16 @@ app.use("/api/events/student-login", authLimiter);
 
 /* ================= CORS ================= */
 app.use(cors({
-  origin: process.env.NODE_ENV === "production"
-    ? process.env.FRONTEND_URL || "https://yourdomain.com"
-    : ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5500",    'https://quiz-app-3e991.web.app',
+  origin: [
+    'https://quiz-app-3e991.web.app',
     'https://quiz-app-3e991.firebaseapp.com',
     'http://localhost:3000',
-    'http://localhost:5000'],
+    'http://localhost:5000',
+    'http://localhost:5500',
+    'http://127.0.0.1:3000'
+  ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -78,7 +90,8 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "OK",
     mongodb: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
   });
 });
 
