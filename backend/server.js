@@ -53,7 +53,10 @@ app.use("/api/events/student-login", authLimiter);
 app.use(cors({
   origin: process.env.NODE_ENV === "production"
     ? process.env.FRONTEND_URL || "https://yourdomain.com"
-    : ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5500"],
+    : ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5500",    'https://quiz-app-3e991.web.app',
+    'https://quiz-app-3e991.firebaseapp.com',
+    'http://localhost:3000',
+    'http://localhost:5000'],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
