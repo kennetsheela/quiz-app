@@ -80,11 +80,13 @@ async function createEvent(data, files, userId) {
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
-  // ✅ FIX: Parse dates from datetime-local format
-  // datetime-local sends: "2024-01-27T11:00" (local time, no timezone)
-  // We create Date object which interprets it as local time
-  const startDate = new Date(startTime);
-  const endDate = new Date(endTime);
+  // ✅ FIX: Parse dates from datetime-local format treating them as IST
+  // datetime-local sends: "2024-01-27T11:00" (no timezone info)
+  // We need to treat this as IST time and convert to UTC for storage
+  
+  // Append IST timezone offset to the datetime string
+  const startDate = new Date(startTime + ':00+05:30'); // IST is UTC+5:30
+  const endDate = new Date(endTime + ':00+05:30');
   
   console.log("📅 Creating event with times:");
   console.log("Start:", startDate.toISOString(), "| IST:", startDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
