@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -209,14 +208,18 @@
       formData.append("adminPassword", document.getElementById("adminPassword").value);
       formData.append("studentPassword", document.getElementById("studentPassword").value);
       
-      // ✅ FIX: Convert datetime-local to proper ISO string
-      const startTimeInput = document.getElementById("startTime").value;
-      const endTimeInput = document.getElementById("endTime").value;
+      // ✅ CRITICAL FIX: Send datetime-local value exactly as-is
+      // The value is already in format "2026-01-28T12:00"
+      // DO NOT convert or manipulate it - send it directly to backend
+      const startTimeValue = document.getElementById("startTime").value;
+      const endTimeValue = document.getElementById("endTime").value;
       
-      // datetime-local format: "2024-01-27T11:00"
-      // We need to preserve the local time (IST)
-      formData.append("startTime", startTimeInput);
-      formData.append("endTime", endTimeInput);
+      console.log("📤 Sending datetime values:");
+      console.log("Start:", startTimeValue);
+      console.log("End:", endTimeValue);
+      
+      formData.append("startTime", startTimeValue);
+      formData.append("endTime", endTimeValue);
 
       const sets = [];
       document.querySelectorAll(".set-container").forEach((setDiv, index) => {
