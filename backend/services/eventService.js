@@ -38,6 +38,34 @@ async function parseQuestionsFromFile(file) {
   }
 }
 
+// ✅ Helper function to convert IST datetime-local string to proper Date object
+function parseISTDateTime(datetimeString) {
+  // Input format: "2024-01-27T11:00" (from datetime-local, assumed to be IST)
+  // We need to convert this to a proper Date object
+  
+  // Split the datetime string
+  const [datePart, timePart] = datetimeString.split('T');
+  const [year, month, day] = datePart.split('-');
+  const [hour, minute] = timePart.split(':');
+  
+  // Create date in IST (UTC+5:30)
+  // First create a UTC date, then subtract 5.5 hours to get the equivalent UTC time
+  const date = new Date(Date.UTC(
+    parseInt(year),
+    parseInt(month) - 1, // Month is 0-indexed
+    parseInt(day),
+    parseInt(hour),
+    parseInt(minute),
+    0,
+    0
+  ));
+  
+  // Subtract IST offset (5 hours 30 minutes = 330 minutes)
+  date.setMinutes(date.getMinutes() - 330);
+  
+  return date;
+}
+
 // ✅ Create event with questions stored in MongoDB and timezone fix
 async function createEvent(data, files, userId) {
   const { eventName, adminPassword, studentPassword, startTime, endTime, sets } = data;
@@ -80,17 +108,17 @@ async function createEvent(data, files, userId) {
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
-  // ✅ FIX: Parse dates from datetime-local format treating them as IST
-  // datetime-local sends: "2024-01-27T11:00" (no timezone info)
-  // We need to treat this as IST time and convert to UTC for storage
-  
-  // Append IST timezone offset to the datetime string
-  const startDate = new Date(startTime + ':00+05:30'); // IST is UTC+5:30
-  const endDate = new Date(endTime + ':00+05:30');
+  // ✅ FIX: Parse dates treating them as IST time
+  const startDate = parseISTDateTime(startTime);
+  const endDate = parseISTDateTime(endTime);
   
   console.log("📅 Creating event with times:");
-  console.log("Start:", startDate.toISOString(), "| IST:", startDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
-  console.log("End:", endDate.toISOString(), "| IST:", endDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("Input start time:", startTime);
+  console.log("Input end time:", endTime);
+  console.log("Stored Start UTC:", startDate.toISOString());
+  console.log("Stored Start IST:", startDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("Stored End UTC:", endDate.toISOString());
+  console.log("Stored End IST:", endDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
 
   const event = await Event.create({
     eventName,
