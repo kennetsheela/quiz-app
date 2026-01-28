@@ -233,9 +233,10 @@
     </div>
   </div>
   <script type="module">
+    const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
+
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
     import { practiceAPI } from "./js/api.js";
-    const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
 
     requireAuth();
     setupLogoutButton();

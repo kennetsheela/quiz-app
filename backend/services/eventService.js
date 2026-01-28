@@ -1,30 +1,24 @@
 const Event = require("../models/Event");
 const EventParticipant = require("../models/EventParticipant");
 const bcrypt = require("bcrypt");
-const fs = require("fs").promises;
-const path = require("path");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const parseStrict = require("../utils/parseStrict");
 
-// ✅ NEW: Parse questions from file buffer and store in MongoDB
+// ✅ Parse questions from file buffer and store in MongoDB
 async function parseQuestionsFromFile(file) {
-  const ext = path.extname(file.originalname).toLowerCase();
+  const ext = file.originalname.toLowerCase().endsWith('.pdf') ? '.pdf' : '.docx';
   let textContent = "";
 
   try {
     if (ext === ".pdf") {
-      const data = await pdfParse(file.buffer || await fs.readFile(file.path));
+      const data = await pdfParse(file.buffer);
       textContent = data.text;
       console.log(`📄 Extracted ${data.text.length} characters from PDF`);
-    } else if (ext === ".docx" || ext === ".doc") {
-      const result = file.buffer 
-        ? await mammoth.extractRawText({ buffer: file.buffer })
-        : await mammoth.extractRawText({ path: file.path });
+    } else {
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
       textContent = result.value;
       console.log(`📄 Extracted ${textContent.length} characters from DOCX`);
-    } else {
-      throw new Error("Unsupported file format");
     }
 
     // Parse questions using your existing parser
@@ -44,7 +38,7 @@ async function parseQuestionsFromFile(file) {
   }
 }
 
-// ✅ UPDATED: Create event with questions stored in MongoDB
+// ✅ Create event with questions stored in MongoDB and timezone fix
 async function createEvent(data, files, userId) {
   const { eventName, adminPassword, studentPassword, startTime, endTime, sets } = data;
 
@@ -63,16 +57,8 @@ async function createEvent(data, files, userId) {
       
       if (file) {
         try {
-          // Parse questions from uploaded file
           questions = await parseQuestionsFromFile(file);
           console.log(`✅ Parsed ${questions.length} questions for set: ${set.setName}`);
-          
-          // Clean up temporary file if it exists
-          if (file.path) {
-            await fs.unlink(file.path).catch(err => 
-              console.error("Error deleting temp file:", err)
-            );
-          }
         } catch (error) {
           console.error(`❌ Error parsing file for set ${set.setName}:`, error);
           throw new Error(`Failed to parse questions for ${set.setName}: ${error.message}`);
@@ -85,7 +71,7 @@ async function createEvent(data, files, userId) {
         setName: set.setName,
         timeLimit: parseInt(set.timeLimit),
         isActive: false,
-        questions, // ✅ Store questions directly
+        questions,
         originalFilename: file?.originalname
       };
     })
@@ -94,12 +80,22 @@ async function createEvent(data, files, userId) {
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
+  // ✅ FIX: Parse dates from datetime-local format
+  // datetime-local sends: "2024-01-27T11:00" (local time, no timezone)
+  // We create Date object which interprets it as local time
+  const startDate = new Date(startTime);
+  const endDate = new Date(endTime);
+  
+  console.log("📅 Creating event with times:");
+  console.log("Start:", startDate.toISOString(), "| IST:", startDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("End:", endDate.toISOString(), "| IST:", endDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+
   const event = await Event.create({
     eventName,
     adminPassword: hashedAdminPassword,
     studentPassword: hashedStudentPassword,
-    startTime: new Date(startTime),
-    endTime: new Date(endTime),
+    startTime: startDate,
+    endTime: endDate,
     sets: eventSets,
     createdBy: userId
   });
@@ -116,8 +112,25 @@ async function studentLogin({ eventId, userId, rollNo, department, password }) {
   }
 
   const now = new Date();
-  if (now < event.startTime || now > event.endTime) {
-    throw new Error("Event is not active at this time");
+  
+  // ✅ Enhanced logging for debugging timezone issues
+  console.log("🕐 Time Check:");
+  console.log("Current UTC:", now.toISOString());
+  console.log("Current IST:", now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("Event Start UTC:", event.startTime.toISOString());
+  console.log("Event Start IST:", event.startTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("Event End UTC:", event.endTime.toISOString());
+  console.log("Event End IST:", event.endTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("Is before start?", now < event.startTime);
+  console.log("Is after end?", now > event.endTime);
+  
+  if (now < event.startTime) {
+    const waitTime = Math.ceil((event.startTime - now) / 60000); // minutes
+    throw new Error(`Event hasn't started yet. Starts at ${event.startTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}. Please wait ${waitTime} minutes.`);
+  }
+  
+  if (now > event.endTime) {
+    throw new Error(`Event has ended. Ended at ${event.endTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.`);
   }
 
   const match = await bcrypt.compare(password, event.studentPassword);
@@ -143,7 +156,7 @@ async function studentLogin({ eventId, userId, rollNo, department, password }) {
   return participant;
 }
 
-// ✅ UPDATED: Get questions directly from MongoDB (no file reading)
+// ✅ Get questions directly from MongoDB (no file reading)
 async function getSetQuestions(setId, eventId) {
   const event = await Event.findById(eventId);
   if (!event) throw new Error("Event not found");
@@ -151,7 +164,6 @@ async function getSetQuestions(setId, eventId) {
   const set = event.sets.id(setId);
   if (!set) throw new Error("Set not found");
 
-  // ✅ Questions are already in MongoDB!
   if (!set.questions || set.questions.length === 0) {
     throw new Error("No questions available for this set");
   }
@@ -187,13 +199,11 @@ async function startSet(participantId, setId, userId) {
     throw new Error("Set is not active");
   }
 
-  // Check if already started and not completed
   const existingAttempt = participant.setResults.find(
     r => r.setId.toString() === setId && !r.completedAt
   );
 
   if (existingAttempt) {
-    // Return existing session with questions
     const questions = await getSetQuestions(setId, participant.eventId);
     const now = new Date();
     const timeElapsed = Math.floor((now - existingAttempt.startedAt) / 1000);
@@ -207,12 +217,10 @@ async function startSet(participantId, setId, userId) {
       questions: questions.map(q => ({
         question: q.question,
         options: q.options
-        // Don't send correctAnswer to frontend
       }))
     };
   }
 
-  // Remove old completed attempts (allow retakes)
   participant.setResults = participant.setResults.filter(
     r => r.setId.toString() !== setId || !r.completedAt
   );
@@ -230,7 +238,6 @@ async function startSet(participantId, setId, userId) {
 
   await participant.save();
 
-  // ✅ Get questions directly from MongoDB
   const questions = await getSetQuestions(setId, participant.eventId);
 
   return {
@@ -241,7 +248,6 @@ async function startSet(participantId, setId, userId) {
     questions: questions.map(q => ({
       question: q.question,
       options: q.options
-      // Don't send correctAnswer to frontend
     }))
   };
 }
@@ -264,7 +270,6 @@ async function submitSet({ participantId, setId, userId, answers }) {
   const event = await Event.findById(participant.eventId);
   const set = event.sets.id(setId);
 
-  // Check if auto-submit time has passed
   const now = new Date();
   const autoSubmitTime = participant.setResults[resultIndex].autoSubmitAt;
   
@@ -272,7 +277,6 @@ async function submitSet({ participantId, setId, userId, answers }) {
     console.log("⏰ Auto-submitting quiz - time expired");
   }
 
-  // ✅ Get questions from MongoDB and calculate score
   const questions = await getSetQuestions(setId, participant.eventId);
   
   let score = 0;
@@ -330,7 +334,6 @@ async function toggleSet({ eventId, setId, adminPassword, enable, userId }) {
     throw new Error("Set not found");
   }
 
-  // If enabling, disable all other sets first
   if (enable) {
     event.sets.forEach(set => {
       set.isActive = false;
@@ -362,12 +365,7 @@ async function deleteEvent(eventId, adminPassword, userId) {
     throw new Error("Invalid admin password");
   }
 
-  // ✅ No need to delete files - questions are in MongoDB!
-
-  // Delete participants
   await EventParticipant.deleteMany({ eventId: event._id });
-
-  // Delete event
   await Event.findByIdAndDelete(event._id);
 
   console.log(`🗑️  Event "${event.eventName}" deleted`);

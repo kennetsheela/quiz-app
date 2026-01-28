@@ -1,3 +1,4 @@
+const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
 <!-- ========================================== -->
 <!-- technical.html -->
 <!-- ========================================== -->
@@ -116,7 +117,7 @@
 
     async function loadTopics() {
       try {
-        const response = await fetch(`http://localhost:5000/api/practice/categories/${CATEGORY}/topics`);
+        const response = await fetch(`${API_BASE_URL}/practice/categories/${CATEGORY}/topics`);
         const data = await response.json();
         if (data.topics.length === 0) {
           document.getElementById("topicsGrid").innerHTML = '<p class="text-center">No topics available yet.</p>';

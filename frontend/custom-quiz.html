@@ -1,3 +1,4 @@
+const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -535,7 +536,7 @@
       try {
         const token = await getAuthToken();
         
-        const response = await fetch('http://localhost:5000/api/practice/custom-questions', {
+        const response = await fetch('${API_BASE_URL}/practice/custom-questions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -799,7 +800,7 @@
         
         const questionIds = questions.map(q => q._id);
         
-        const response = await fetch('http://localhost:5000/api/practice/custom-quiz/submit', {
+        const response = await fetch('${API_BASE_URL}/practice/custom-quiz/submit', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
