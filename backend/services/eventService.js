@@ -38,35 +38,7 @@ async function parseQuestionsFromFile(file) {
   }
 }
 
-// ✅ Helper function to convert IST datetime-local string to proper Date object
-function parseISTDateTime(datetimeString) {
-  // Input format: "2024-01-27T11:00" (from datetime-local, assumed to be IST)
-  // We need to convert this to a proper Date object
-  
-  // Split the datetime string
-  const [datePart, timePart] = datetimeString.split('T');
-  const [year, month, day] = datePart.split('-');
-  const [hour, minute] = timePart.split(':');
-  
-  // Create date in IST (UTC+5:30)
-  // First create a UTC date, then subtract 5.5 hours to get the equivalent UTC time
-  const date = new Date(Date.UTC(
-    parseInt(year),
-    parseInt(month) - 1, // Month is 0-indexed
-    parseInt(day),
-    parseInt(hour),
-    parseInt(minute),
-    0,
-    0
-  ));
-  
-  // Subtract IST offset (5 hours 30 minutes = 330 minutes)
-  date.setMinutes(date.getMinutes() - 330);
-  
-  return date;
-}
-
-// ✅ Create event with questions stored in MongoDB and timezone fix
+// ✅ Create event with questions stored in MongoDB - NO timezone conversion
 async function createEvent(data, files, userId) {
   const { eventName, adminPassword, studentPassword, startTime, endTime, sets } = data;
 
@@ -108,17 +80,17 @@ async function createEvent(data, files, userId) {
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
-  // ✅ FIX: Parse dates treating them as IST time
-  const startDate = parseISTDateTime(startTime);
-  const endDate = parseISTDateTime(endTime);
+  // ✅ NO TIMEZONE CONVERSION - Store exactly as entered
+  // Input: "2026-01-28T12:00" → Store as: "2026-01-28T12:00:00.000Z"
+  // Add seconds and Z to make it a valid ISO string
+  const startDate = new Date(startTime + ':00.000Z');
+  const endDate = new Date(endTime + ':00.000Z');
   
   console.log("📅 Creating event with times:");
   console.log("Input start time:", startTime);
   console.log("Input end time:", endTime);
-  console.log("Stored Start UTC:", startDate.toISOString());
-  console.log("Stored Start IST:", startDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
-  console.log("Stored End UTC:", endDate.toISOString());
-  console.log("Stored End IST:", endDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("Stored Start:", startDate.toISOString());
+  console.log("Stored End:", endDate.toISOString());
 
   const event = await Event.create({
     eventName,
@@ -143,24 +115,22 @@ async function studentLogin({ eventId, userId, rollNo, department, password }) {
 
   const now = new Date();
   
-  // ✅ Enhanced logging for debugging timezone issues
   console.log("🕐 Time Check:");
-  console.log("Current UTC:", now.toISOString());
-  console.log("Current IST:", now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
-  console.log("Event Start UTC:", event.startTime.toISOString());
-  console.log("Event Start IST:", event.startTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
-  console.log("Event End UTC:", event.endTime.toISOString());
-  console.log("Event End IST:", event.endTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
+  console.log("Current time:", now.toISOString());
+  console.log("Event Start:", event.startTime.toISOString());
+  console.log("Event End:", event.endTime.toISOString());
   console.log("Is before start?", now < event.startTime);
   console.log("Is after end?", now > event.endTime);
   
   if (now < event.startTime) {
     const waitTime = Math.ceil((event.startTime - now) / 60000); // minutes
-    throw new Error(`Event hasn't started yet. Starts at ${event.startTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}. Please wait ${waitTime} minutes.`);
+    const startTimeStr = event.startTime.toISOString().replace('T', ' ').substring(0, 16);
+    throw new Error(`Event hasn't started yet. Starts at ${startTimeStr}. Please wait ${waitTime} minutes.`);
   }
   
   if (now > event.endTime) {
-    throw new Error(`Event has ended. Ended at ${event.endTime.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.`);
+    const endTimeStr = event.endTime.toISOString().replace('T', ' ').substring(0, 16);
+    throw new Error(`Event has ended. Ended at ${endTimeStr}.`);
   }
 
   const match = await bcrypt.compare(password, event.studentPassword);
