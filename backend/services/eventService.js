@@ -2,13 +2,49 @@ const Event = require("../models/Event");
 const EventParticipant = require("../models/EventParticipant");
 const bcrypt = require("bcrypt");
 const fs = require("fs").promises;
-const fsSync = require("fs");
 const path = require("path");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const parseStrict = require("../utils/parseStrict");
 
-// ✅ FIX #1: Store only filename, not full path
+// ✅ NEW: Parse questions from file buffer and store in MongoDB
+async function parseQuestionsFromFile(file) {
+  const ext = path.extname(file.originalname).toLowerCase();
+  let textContent = "";
+
+  try {
+    if (ext === ".pdf") {
+      const data = await pdfParse(file.buffer || await fs.readFile(file.path));
+      textContent = data.text;
+      console.log(`📄 Extracted ${data.text.length} characters from PDF`);
+    } else if (ext === ".docx" || ext === ".doc") {
+      const result = file.buffer 
+        ? await mammoth.extractRawText({ buffer: file.buffer })
+        : await mammoth.extractRawText({ path: file.path });
+      textContent = result.value;
+      console.log(`📄 Extracted ${textContent.length} characters from DOCX`);
+    } else {
+      throw new Error("Unsupported file format");
+    }
+
+    // Parse questions using your existing parser
+    const questions = parseStrict(textContent);
+    
+    if (questions.length === 0) {
+      console.error("❌ No questions parsed from text:", textContent.substring(0, 500));
+      throw new Error("No valid questions found in file");
+    }
+
+    console.log(`✅ Successfully parsed ${questions.length} questions`);
+    return questions;
+    
+  } catch (error) {
+    console.error("❌ Question parsing error:", error);
+    throw new Error(`Failed to parse questions: ${error.message}`);
+  }
+}
+
+// ✅ UPDATED: Create event with questions stored in MongoDB
 async function createEvent(data, files, userId) {
   const { eventName, adminPassword, studentPassword, startTime, endTime, sets } = data;
 
@@ -18,18 +54,47 @@ async function createEvent(data, files, userId) {
 
   const parsedSets = JSON.parse(sets);
 
-  const eventSets = parsedSets.map((set, index) => ({
-    setName: set.setName,
-    timeLimit: set.timeLimit,
-    isActive: false,
-    // ✅ CHANGED: Store only filename, not full path
-    questionsFile: files[index]?.filename || ""
-  }));
+  // ✅ Parse questions from each file and store in MongoDB
+  const eventSets = await Promise.all(
+    parsedSets.map(async (set, index) => {
+      const file = files[index];
+      
+      let questions = [];
+      
+      if (file) {
+        try {
+          // Parse questions from uploaded file
+          questions = await parseQuestionsFromFile(file);
+          console.log(`✅ Parsed ${questions.length} questions for set: ${set.setName}`);
+          
+          // Clean up temporary file if it exists
+          if (file.path) {
+            await fs.unlink(file.path).catch(err => 
+              console.error("Error deleting temp file:", err)
+            );
+          }
+        } catch (error) {
+          console.error(`❌ Error parsing file for set ${set.setName}:`, error);
+          throw new Error(`Failed to parse questions for ${set.setName}: ${error.message}`);
+        }
+      } else {
+        throw new Error(`No file provided for set: ${set.setName}`);
+      }
+
+      return {
+        setName: set.setName,
+        timeLimit: parseInt(set.timeLimit),
+        isActive: false,
+        questions, // ✅ Store questions directly
+        originalFilename: file?.originalname
+      };
+    })
+  );
 
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
-  return await Event.create({
+  const event = await Event.create({
     eventName,
     adminPassword: hashedAdminPassword,
     studentPassword: hashedStudentPassword,
@@ -38,6 +103,9 @@ async function createEvent(data, files, userId) {
     sets: eventSets,
     createdBy: userId
   });
+
+  console.log(`✅ Event created with ${eventSets.length} sets`);
+  return event;
 }
 
 async function studentLogin({ eventId, userId, rollNo, department, password }) {
@@ -75,7 +143,7 @@ async function studentLogin({ eventId, userId, rollNo, department, password }) {
   return participant;
 }
 
-// ✅ FIX #2: Construct file path correctly
+// ✅ UPDATED: Get questions directly from MongoDB (no file reading)
 async function getSetQuestions(setId, eventId) {
   const event = await Event.findById(eventId);
   if (!event) throw new Error("Event not found");
@@ -83,72 +151,13 @@ async function getSetQuestions(setId, eventId) {
   const set = event.sets.id(setId);
   if (!set) throw new Error("Set not found");
 
-  // ✅ CHANGED: Construct path correctly from uploads directory
-  const filePath = path.join(__dirname, "..", "uploads", set.questionsFile);
-  
-  console.log("📁 Looking for file:", set.questionsFile);
-  console.log("📂 Full path:", filePath);
-  console.log("📍 File exists:", fsSync.existsSync(filePath));
-  
-  if (!fsSync.existsSync(filePath)) {
-    // ✅ Better error logging
-    const uploadsDir = path.join(__dirname, "..", "uploads");
-    const availableFiles = fsSync.existsSync(uploadsDir) 
-      ? fsSync.readdirSync(uploadsDir) 
-      : [];
-    
-    console.error("❌ File not found!");
-    console.error("Looking for:", set.questionsFile);
-    console.error("In directory:", uploadsDir);
-    console.error("Available files:", availableFiles);
-    
-    throw new Error("Questions file not found. Please contact the event organizer.");
+  // ✅ Questions are already in MongoDB!
+  if (!set.questions || set.questions.length === 0) {
+    throw new Error("No questions available for this set");
   }
 
-  const ext = path.extname(filePath).toLowerCase();
-  let textContent = "";
-
-  try {
-    if (ext === ".pdf") {
-      // Parse PDF
-      const dataBuffer = await fs.readFile(filePath);
-      const data = await pdfParse(dataBuffer);
-      
-      if (!data || !data.text) {
-        throw new Error("Failed to read PDF content");
-      }
-      
-      textContent = data.text;
-      console.log(`📄 Extracted ${data.text.length} characters from PDF`);
-      
-    } else if (ext === ".docx" || ext === ".doc") {
-      // Parse DOCX
-      const result = await mammoth.extractRawText({ path: filePath });
-      textContent = result.value;
-      console.log(`📄 Extracted ${textContent.length} characters from DOCX`);
-      
-    } else {
-      throw new Error("Unsupported file format. Please use PDF or DOCX files.");
-    }
-
-    // Parse questions using parseStrict
-    const questions = parseStrict(textContent);
-    
-    if (questions.length === 0) {
-      console.error("❌ No questions parsed from text:", textContent.substring(0, 500));
-      throw new Error("No valid questions found in file. Please check the format matches the required structure.");
-    }
-
-    console.log(`✅ Successfully parsed ${questions.length} questions`);
-    return questions;
-    
-  } catch (error) {
-    console.error("❌ Question parsing error:", error);
-    if (error.message.includes("valid questions")) {
-      throw error; // Re-throw our custom error
-    }
-    throw new Error(`Failed to load questions: ${error.message}`);
-  }
+  console.log(`✅ Retrieved ${set.questions.length} questions from MongoDB`);
+  return set.questions;
 }
 
 async function startSet(participantId, setId, userId) {
@@ -221,7 +230,7 @@ async function startSet(participantId, setId, userId) {
 
   await participant.save();
 
-  // Get questions from file when starting
+  // ✅ Get questions directly from MongoDB
   const questions = await getSetQuestions(setId, participant.eventId);
 
   return {
@@ -263,7 +272,7 @@ async function submitSet({ participantId, setId, userId, answers }) {
     console.log("⏰ Auto-submitting quiz - time expired");
   }
 
-  // Get questions and calculate score
+  // ✅ Get questions from MongoDB and calculate score
   const questions = await getSetQuestions(setId, participant.eventId);
   
   let score = 0;
@@ -353,21 +362,7 @@ async function deleteEvent(eventId, adminPassword, userId) {
     throw new Error("Invalid admin password");
   }
 
-  // Delete uploaded files
-  for (const set of event.sets) {
-    if (set.questionsFile) {
-      // ✅ CHANGED: Construct path correctly
-      const filePath = path.join(__dirname, "..", "uploads", set.questionsFile);
-      try {
-        if (fsSync.existsSync(filePath)) {
-          await fs.unlink(filePath);
-          console.log(`🗑️  Deleted file: ${set.questionsFile}`);
-        }
-      } catch (err) {
-        console.error("Error deleting file:", err);
-      }
-    }
-  }
+  // ✅ No need to delete files - questions are in MongoDB!
 
   // Delete participants
   await EventParticipant.deleteMany({ eventId: event._id });
@@ -394,7 +389,6 @@ async function getEventStats(eventId) {
   let departmentStats = {};
 
   participants.forEach(p => {
-    // Track department stats
     if (!departmentStats[p.department]) {
       departmentStats[p.department] = { count: 0, totalScore: 0, submissions: 0 };
     }
@@ -414,7 +408,6 @@ async function getEventStats(eventId) {
     });
   });
 
-  // Calculate department averages
   Object.keys(departmentStats).forEach(dept => {
     const stats = departmentStats[dept];
     stats.avgScore = stats.submissions > 0 
@@ -433,7 +426,8 @@ async function getEventStats(eventId) {
     sets: event.sets.map(set => ({
       setName: set.setName,
       isActive: set.isActive,
-      timeLimit: set.timeLimit
+      timeLimit: set.timeLimit,
+      questionCount: set.questions?.length || 0
     }))
   };
 }

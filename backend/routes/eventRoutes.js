@@ -1,34 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 const { verifyToken } = require("./authRoutes");
 const EventService = require("../services/eventService");
 const Event = require("../models/Event");
 const EventParticipant = require("../models/EventParticipant");
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Multer configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// ✅ Use memory storage with 1MB limit
 const upload = multer({ 
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  storage: multer.memoryStorage(), // Store in memory, not on disk
+  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB limit
   fileFilter: (req, file, cb) => {
     const allowedTypes = /pdf|docx|doc/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const extname = allowedTypes.test(file.originalname.toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype) || 
                      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     
@@ -45,18 +29,14 @@ router.post("/create", verifyToken, upload.array("setFiles"), async (req, res) =
     const event = await EventService.createEvent(req.body, req.files, req.user.uid);
     res.status(201).json({
       message: "Event created successfully",
-      eventId: event._id
+      eventId: event._id,
+      sets: event.sets.map(s => ({
+        name: s.setName,
+        questionCount: s.questions.length
+      }))
     });
   } catch (error) {
     console.error("Create event error:", error);
-    // Clean up uploaded files on error
-    if (req.files) {
-      req.files.forEach(file => {
-        fs.unlink(file.path, err => {
-          if (err) console.error("Error deleting file:", err);
-        });
-      });
-    }
     res.status(500).json({ error: error.message });
   }
 });
@@ -238,7 +218,7 @@ router.delete("/:eventId", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Check remaining time for active quiz
+// Check remaining time for active quiz
 router.get("/check-time/:participantId/:setId", verifyToken, async (req, res) => {
   try {
     const { participantId, setId } = req.params;
@@ -272,7 +252,7 @@ router.get("/check-time/:participantId/:setId", verifyToken, async (req, res) =>
   }
 });
 
-// ✅ Track tab visibility changes (auto-submit on tab switch)
+// Track tab visibility changes (auto-submit on tab switch)
 router.post("/tab-switch", verifyToken, async (req, res) => {
   try {
     const { participantId, setId } = req.body;
@@ -295,6 +275,19 @@ router.post("/tab-switch", verifyToken, async (req, res) => {
     console.log("Tab switch tracking:", error.message);
     res.json({ message: "Tab switch tracked" });
   }
+});
+
+// Handle multer file size errors
+router.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ 
+        error: 'File size too large. Maximum size is 1MB per file.' 
+      });
+    }
+    return res.status(400).json({ error: error.message });
+  }
+  next(error);
 });
 
 module.exports = router;
