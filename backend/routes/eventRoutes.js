@@ -1,73 +1,73 @@
-
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-
+const path = require("path");
+const fs = require("fs");
 const { verifyToken } = require("./authRoutes");
 const EventService = require("../services/eventService");
 const Event = require("../models/Event");
 const EventParticipant = require("../models/EventParticipant");
 
-/* ===========================
-   Multer Configuration
-=========================== */
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
     const allowedTypes = /pdf|docx|doc/;
-    const extname = allowedTypes.test(file.originalname.toLowerCase());
-    const mimetype =
-      allowedTypes.test(file.mimetype) ||
-      file.mimetype ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype) || 
+                     file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    
     if (extname && mimetype) {
       return cb(null, true);
     }
-    cb(new Error("Only PDF and DOC/DOCX files are allowed"));
-  },
+    cb(new Error("Only PDF and DOCX files are allowed"));
+  }
 });
 
-/* ===========================
-   Create Event (Admin)
-=========================== */
-router.post(
-  "/create",
-  verifyToken,
-  upload.array("setFiles"),
-  async (req, res) => {
-    try {
-      const event = await EventService.createEvent(
-        req.body,
-        req.files,
-        req.user.uid
-      );
-
-      res.status(201).json({
-        message: "Event created successfully",
-        eventId: event._id,
-        sets: event.sets.map((s) => ({
-          name: s.setName,
-          questionCount: s.questions.length,
-        })),
+// Create event (admin only)
+router.post("/create", verifyToken, upload.array("setFiles"), async (req, res) => {
+  try {
+    const event = await EventService.createEvent(req.body, req.files, req.user.uid);
+    res.status(201).json({
+      message: "Event created successfully",
+      eventId: event._id
+    });
+  } catch (error) {
+    console.error("Create event error:", error);
+    // Clean up uploaded files on error
+    if (req.files) {
+      req.files.forEach(file => {
+        fs.unlink(file.path, err => {
+          if (err) console.error("Error deleting file:", err);
+        });
       });
-    } catch (error) {
-      console.error("Create event error:", error);
-      res.status(500).json({ error: error.message });
     }
+    res.status(500).json({ error: error.message });
   }
-);
+});
 
-/* ===========================
-   Get All Events
-=========================== */
+// Get all events
 router.get("/", async (req, res) => {
   try {
     const events = await Event.find()
       .select("-adminPassword -studentPassword")
       .sort({ createdAt: -1 });
-
+    
     res.json({ events });
   } catch (error) {
     console.error("Get events error:", error);
@@ -75,15 +75,12 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* ===========================
-   Get Event Details
-=========================== */
+// Get specific event details
 router.get("/:eventId", async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId).select(
-      "-adminPassword -studentPassword"
-    );
-
+    const event = await Event.findById(req.params.eventId)
+      .select("-adminPassword -studentPassword");
+    
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
@@ -95,9 +92,7 @@ router.get("/:eventId", async (req, res) => {
   }
 });
 
-/* ===========================
-   Student Login
-=========================== */
+// Student login to event
 router.post("/student-login", verifyToken, async (req, res) => {
   try {
     const { eventId, rollNo, department, password } = req.body;
@@ -107,12 +102,12 @@ router.post("/student-login", verifyToken, async (req, res) => {
       userId: req.user.uid,
       rollNo,
       department,
-      password,
+      password
     });
 
-    res.json({
-      message: "Login successful",
-      participantId: participant._id,
+    res.json({ 
+      message: "Login successful", 
+      participantId: participant._id 
     });
   } catch (error) {
     console.error("Student login error:", error);
@@ -120,19 +115,17 @@ router.post("/student-login", verifyToken, async (req, res) => {
   }
 });
 
-/* ===========================
-   Get Active Set
-=========================== */
+// Get active set for an event
 router.get("/:eventId/active-set", async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
-
+    
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    const activeSet = event.sets.find((set) => set.isActive);
-
+    const activeSet = event.sets.find(set => set.isActive);
+    
     if (!activeSet) {
       return res.json({ message: "No active set", activeSet: null });
     }
@@ -144,18 +137,12 @@ router.get("/:eventId/active-set", async (req, res) => {
   }
 });
 
-/* ===========================
-   Start Set (Student)
-=========================== */
+// Start set (student)
 router.post("/start-set", verifyToken, async (req, res) => {
   try {
     const { participantId, setId } = req.body;
 
-    const result = await EventService.startSet(
-      participantId,
-      setId,
-      req.user.uid
-    );
+    const result = await EventService.startSet(participantId, setId, req.user.uid);
 
     res.json(result);
   } catch (error) {
@@ -164,9 +151,7 @@ router.post("/start-set", verifyToken, async (req, res) => {
   }
 });
 
-/* ===========================
-   Submit Set (Student)
-=========================== */
+// Submit set (student)
 router.post("/submit-set", verifyToken, async (req, res) => {
   try {
     const { participantId, setId, answers } = req.body;
@@ -175,12 +160,12 @@ router.post("/submit-set", verifyToken, async (req, res) => {
       participantId,
       setId,
       userId: req.user.uid,
-      answers,
+      answers
     });
 
-    res.json({
+    res.json({ 
       message: "Set submitted successfully",
-      ...result,
+      ...result
     });
   } catch (error) {
     console.error("Submit set error:", error);
@@ -188,9 +173,7 @@ router.post("/submit-set", verifyToken, async (req, res) => {
   }
 });
 
-/* ===========================
-   Toggle Set (Admin)
-=========================== */
+// Toggle set active status (admin)
 router.post("/toggle-set", verifyToken, async (req, res) => {
   try {
     const { eventId, setId, adminPassword, enable } = req.body;
@@ -200,11 +183,11 @@ router.post("/toggle-set", verifyToken, async (req, res) => {
       setId,
       adminPassword,
       enable,
-      userId: req.user.uid,
+      userId: req.user.uid
     });
 
-    res.json({
-      message: enable ? "Set enabled" : "Set disabled",
+    res.json({ 
+      message: enable ? "Set enabled" : "Set disabled" 
     });
   } catch (error) {
     console.error("Toggle set error:", error);
@@ -212,13 +195,11 @@ router.post("/toggle-set", verifyToken, async (req, res) => {
   }
 });
 
-/* ===========================
-   Get Participants (Admin)
-=========================== */
+// Get participants list (admin)
 router.get("/:eventId/participants", verifyToken, async (req, res) => {
   try {
-    const participants = await EventParticipant.find({
-      eventId: req.params.eventId,
+    const participants = await EventParticipant.find({ 
+      eventId: req.params.eventId 
     }).sort({ createdAt: -1 });
 
     res.json({ participants });
@@ -228,9 +209,7 @@ router.get("/:eventId/participants", verifyToken, async (req, res) => {
   }
 });
 
-/* ===========================
-   Event Statistics (Admin)
-=========================== */
+// Get event statistics (admin)
 router.get("/:eventId/stats", verifyToken, async (req, res) => {
   try {
     const stats = await EventService.getEventStats(req.params.eventId);
@@ -241,9 +220,7 @@ router.get("/:eventId/stats", verifyToken, async (req, res) => {
   }
 });
 
-/* ===========================
-   Delete Event (Admin)
-=========================== */
+// Delete event (admin)
 router.delete("/:eventId", verifyToken, async (req, res) => {
   try {
     const { adminPassword } = req.body;
@@ -261,83 +238,63 @@ router.delete("/:eventId", verifyToken, async (req, res) => {
   }
 });
 
-/* ===========================
-   Check Remaining Time
-=========================== */
-router.get(
-  "/check-time/:participantId/:setId",
-  verifyToken,
-  async (req, res) => {
-    try {
-      const { participantId, setId } = req.params;
+// ✅ Check remaining time for active quiz
+router.get("/check-time/:participantId/:setId", verifyToken, async (req, res) => {
+  try {
+    const { participantId, setId } = req.params;
+    
+    const result = await EventService.checkRemainingTime(
+      participantId, 
+      setId, 
+      req.user.uid
+    );
 
-      const result = await EventService.checkRemainingTime(
+    if (result.timeUp) {
+      // Auto-submit if time is up
+      const submitResult = await EventService.submitSet({
         participantId,
         setId,
-        req.user.uid
-      );
+        userId: req.user.uid,
+        answers: [] // Empty answers for auto-submit
+      });
 
-      if (result.timeUp) {
-        const submitResult = await EventService.submitSet({
-          participantId,
-          setId,
-          userId: req.user.uid,
-          answers: [],
-        });
-
-        return res.json({
-          timeUp: true,
-          message: "Time expired - quiz auto-submitted",
-          result: submitResult,
-        });
-      }
-
-      res.json(result);
-    } catch (error) {
-      console.error("Check time error:", error);
-      res.status(500).json({ error: error.message });
+      return res.json({
+        timeUp: true,
+        message: "Time expired - quiz auto-submitted",
+        result: submitResult
+      });
     }
-  }
-);
 
-/* ===========================
-   Tab Switch Tracking
-=========================== */
+    res.json(result);
+  } catch (error) {
+    console.error("Check time error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ✅ Track tab visibility changes (auto-submit on tab switch)
 router.post("/tab-switch", verifyToken, async (req, res) => {
   try {
     const { participantId, setId } = req.body;
 
+    // Auto-submit when user leaves the tab
     const submitResult = await EventService.submitSet({
       participantId,
       setId,
       userId: req.user.uid,
-      answers: [],
+      answers: [] // Submit with incomplete answers
     });
 
     res.json({
       autoSubmitted: true,
       message: "Quiz auto-submitted due to tab switch",
-      result: submitResult,
+      result: submitResult
     });
   } catch (error) {
-    console.log("Tab switch tracked:", error.message);
+    // If already submitted or not found, just log it
+    console.log("Tab switch tracking:", error.message);
     res.json({ message: "Tab switch tracked" });
   }
-});
-
-/* ===========================
-   Multer Error Handler
-=========================== */
-router.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    if (error.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({
-        error: "File size too large. Maximum size is 1MB per file.",
-      });
-    }
-    return res.status(400).json({ error: error.message });
-  }
-  next(error);
 });
 
 module.exports = router;

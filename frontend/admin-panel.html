@@ -450,12 +450,13 @@
                 <th onclick="sortTable('score')">
                   Score <i class="fas fa-sort"></i>
                 </th>
+                <th>Percentage</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="participantsBody">
               <tr>
-                <td colspan="4" class="text-center">Loading participants...</td>
+                <td colspan="5" class="text-center">Loading participants...</td>
               </tr>
             </tbody>
           </table>
@@ -537,6 +538,38 @@
     window.selectedSetId = null;
     window.filteredParticipants = [];
 
+    // Helper function to get total questions for a set
+    function getTotalQuestions(setId) {
+      if (!currentEvent) return 0;
+      const set = currentEvent.sets.find(s => s._id === setId);
+      return set?.questions?.length || 0;
+    }
+
+    // Helper function to calculate percentage from score
+    function calculatePercentage(score, setId) {
+      const totalQuestions = getTotalQuestions(setId);
+      if (totalQuestions === 0) return 0;
+      return (score / totalQuestions) * 100;
+    }
+
+    // Helper function to get score and percentage for a participant
+    function getParticipantScoreData(participant, setId) {
+      const result = setId 
+        ? participant.setResults.find(r => r.setId === setId)
+        : participant.setResults[0];
+      
+      if (!result || result.score === undefined) {
+        return { score: null, percentage: null, totalQuestions: 0 };
+      }
+      
+      const resultSetId = result.setId;
+      const totalQuestions = getTotalQuestions(resultSetId);
+      const score = result.score || 0;
+      const percentage = calculatePercentage(score, resultSetId);
+      
+      return { score, percentage, totalQuestions };
+    }
+
     // Update connection status indicator
     function updateConnectionStatus(isConnected) {
       const statusEl = document.getElementById('connectionStatus');
@@ -594,6 +627,9 @@
           <div class="set-item-header">
             <div>
               <h4>${set.setName}</h4>
+              <p style="margin: 5px 0; color: var(--text-secondary);">
+                <i class="fas fa-question-circle"></i> ${set.questions?.length || 0} questions
+              </p>
               <p style="margin: 5px 0; color: var(--text-secondary);">
                 <i class="fas fa-clock"></i> ${set.timeLimit} minutes
               </p>
@@ -700,13 +736,13 @@
       });
       
       const above80Count = submissions.filter(p => {
-        const result = p.setResults.find(r => r.setId === selectedSetId);
-        return result.score > 80;
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
+        return percentage !== null && percentage > 80;
       }).length;
       
       const above50Count = submissions.filter(p => {
-        const result = p.setResults.find(r => r.setId === selectedSetId);
-        return result.score >= 50 && result.score <= 80;
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
+        return percentage !== null && percentage >= 50 && percentage <= 80;
       }).length;
       
       document.getElementById('totalParticipants').textContent = setParticipants.length;
@@ -750,30 +786,23 @@
       
       const scoreFilter = document.getElementById('filterScore').value;
       filtered = filtered.filter(p => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
         
-        if (!result?.score && result?.score !== 0) return scoreFilter === 'all';
+        if (percentage === null) return scoreFilter === 'all';
         
-        const score = result.score;
-        if (scoreFilter === 'above80') return score > 80;
-        if (scoreFilter === '50to80') return score >= 50 && score <= 80;
-        if (scoreFilter === 'below50') return score < 50;
+        if (scoreFilter === 'above80') return percentage > 80;
+        if (scoreFilter === '50to80') return percentage >= 50 && percentage <= 80;
+        if (scoreFilter === 'below50') return percentage < 50;
         return true;
       });
       
       const sortBy = document.getElementById('sortBy').value;
       filtered.sort((a, b) => {
-        const aResult = selectedSetId 
-          ? a.setResults.find(r => r.setId === selectedSetId)
-          : a.setResults[0];
-        const bResult = selectedSetId 
-          ? b.setResults.find(r => r.setId === selectedSetId)
-          : b.setResults[0];
+        const aData = getParticipantScoreData(a, selectedSetId);
+        const bData = getParticipantScoreData(b, selectedSetId);
         
-        if (sortBy === 'score-desc') return (bResult?.score || 0) - (aResult?.score || 0);
-        if (sortBy === 'score-asc') return (aResult?.score || 0) - (bResult?.score || 0);
+        if (sortBy === 'score-desc') return (bData.percentage || 0) - (aData.percentage || 0);
+        if (sortBy === 'score-asc') return (aData.percentage || 0) - (bData.percentage || 0);
         if (sortBy === 'roll-asc') return a.rollNo.localeCompare(b.rollNo);
         if (sortBy === 'roll-desc') return b.rollNo.localeCompare(a.rollNo);
         return 0;
@@ -794,7 +823,7 @@
       
       if (filteredParticipants.length === 0) {
         document.getElementById('participantsBody').innerHTML = 
-          '<tr><td colspan="4" class="text-center">No participants match the filters</td></tr>';
+          '<tr><td colspan="5" class="text-center">No participants match the filters</td></tr>';
         return;
       }
 
@@ -803,13 +832,16 @@
           ? p.setResults.find(r => r.setId === selectedSetId)
           : p.setResults[0];
         
-        const score = result?.score ?? '-';
+        const { score, percentage, totalQuestions } = getParticipantScoreData(p, selectedSetId);
+        
+        const scoreDisplay = score !== null ? `${score}/${totalQuestions}` : '-';
+        const percentageDisplay = percentage !== null ? percentage.toFixed(2) + '%' : '-';
         const status = result?.completedAt ? '✅ Completed' : '⏳ In Progress';
         
         let scoreClass = '';
-        if (typeof score === 'number') {
-          if (score > 80) scoreClass = 'score-high';
-          else if (score >= 50) scoreClass = 'score-medium';
+        if (percentage !== null) {
+          if (percentage > 80) scoreClass = 'score-high';
+          else if (percentage >= 50) scoreClass = 'score-medium';
           else scoreClass = 'score-low';
         }
         
@@ -817,7 +849,8 @@
           <tr>
             <td>${p.rollNo}</td>
             <td>${p.department}</td>
-            <td><span class="score-badge ${scoreClass}">${score}</span></td>
+            <td><span class="score-badge ${scoreClass}">${scoreDisplay}</span></td>
+            <td>${percentageDisplay}</td>
             <td>${status}</td>
           </tr>
         `;
@@ -847,24 +880,18 @@
       });
       
       const above80 = completed.filter(p => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        return result.score > 80;
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
+        return percentage !== null && percentage > 80;
       }).length;
       
       const between50and80 = completed.filter(p => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        return result.score >= 50 && result.score <= 80;
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
+        return percentage !== null && percentage >= 50 && percentage <= 80;
       }).length;
       
       const below50 = completed.filter(p => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        return result.score < 50;
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
+        return percentage !== null && percentage < 50;
       }).length;
 
       if (scoreChart) scoreChart.destroy();
@@ -888,15 +915,13 @@
 
       const deptStats = {};
       filteredParticipants.forEach(p => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
         
-        if (result?.score !== undefined && result?.score !== null) {
+        if (percentage !== null) {
           if (!deptStats[p.department]) {
             deptStats[p.department] = { total: 0, count: 0 };
           }
-          deptStats[p.department].total += result.score;
+          deptStats[p.department].total += percentage;
           deptStats[p.department].count += 1;
         }
       });
@@ -912,7 +937,7 @@
         data: {
           labels: deptLabels,
           datasets: [{
-            label: 'Average Score',
+            label: 'Average Score %',
             data: deptAvgs,
             backgroundColor: '#6366f1'
           }]
@@ -955,21 +980,25 @@
         ? window.currentEvent.sets.find(s => s._id === window.selectedSetId)?.setName 
         : 'Overall';
       
-      let csv = 'Roll No,Name,Department,Score,Status,Time Taken (min),Correct Answers,Wrong Answers,Skipped\n';
+      let csv = 'Roll No,Name,Department,Score,Total Questions,Percentage,Status,Time Taken (min),Correct Answers,Wrong Answers,Skipped\n';
       
       window.filteredParticipants.forEach(p => {
         const result = window.selectedSetId 
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
         
-        const score = result?.score ?? 'N/A';
+        const { score, percentage, totalQuestions } = getParticipantScoreData(p, window.selectedSetId);
+        
+        const scoreDisplay = score !== null ? score : 'N/A';
+        const totalQuestionsDisplay = score !== null ? totalQuestions : 'N/A';
+        const percentageDisplay = percentage !== null ? percentage.toFixed(2) + '%' : 'N/A';
         const status = result?.completedAt ? 'Completed' : 'In Progress';
         const timeTaken = result?.timeTaken ? Math.round(result.timeTaken / 60) : 'N/A';
         const correct = result?.correctAnswers ?? 'N/A';
         const wrong = result?.wrongAnswers ?? 'N/A';
         const skipped = result?.skipped ?? 'N/A';
         
-        csv += `${p.rollNo},${p.name || 'N/A'},${p.department},${score},${status},${timeTaken},${correct},${wrong},${skipped}\n`;
+        csv += `${p.rollNo},${p.name || 'N/A'},${p.department},${scoreDisplay},${totalQuestionsDisplay},${percentageDisplay},${status},${timeTaken},${correct},${wrong},${skipped}\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -1007,8 +1036,8 @@
           return result?.completedAt;
         }).length],
         ['Average Score:', calculateAverageScore().toFixed(2) + '%'],
-        ['Highest Score:', calculateHighestScore() + '%'],
-        ['Lowest Score:', calculateLowestScore() + '%'],
+        ['Highest Score:', calculateHighestScore().toFixed(2) + '%'],
+        ['Lowest Score:', calculateLowestScore().toFixed(2) + '%'],
       ];
       
       const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -1016,7 +1045,7 @@
       
       // Detailed Results Sheet
       const detailedData = [
-        ['Roll No', 'Name', 'Department', 'Score (%)', 'Status', 'Time Taken (min)', 'Correct', 'Wrong', 'Skipped']
+        ['Roll No', 'Name', 'Department', 'Score', 'Total Questions', 'Percentage', 'Status', 'Time Taken (min)', 'Correct', 'Wrong', 'Skipped']
       ];
       
       window.filteredParticipants.forEach(p => {
@@ -1024,11 +1053,15 @@
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
         
+        const { score, percentage, totalQuestions } = getParticipantScoreData(p, window.selectedSetId);
+        
         detailedData.push([
           p.rollNo,
           p.name || 'N/A',
           p.department,
-          result?.score ?? 'N/A',
+          score !== null ? score : 'N/A',
+          score !== null ? totalQuestions : 'N/A',
+          percentage !== null ? percentage.toFixed(2) + '%' : 'N/A',
           result?.completedAt ? 'Completed' : 'In Progress',
           result?.timeTaken ? Math.round(result.timeTaken / 60) : 'N/A',
           result?.correctAnswers ?? 'N/A',
@@ -1039,8 +1072,8 @@
       
       const detailedSheet = XLSX.utils.aoa_to_sheet(detailedData);
       detailedSheet['!cols'] = [
-        { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 12 }, 
-        { wch: 12 }, { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+        { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 15 },
+        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
       ];
       
       XLSX.utils.book_append_sheet(wb, detailedSheet, 'Detailed Results');
@@ -1078,29 +1111,32 @@
       doc.text('Summary Statistics', 18, 50);
       doc.text(`Total Participants: ${window.filteredParticipants.length}`, 18, 58);
       doc.text(`Average Score: ${calculateAverageScore().toFixed(2)}%`, 18, 65);
-      doc.text(`Highest Score: ${calculateHighestScore()}%`, 18, 72);
+      doc.text(`Highest Score: ${calculateHighestScore().toFixed(2)}%`, 18, 72);
       
       const tableData = window.filteredParticipants.map(p => {
         const result = window.selectedSetId 
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
         
+        const { score, percentage, totalQuestions } = getParticipantScoreData(p, window.selectedSetId);
+        
         return [
           p.rollNo,
           p.name || 'N/A',
           p.department,
-          result?.score ?? 'N/A',
+          score !== null ? `${score}/${totalQuestions}` : 'N/A',
+          percentage !== null ? percentage.toFixed(2) + '%' : 'N/A',
           result?.completedAt ? '✓' : '⏳'
         ];
       });
       
       doc.autoTable({
         startY: 85,
-        head: [['Roll No', 'Name', 'Department', 'Score (%)', 'Status']],
+        head: [['Roll No', 'Name', 'Department', 'Score', 'Percentage', 'Status']],
         body: tableData,
         theme: 'striped',
         headStyles: { fillColor: [99, 102, 241] },
-        styles: { fontSize: 9 }
+        styles: { fontSize: 8 }
       });
       
       const pageCount = doc.internal.getNumberOfPages();
@@ -1125,30 +1161,26 @@
         const result = window.selectedSetId 
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
-        return result?.completedAt && result?.score !== undefined;
+        return result?.completedAt;
       });
       
       if (completed.length === 0) return 0;
       
       const total = completed.reduce((sum, p) => {
-        const result = window.selectedSetId 
-          ? p.setResults.find(r => r.setId === window.selectedSetId)
-          : p.setResults[0];
-        return sum + (result.score || 0);
+        const { percentage } = getParticipantScoreData(p, window.selectedSetId);
+        return sum + (percentage || 0);
       }, 0);
       
       return total / completed.length;
     }
 
     function calculateHighestScore() {
-      const scores = window.filteredParticipants.map(p => {
-        const result = window.selectedSetId 
-          ? p.setResults.find(r => r.setId === window.selectedSetId)
-          : p.setResults[0];
-        return result?.score || 0;
+      const percentages = window.filteredParticipants.map(p => {
+        const { percentage } = getParticipantScoreData(p, window.selectedSetId);
+        return percentage || 0;
       });
       
-      return Math.max(...scores, 0);
+      return Math.max(...percentages, 0);
     }
 
     function calculateLowestScore() {
@@ -1156,28 +1188,24 @@
         const result = window.selectedSetId 
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
-        return result?.completedAt && result?.score !== undefined;
+        return result?.completedAt;
       });
       
       if (completed.length === 0) return 0;
       
-      const scores = completed.map(p => {
-        const result = window.selectedSetId 
-          ? p.setResults.find(r => r.setId === window.selectedSetId)
-          : p.setResults[0];
-        return result.score;
-      });
+      const percentages = completed.map(p => {
+        const { percentage } = getParticipantScoreData(p, window.selectedSetId);
+        return percentage;
+      }).filter(p => p !== null);
       
-      return Math.min(...scores);
+      return percentages.length > 0 ? Math.min(...percentages) : 0;
     }
 
     function generateDepartmentAnalysis() {
       const deptStats = {};
       
       window.filteredParticipants.forEach(p => {
-        const result = window.selectedSetId 
-          ? p.setResults.find(r => r.setId === window.selectedSetId)
-          : p.setResults[0];
+        const { percentage } = getParticipantScoreData(p, window.selectedSetId);
         
         if (!deptStats[p.department]) {
           deptStats[p.department] = {
@@ -1190,21 +1218,25 @@
         
         deptStats[p.department].count++;
         
-        if (result?.completedAt && result?.score !== undefined) {
-          deptStats[p.department].total += result.score;
+        const result = window.selectedSetId 
+          ? p.setResults.find(r => r.setId === window.selectedSetId)
+          : p.setResults[0];
+        
+        if (result?.completedAt && percentage !== null) {
+          deptStats[p.department].total += percentage;
           deptStats[p.department].completed++;
-          deptStats[p.department].scores.push(result.score);
+          deptStats[p.department].scores.push(percentage);
         }
       });
       
       const analysis = [
-        ['Department', 'Total Students', 'Completed', 'Average Score', 'Highest Score']
+        ['Department', 'Total Students', 'Completed', 'Average Score %', 'Highest Score %']
       ];
       
       Object.keys(deptStats).sort().forEach(dept => {
         const stats = deptStats[dept];
         const avg = stats.completed > 0 ? (stats.total / stats.completed).toFixed(2) : 'N/A';
-        const highest = stats.scores.length > 0 ? Math.max(...stats.scores) : 'N/A';
+        const highest = stats.scores.length > 0 ? Math.max(...stats.scores).toFixed(2) : 'N/A';
         
         analysis.push([
           dept,
