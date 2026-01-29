@@ -80,16 +80,31 @@ async function createEvent(data, files, userId) {
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
-  // ✅ FIXED: Store datetime-local input as-is (treat as local time)
-  // Input: "2026-01-28T12:00" → Store as local time in DB
-  const startDate = new Date(startTime);
-  const endDate = new Date(endTime);
+  // ✅ FIXED: Parse datetime strings as local time without timezone conversion
+  // Input format: "2026-01-29T21:52:00"
+  // We need to create Date object that represents this EXACT time in local timezone
+  
+  // Method 1: Parse the components directly to avoid timezone issues
+  const parseLocalDateTime = (dateTimeString) => {
+    // Split "2026-01-29T21:52:00" into parts
+    const [datePart, timePart] = dateTimeString.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes, seconds = 0] = timePart.split(':').map(Number);
+    
+    // Create date using local timezone components
+    return new Date(year, month - 1, day, hours, minutes, seconds);
+  };
+  
+  const startDate = parseLocalDateTime(startTime);
+  const endDate = parseLocalDateTime(endTime);
   
   console.log("📅 Creating event with times:");
   console.log("Input start time:", startTime);
+  console.log("Parsed Start Date:", startDate);
   console.log("Input end time:", endTime);
-  console.log("Stored Start:", startDate);
-  console.log("Stored End:", endDate);
+  console.log("Parsed End Date:", endDate);
+  console.log("Start ISO:", startDate.toISOString());
+  console.log("End ISO:", endDate.toISOString());
 
   const event = await Event.create({
     eventName,

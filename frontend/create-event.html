@@ -269,12 +269,27 @@
         return;
       }
 
+      // ✅ IMPORTANT: Format datetime to prevent timezone conversion
+      // Convert datetime-local format to ISO string without timezone conversion
+      const startDate = new Date(startTime);
+      const endDate = new Date(endTime);
+      
+      // Format as ISO string but preserve local time
+      const formatLocalDateTime = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+      };
+
       const formData = new FormData();
       formData.append("eventName", document.getElementById("eventName").value);
       formData.append("adminPassword", document.getElementById("adminPassword").value);
       formData.append("studentPassword", document.getElementById("studentPassword").value);
-      formData.append("startTime", startTime);
-      formData.append("endTime", endTime);
+      formData.append("startTime", formatLocalDateTime(startDate));
+      formData.append("endTime", formatLocalDateTime(endDate));
 
       const sets = [];
       const setContainers = document.querySelectorAll(".set-container");
@@ -304,6 +319,11 @@
         const submitButton = document.querySelector('button[type="submit"]');
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+        console.log("Sending times:", {
+          start: formatLocalDateTime(startDate),
+          end: formatLocalDateTime(endDate)
+        });
 
         const result = await eventAPI.createEvent(formData);
         
