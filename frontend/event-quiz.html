@@ -346,9 +346,15 @@
     // ---------------- START QUIZ ----------------
     async function startQuiz(activeSet) {
       try {
-        addDebugLog('🚀 Starting quiz...', { setId: activeSet._id });
+        addDebugLog('🚀 Starting quiz...', { 
+          eventId, 
+          participantId, 
+          setId: activeSet._id 
+        });
         
+        // FIXED: Added eventId parameter
         const result = await eventAPI.startSet({
+          eventId,          // ← This was missing!
           participantId,
           setId: activeSet._id
         });
@@ -356,7 +362,7 @@
         addDebugLog('📋 Start set result', result);
         
         currentSet = activeSet;
-        questions = result.questions || [];
+        questions = result.questions || activeSet.questions || [];
         
         addDebugLog(`📝 Loaded ${questions.length} questions`);
         
@@ -367,7 +373,7 @@
         }
 
         answers = new Array(questions.length).fill(null);
-        timeRemaining = result.timeRemaining || result.timeLimit * 60;
+        timeRemaining = result.timeRemaining || (activeSet.timeLimit * 60);
 
         addDebugLog(`⏱️ Time remaining: ${timeRemaining} seconds`);
 
@@ -555,6 +561,7 @@
         const score = calculateScore();
 
         await eventAPI.submitSet({
+          eventId,
           participantId,
           setId: currentSet._id,
           score,
@@ -590,6 +597,7 @@
         const score = calculateScore();
 
         await eventAPI.submitSet({
+          eventId,
           participantId,
           setId: currentSet._id,
           score,
