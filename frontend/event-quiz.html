@@ -612,23 +612,15 @@
       }
     };
 
-function calculateScore() {
-  const labels = ['A', 'B', 'C', 'D'];
-  let score = 0;
-
-  answers.forEach((answer, index) => {
-    const correctLabel = questions[index].correctAnswer;
-    const correctIndex = labels.indexOf(correctLabel);
-    const correctOption = questions[index].options[correctIndex];
-
-    if (answer === correctOption) {
-      score++;
+    function calculateScore() {
+      let score = 0;
+      answers.forEach((answer, index) => {
+        if (answer && questions[index] && answer === questions[index].correctAnswer) {
+          score++;
+        }
+      });
+      return score;
     }
-  });
-
-  return score;
-}
-
 
     window.goToResults = function() {
       window.location.href = 'challenge.html';
