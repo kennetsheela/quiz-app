@@ -558,13 +558,13 @@
         ? participant.setResults.find(r => r.setId === setId)
         : participant.setResults[0];
       
-      if (!result || result.score === undefined) {
+      if (!result || result.score === undefined || result.score === null) {
         return { score: null, percentage: null, totalQuestions: 0 };
       }
       
       const resultSetId = result.setId;
       const totalQuestions = getTotalQuestions(resultSetId);
-      const score = result.score || 0;
+      const score = result.score; // Don't use || 0, as score can be 0
       const percentage = calculatePercentage(score, resultSetId);
       
       return { score, percentage, totalQuestions };
@@ -785,8 +785,17 @@
       }
       
       const scoreFilter = document.getElementById('filterScore').value;
+      
+      // Debug: Log filtering process
+      console.log('Filtering with:', { scoreFilter, selectedSetId, participantCount: filtered.length });
+      
       filtered = filtered.filter(p => {
-        const { percentage } = getParticipantScoreData(p, selectedSetId);
+        const { percentage, score, totalQuestions } = getParticipantScoreData(p, selectedSetId);
+        
+        // Debug: Log each participant's data
+        if (scoreFilter !== 'all') {
+          console.log('Participant:', p.rollNo, 'Score:', score, 'Total:', totalQuestions, 'Percentage:', percentage);
+        }
         
         if (percentage === null) return scoreFilter === 'all';
         
@@ -795,6 +804,8 @@
         if (scoreFilter === 'below50') return percentage < 50;
         return true;
       });
+      
+      console.log('After score filter:', filtered.length, 'participants');
       
       const sortBy = document.getElementById('sortBy').value;
       filtered.sort((a, b) => {
