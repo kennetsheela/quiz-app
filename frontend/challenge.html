@@ -4,39 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AptioGen - Challenges</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/components.css">
-
   <style>
     body {
       padding-top: 80px;
       min-height: 100vh;
     }
-
+    
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
     }
+    
+    .time-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .time-badge.upcoming {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+    
+    .time-badge.live {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      animation: pulse 2s infinite;
+    }
+    
+    .time-badge.ended {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
   </style>
 </head>
-
 <body>
-
   <!-- Appbar -->
   <div class="appbar">
     <h2>AptioGen</h2>
-
+    
     <div class="nav-links">
       <a href="explore.html">Explore</a>
       <a href="challenge.html" class="active">Challenge</a>
       <a href="level-up.html">Level Up</a>
     </div>
-
+    
     <div class="right-icons">
       <i class="fa-solid fa-moon theme-toggle"></i>
       <div class="dropdown">
@@ -46,9 +72,7 @@
         <div class="dropdown-content">
           <a href="#"><i class="fa-solid fa-user"></i> Profile</a>
           <hr>
-          <a href="#" id="logoutBtn">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-          </a>
+          <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </div>
       </div>
     </div>
@@ -56,7 +80,6 @@
 
   <!-- Main Content -->
   <div class="container">
-
     <div class="header">
       <h2>Available Challenges</h2>
       <button class="btn btn-primary" onclick="window.location.href='create-event.html'">
@@ -70,10 +93,9 @@
         <p>Loading events...</p>
       </div>
     </div>
-
   </div>
 
-  <!-- Join Modal -->
+  <!-- Login Modal -->
   <div id="loginModal" class="modal">
     <div class="modal-content">
       <h3>Join Event</h3>
@@ -81,7 +103,6 @@
         <input type="text" id="rollNo" placeholder="Roll Number" required>
         <input type="text" id="department" placeholder="Department" required>
         <input type="password" id="password" placeholder="Event Password" required>
-
         <button type="submit" class="btn btn-primary">Join Event</button>
         <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
       </form>
@@ -92,80 +113,106 @@
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
     import { eventAPI } from "./js/api.js";
 
+    let currentEventId = null;
+
     requireAuth();
     setupLogoutButton();
 
-    let currentEventId = null;
-
-    // --------- UTIL FUNCTIONS (LOCAL TIME SAFE) ---------
-    function getDate(datetime) {
-      return datetime.split("T")[0];
+    function formatDateTime(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
     }
 
-    function getTime(datetime) {
-      return datetime.split("T")[1];
+    function getEventStatus(startTime, endTime) {
+      const now = new Date();
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+
+      if (now < start) {
+        return { status: 'upcoming', label: '⏳ Upcoming', class: 'upcoming' };
+      } else if (now >= start && now <= end) {
+        return { status: 'live', label: '🔴 Live Now', class: 'live' };
+      } else {
+        return { status: 'ended', label: '⏹️ Ended', class: 'ended' };
+      }
     }
 
     async function loadEvents() {
       try {
         const { events } = await eventAPI.getAll();
         const eventList = document.getElementById("eventList");
-
-        if (!events || events.length === 0) {
+        
+        if (events.length === 0) {
           eventList.innerHTML = '<p class="text-center">No events available</p>';
           return;
         }
 
-        eventList.innerHTML = events.map(event => `
-          <div class="event-card">
-            <h3>${event.eventName}</h3>
-
-            <div class="event-date">
-              <i class="fas fa-calendar"></i>
-              ${getDate(event.startTime)} → ${getDate(event.endTime)}
+        eventList.innerHTML = events.map(event => {
+          const statusInfo = getEventStatus(event.startTime, event.endTime);
+          const canJoin = statusInfo.status === 'live';
+          
+          return `
+            <div class="event-card">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h3>${event.eventName}</h3>
+                <span class="time-badge ${statusInfo.class}">${statusInfo.label}</span>
+              </div>
+              
+              <div class="event-date">
+                <i class="fas fa-calendar-start"></i>
+                <strong>Start:</strong> ${formatDateTime(event.startTime)}
+              </div>
+              
+              <div class="event-date">
+                <i class="fas fa-calendar-check"></i>
+                <strong>End:</strong> ${formatDateTime(event.endTime)}
+              </div>
+              
+              <div class="event-actions">
+                <button class="btn btn-primary" 
+                        onclick="joinEvent('${event._id}')"
+                        ${!canJoin ? 'disabled' : ''}>
+                  <i class="fas fa-sign-in-alt"></i> 
+                  ${canJoin ? 'Join Event' : statusInfo.status === 'upcoming' ? 'Not Started' : 'Event Ended'}
+                </button>
+                <button class="btn btn-secondary" onclick="manageEvent('${event._id}')">
+                  <i class="fas fa-cog"></i> Manage
+                </button>
+              </div>
             </div>
-
-            <div class="event-date">
-              <i class="fas fa-clock"></i>
-              ${getTime(event.startTime)}
-            </div>
-
-            <div class="event-actions">
-              <button class="btn btn-primary" onclick="joinEvent('${event._id}')">
-                <i class="fas fa-sign-in-alt"></i> Join Event
-              </button>
-
-              <button class="btn btn-secondary" onclick="manageEvent('${event._id}')">
-                <i class="fas fa-cog"></i> Manage
-              </button>
-            </div>
-          </div>
-        `).join("");
-
+          `;
+        }).join('');
       } catch (error) {
         console.error("Error loading events:", error);
-        document.getElementById("eventList").innerHTML =
-          '<p class="text-center">Error loading events</p>';
+        document.getElementById("eventList").innerHTML = 
+          '<p class="text-center">Error loading events. Please try again.</p>';
       }
     }
 
-    window.joinEvent = function (eventId) {
+    window.joinEvent = function(eventId) {
       currentEventId = eventId;
       document.getElementById("loginModal").classList.add("active");
     };
 
-    window.manageEvent = function (eventId) {
+    window.manageEvent = function(eventId) {
       window.location.href = `admin-panel.html?eventId=${eventId}`;
     };
 
-    window.closeLoginModal = function () {
+    window.closeLoginModal = function() {
       document.getElementById("loginModal").classList.remove("active");
       currentEventId = null;
     };
 
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-
+      
       const rollNo = document.getElementById("rollNo").value;
       const department = document.getElementById("department").value;
       const password = document.getElementById("password").value;
@@ -178,17 +225,18 @@
           password
         });
 
-        window.location.href =
-          `event-quiz.html?eventId=${currentEventId}&participantId=${result.participantId}`;
-
+        alert("Joined successfully!");
+        window.location.href = `event-quiz.html?eventId=${currentEventId}&participantId=${result.participantId}`;
       } catch (error) {
         alert("Error: " + error.message);
       }
     });
 
+    // Refresh event statuses every 30 seconds
+    setInterval(loadEvents, 30000);
+    
     loadEvents();
   </script>
-
   <script src="js/theme.js" type="module"></script>
 </body>
 </html>

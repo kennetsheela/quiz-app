@@ -38,7 +38,7 @@ async function parseQuestionsFromFile(file) {
   }
 }
 
-// ✅ Create event with questions stored in MongoDB - NO timezone conversion
+// ✅ Create event with proper timezone handling
 async function createEvent(data, files, userId) {
   const { eventName, adminPassword, studentPassword, startTime, endTime, sets } = data;
 
@@ -80,17 +80,16 @@ async function createEvent(data, files, userId) {
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
-  // ✅ NO TIMEZONE CONVERSION - Store exactly as entered
-  // Input: "2026-01-28T12:00" → Store as: "2026-01-28T12:00:00.000Z"
-  // Add seconds and Z to make it a valid ISO string
-  const startDate = new Date(startTime + ':00.000Z');
-  const endDate = new Date(endTime + ':00.000Z');
+  // ✅ FIXED: Store datetime-local input as-is (treat as local time)
+  // Input: "2026-01-28T12:00" → Store as local time in DB
+  const startDate = new Date(startTime);
+  const endDate = new Date(endTime);
   
   console.log("📅 Creating event with times:");
   console.log("Input start time:", startTime);
   console.log("Input end time:", endTime);
-  console.log("Stored Start:", startDate.toISOString());
-  console.log("Stored End:", endDate.toISOString());
+  console.log("Stored Start:", startDate);
+  console.log("Stored End:", endDate);
 
   const event = await Event.create({
     eventName,
@@ -116,20 +115,34 @@ async function studentLogin({ eventId, userId, rollNo, department, password }) {
   const now = new Date();
   
   console.log("🕐 Time Check:");
-  console.log("Current time:", now.toISOString());
-  console.log("Event Start:", event.startTime.toISOString());
-  console.log("Event End:", event.endTime.toISOString());
+  console.log("Current time:", now);
+  console.log("Event Start:", event.startTime);
+  console.log("Event End:", event.endTime);
   console.log("Is before start?", now < event.startTime);
   console.log("Is after end?", now > event.endTime);
   
   if (now < event.startTime) {
     const waitTime = Math.ceil((event.startTime - now) / 60000); // minutes
-    const startTimeStr = event.startTime.toISOString().replace('T', ' ').substring(0, 16);
+    const startTimeStr = new Date(event.startTime).toLocaleString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
     throw new Error(`Event hasn't started yet. Starts at ${startTimeStr}. Please wait ${waitTime} minutes.`);
   }
   
   if (now > event.endTime) {
-    const endTimeStr = event.endTime.toISOString().replace('T', ' ').substring(0, 16);
+    const endTimeStr = new Date(event.endTime).toLocaleString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
     throw new Error(`Event has ended. Ended at ${endTimeStr}.`);
   }
 
@@ -271,6 +284,8 @@ async function submitSet({ participantId, setId, userId, answers }) {
   const set = event.sets.id(setId);
 
   const now = new Date();
+  const startTime = participant.setResults[resultIndex].startedAt;
+  const timeTaken = Math.floor((now - startTime) / 1000); // seconds
   const autoSubmitTime = participant.setResults[resultIndex].autoSubmitAt;
   
   if (now > autoSubmitTime) {
@@ -280,13 +295,23 @@ async function submitSet({ participantId, setId, userId, answers }) {
   const questions = await getSetQuestions(setId, participant.eventId);
   
   let score = 0;
+  let correctAnswers = 0;
+  let wrongAnswers = 0;
+  let skipped = 0;
   const results = [];
   
   questions.forEach((question, index) => {
     const userAnswer = answers[index] || null;
     const isCorrect = userAnswer === question.correctAnswer;
     
-    if (isCorrect) score++;
+    if (userAnswer === null) {
+      skipped++;
+    } else if (isCorrect) {
+      correctAnswers++;
+      score++;
+    } else {
+      wrongAnswers++;
+    }
     
     results.push({
       question: question.question,
@@ -296,20 +321,31 @@ async function submitSet({ participantId, setId, userId, answers }) {
     });
   });
 
+  // ✅ FIXED: Store detailed results
   participant.setResults[resultIndex].score = score;
   participant.setResults[resultIndex].completedAt = now;
   participant.setResults[resultIndex].totalQuestions = questions.length;
   participant.setResults[resultIndex].answers = answers;
+  participant.setResults[resultIndex].timeTaken = timeTaken;
+  participant.setResults[resultIndex].correctAnswers = correctAnswers;
+  participant.setResults[resultIndex].wrongAnswers = wrongAnswers;
+  participant.setResults[resultIndex].skipped = skipped;
 
   await participant.save();
 
-  console.log(`✅ Quiz submitted: ${score}/${questions.length} by user ${userId}`);
+  const percentage = Math.round((score / questions.length) * 100);
+
+  console.log(`✅ Quiz submitted: ${score}/${questions.length} (${percentage}%) by user ${userId}`);
 
   return { 
     score, 
     totalQuestions: questions.length, 
+    correctAnswers,
+    wrongAnswers,
+    skipped,
     results,
-    percentage: Math.round((score / questions.length) * 100)
+    percentage,
+    timeTaken: Math.floor(timeTaken / 60) // minutes
   };
 }
 
@@ -397,8 +433,8 @@ async function getEventStats(eventId) {
         totalSubmissions++;
         const percentage = (r.score / r.totalQuestions) * 100;
         
-        if (percentage >= 80) above80++;
-        else if (percentage >= 50) above50++;
+        if (percentage > 80) above80++;
+        else if (percentage >= 50 && percentage <= 80) above50++;
 
         departmentStats[p.department].totalScore += percentage;
         departmentStats[p.department].submissions++;
