@@ -287,6 +287,15 @@
     .score-medium { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
     .score-low { background: rgba(239, 68, 68, 0.2); color: var(--error); }
     
+    .time-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--accent-primary);
+    }
+    
     .connection-status {
       display: inline-block;
       padding: 6px 12px;
@@ -372,6 +381,8 @@
               <select id="sortBy" onchange="applyFilters()">
                 <option value="score-desc">Score (High to Low)</option>
                 <option value="score-asc">Score (Low to High)</option>
+                <option value="time-asc">Time Spent (Low to High)</option>
+                <option value="time-desc">Time Spent (High to Low)</option>
                 <option value="roll-asc">Roll Number (A-Z)</option>
                 <option value="roll-desc">Roll Number (Z-A)</option>
               </select>
@@ -408,6 +419,12 @@
             <i class="fas fa-check" style="font-size: 2rem; color: var(--success);"></i>
             <h3 id="totalSubmissions">0</h3>
             <p>Submissions</p>
+          </div>
+          
+          <div class="stat-box">
+            <i class="fas fa-clock" style="font-size: 2rem; color: var(--accent-primary);"></i>
+            <h3 id="avgTime">0m</h3>
+            <p>Avg. Time Spent</p>
           </div>
           
           <div class="stat-box">
@@ -451,12 +468,15 @@
                   Score <i class="fas fa-sort"></i>
                 </th>
                 <th>Percentage</th>
+                <th onclick="sortTable('time')">
+                  Time Spent <i class="fas fa-sort"></i>
+                </th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="participantsBody">
               <tr>
-                <td colspan="5" class="text-center">Loading participants...</td>
+                <td colspan="6" class="text-center">Loading participants...</td>
               </tr>
             </tbody>
           </table>
@@ -552,6 +572,23 @@
       return (score / totalQuestions) * 100;
     }
 
+    // Helper function to format time spent
+    function formatTimeSpent(seconds) {
+      if (!seconds || seconds === 0) return '-';
+      
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      
+      if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+      } else if (minutes > 0) {
+        return `${minutes}m ${secs}s`;
+      } else {
+        return `${secs}s`;
+      }
+    }
+
     // Helper function to get score and percentage for a participant
     function getParticipantScoreData(participant, setId) {
       const result = setId 
@@ -559,15 +596,16 @@
         : participant.setResults[0];
       
       if (!result || result.score === undefined || result.score === null) {
-        return { score: null, percentage: null, totalQuestions: 0 };
+        return { score: null, percentage: null, totalQuestions: 0, timeSpent: null };
       }
       
       const resultSetId = result.setId;
       const totalQuestions = getTotalQuestions(resultSetId);
-      const score = result.score; // Don't use || 0, as score can be 0
+      const score = result.score;
       const percentage = calculatePercentage(score, resultSetId);
+      const timeSpent = result.timeTaken || 0; // timeTaken should be in seconds
       
-      return { score, percentage, totalQuestions };
+      return { score, percentage, totalQuestions, timeSpent };
     }
 
     // Update connection status indicator
@@ -718,11 +756,40 @@
           document.getElementById('totalSubmissions').textContent = stats.totalSubmissions;
           document.getElementById('above80').textContent = stats.above80;
           document.getElementById('above50').textContent = stats.above50;
+          
+          // Calculate average time
+          if (allParticipants.length > 0) {
+            calculateAverageTime();
+          }
         }
       } catch (error) {
         console.error("Error loading stats:", error);
         throw error;
       }
+    }
+
+    function calculateAverageTime() {
+      const completed = allParticipants.filter(p => {
+        const result = selectedSetId 
+          ? p.setResults.find(r => r.setId === selectedSetId)
+          : p.setResults[0];
+        return result?.completedAt && result?.timeTaken;
+      });
+      
+      if (completed.length === 0) {
+        document.getElementById('avgTime').textContent = '-';
+        return;
+      }
+      
+      const totalTime = completed.reduce((sum, p) => {
+        const { timeSpent } = getParticipantScoreData(p, selectedSetId);
+        return sum + (timeSpent || 0);
+      }, 0);
+      
+      const avgSeconds = Math.round(totalTime / completed.length);
+      const avgMinutes = Math.floor(avgSeconds / 60);
+      
+      document.getElementById('avgTime').textContent = `${avgMinutes}m`;
     }
 
     function calculateSetSpecificStats() {
@@ -749,6 +816,8 @@
       document.getElementById('totalSubmissions').textContent = submissions.length;
       document.getElementById('above80').textContent = above80Count;
       document.getElementById('above50').textContent = above50Count;
+      
+      calculateAverageTime();
     }
 
     async function loadParticipants() {
@@ -786,16 +855,8 @@
       
       const scoreFilter = document.getElementById('filterScore').value;
       
-      // Debug: Log filtering process
-      console.log('Filtering with:', { scoreFilter, selectedSetId, participantCount: filtered.length });
-      
       filtered = filtered.filter(p => {
-        const { percentage, score, totalQuestions } = getParticipantScoreData(p, selectedSetId);
-        
-        // Debug: Log each participant's data
-        if (scoreFilter !== 'all') {
-          console.log('Participant:', p.rollNo, 'Score:', score, 'Total:', totalQuestions, 'Percentage:', percentage);
-        }
+        const { percentage } = getParticipantScoreData(p, selectedSetId);
         
         if (percentage === null) return scoreFilter === 'all';
         
@@ -805,8 +866,6 @@
         return true;
       });
       
-      console.log('After score filter:', filtered.length, 'participants');
-      
       const sortBy = document.getElementById('sortBy').value;
       filtered.sort((a, b) => {
         const aData = getParticipantScoreData(a, selectedSetId);
@@ -814,6 +873,8 @@
         
         if (sortBy === 'score-desc') return (bData.percentage || 0) - (aData.percentage || 0);
         if (sortBy === 'score-asc') return (aData.percentage || 0) - (bData.percentage || 0);
+        if (sortBy === 'time-asc') return (aData.timeSpent || 0) - (bData.timeSpent || 0);
+        if (sortBy === 'time-desc') return (bData.timeSpent || 0) - (aData.timeSpent || 0);
         if (sortBy === 'roll-asc') return a.rollNo.localeCompare(b.rollNo);
         if (sortBy === 'roll-desc') return b.rollNo.localeCompare(a.rollNo);
         return 0;
@@ -834,7 +895,7 @@
       
       if (filteredParticipants.length === 0) {
         document.getElementById('participantsBody').innerHTML = 
-          '<tr><td colspan="5" class="text-center">No participants match the filters</td></tr>';
+          '<tr><td colspan="6" class="text-center">No participants match the filters</td></tr>';
         return;
       }
 
@@ -843,10 +904,11 @@
           ? p.setResults.find(r => r.setId === selectedSetId)
           : p.setResults[0];
         
-        const { score, percentage, totalQuestions } = getParticipantScoreData(p, selectedSetId);
+        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
         
         const scoreDisplay = score !== null ? `${score}/${totalQuestions}` : '-';
         const percentageDisplay = percentage !== null ? percentage.toFixed(2) + '%' : '-';
+        const timeDisplay = formatTimeSpent(timeSpent);
         const status = result?.completedAt ? '✅ Completed' : '⏳ In Progress';
         
         let scoreClass = '';
@@ -862,6 +924,7 @@
             <td>${p.department}</td>
             <td><span class="score-badge ${scoreClass}">${scoreDisplay}</span></td>
             <td>${percentageDisplay}</td>
+            <td><span class="time-badge">${timeDisplay}</span></td>
             <td>${status}</td>
           </tr>
         `;
@@ -877,6 +940,8 @@
         sortBy.value = sortBy.value === 'score-desc' ? 'score-asc' : 'score-desc';
       } else if (field === 'rollNo') {
         sortBy.value = sortBy.value === 'roll-asc' ? 'roll-desc' : 'roll-asc';
+      } else if (field === 'time') {
+        sortBy.value = sortBy.value === 'time-asc' ? 'time-desc' : 'time-asc';
       }
       
       applyFilters();
@@ -991,25 +1056,26 @@
         ? window.currentEvent.sets.find(s => s._id === window.selectedSetId)?.setName 
         : 'Overall';
       
-      let csv = 'Roll No,Name,Department,Score,Total Questions,Percentage,Status,Time Taken (min),Correct Answers,Wrong Answers,Skipped\n';
+      let csv = 'Roll No,Name,Department,Score,Total Questions,Percentage,Time Spent (seconds),Time Spent (formatted),Status,Correct Answers,Wrong Answers,Skipped\n';
       
       window.filteredParticipants.forEach(p => {
         const result = window.selectedSetId 
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
         
-        const { score, percentage, totalQuestions } = getParticipantScoreData(p, window.selectedSetId);
+        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, window.selectedSetId);
         
         const scoreDisplay = score !== null ? score : 'N/A';
         const totalQuestionsDisplay = score !== null ? totalQuestions : 'N/A';
         const percentageDisplay = percentage !== null ? percentage.toFixed(2) + '%' : 'N/A';
+        const timeSpentSeconds = timeSpent || 'N/A';
+        const timeSpentFormatted = formatTimeSpent(timeSpent);
         const status = result?.completedAt ? 'Completed' : 'In Progress';
-        const timeTaken = result?.timeTaken ? Math.round(result.timeTaken / 60) : 'N/A';
         const correct = result?.correctAnswers ?? 'N/A';
         const wrong = result?.wrongAnswers ?? 'N/A';
         const skipped = result?.skipped ?? 'N/A';
         
-        csv += `${p.rollNo},${p.name || 'N/A'},${p.department},${scoreDisplay},${totalQuestionsDisplay},${percentageDisplay},${status},${timeTaken},${correct},${wrong},${skipped}\n`;
+        csv += `${p.rollNo},${p.name || 'N/A'},${p.department},${scoreDisplay},${totalQuestionsDisplay},${percentageDisplay},${timeSpentSeconds},${timeSpentFormatted},${status},${correct},${wrong},${skipped}\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -1049,6 +1115,7 @@
         ['Average Score:', calculateAverageScore().toFixed(2) + '%'],
         ['Highest Score:', calculateHighestScore().toFixed(2) + '%'],
         ['Lowest Score:', calculateLowestScore().toFixed(2) + '%'],
+        ['Average Time Spent:', formatTimeSpent(calculateAverageTimeSeconds())],
       ];
       
       const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -1056,7 +1123,7 @@
       
       // Detailed Results Sheet
       const detailedData = [
-        ['Roll No', 'Name', 'Department', 'Score', 'Total Questions', 'Percentage', 'Status', 'Time Taken (min)', 'Correct', 'Wrong', 'Skipped']
+        ['Roll No', 'Name', 'Department', 'Score', 'Total Questions', 'Percentage', 'Time Spent', 'Status', 'Correct', 'Wrong', 'Skipped']
       ];
       
       window.filteredParticipants.forEach(p => {
@@ -1064,7 +1131,7 @@
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
         
-        const { score, percentage, totalQuestions } = getParticipantScoreData(p, window.selectedSetId);
+        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, window.selectedSetId);
         
         detailedData.push([
           p.rollNo,
@@ -1073,8 +1140,8 @@
           score !== null ? score : 'N/A',
           score !== null ? totalQuestions : 'N/A',
           percentage !== null ? percentage.toFixed(2) + '%' : 'N/A',
+          formatTimeSpent(timeSpent),
           result?.completedAt ? 'Completed' : 'In Progress',
-          result?.timeTaken ? Math.round(result.timeTaken / 60) : 'N/A',
           result?.correctAnswers ?? 'N/A',
           result?.wrongAnswers ?? 'N/A',
           result?.skipped ?? 'N/A'
@@ -1084,7 +1151,7 @@
       const detailedSheet = XLSX.utils.aoa_to_sheet(detailedData);
       detailedSheet['!cols'] = [
         { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 15 },
-        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+        { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
       ];
       
       XLSX.utils.book_append_sheet(wb, detailedSheet, 'Detailed Results');
@@ -1116,20 +1183,21 @@
       doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 35);
       
       doc.setFillColor(240, 241, 255);
-      doc.roundedRect(14, 42, 182, 35, 3, 3, 'F');
+      doc.roundedRect(14, 42, 182, 42, 3, 3, 'F');
       
       doc.setFontSize(10);
       doc.text('Summary Statistics', 18, 50);
       doc.text(`Total Participants: ${window.filteredParticipants.length}`, 18, 58);
       doc.text(`Average Score: ${calculateAverageScore().toFixed(2)}%`, 18, 65);
       doc.text(`Highest Score: ${calculateHighestScore().toFixed(2)}%`, 18, 72);
+      doc.text(`Average Time: ${formatTimeSpent(calculateAverageTimeSeconds())}`, 18, 79);
       
       const tableData = window.filteredParticipants.map(p => {
         const result = window.selectedSetId 
           ? p.setResults.find(r => r.setId === window.selectedSetId)
           : p.setResults[0];
         
-        const { score, percentage, totalQuestions } = getParticipantScoreData(p, window.selectedSetId);
+        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, window.selectedSetId);
         
         return [
           p.rollNo,
@@ -1137,13 +1205,14 @@
           p.department,
           score !== null ? `${score}/${totalQuestions}` : 'N/A',
           percentage !== null ? percentage.toFixed(2) + '%' : 'N/A',
+          formatTimeSpent(timeSpent),
           result?.completedAt ? '✓' : '⏳'
         ];
       });
       
       doc.autoTable({
-        startY: 85,
-        head: [['Roll No', 'Name', 'Department', 'Score', 'Percentage', 'Status']],
+        startY: 92,
+        head: [['Roll No', 'Name', 'Department', 'Score', 'Percentage', 'Time', 'Status']],
         body: tableData,
         theme: 'striped',
         headStyles: { fillColor: [99, 102, 241] },
@@ -1212,18 +1281,37 @@
       return percentages.length > 0 ? Math.min(...percentages) : 0;
     }
 
+    function calculateAverageTimeSeconds() {
+      const completed = window.filteredParticipants.filter(p => {
+        const result = window.selectedSetId 
+          ? p.setResults.find(r => r.setId === window.selectedSetId)
+          : p.setResults[0];
+        return result?.completedAt && result?.timeTaken;
+      });
+      
+      if (completed.length === 0) return 0;
+      
+      const totalTime = completed.reduce((sum, p) => {
+        const { timeSpent } = getParticipantScoreData(p, window.selectedSetId);
+        return sum + (timeSpent || 0);
+      }, 0);
+      
+      return Math.round(totalTime / completed.length);
+    }
+
     function generateDepartmentAnalysis() {
       const deptStats = {};
       
       window.filteredParticipants.forEach(p => {
-        const { percentage } = getParticipantScoreData(p, window.selectedSetId);
+        const { percentage, timeSpent } = getParticipantScoreData(p, window.selectedSetId);
         
         if (!deptStats[p.department]) {
           deptStats[p.department] = {
             total: 0,
             count: 0,
             completed: 0,
-            scores: []
+            scores: [],
+            times: []
           };
         }
         
@@ -1237,24 +1325,31 @@
           deptStats[p.department].total += percentage;
           deptStats[p.department].completed++;
           deptStats[p.department].scores.push(percentage);
+          if (timeSpent) {
+            deptStats[p.department].times.push(timeSpent);
+          }
         }
       });
       
       const analysis = [
-        ['Department', 'Total Students', 'Completed', 'Average Score %', 'Highest Score %']
+        ['Department', 'Total Students', 'Completed', 'Average Score %', 'Highest Score %', 'Avg Time Spent']
       ];
       
       Object.keys(deptStats).sort().forEach(dept => {
         const stats = deptStats[dept];
         const avg = stats.completed > 0 ? (stats.total / stats.completed).toFixed(2) : 'N/A';
         const highest = stats.scores.length > 0 ? Math.max(...stats.scores).toFixed(2) : 'N/A';
+        const avgTime = stats.times.length > 0 
+          ? formatTimeSpent(Math.round(stats.times.reduce((a,b) => a+b, 0) / stats.times.length))
+          : 'N/A';
         
         analysis.push([
           dept,
           stats.count,
           stats.completed,
           avg,
-          highest
+          highest,
+          avgTime
         ]);
       });
       

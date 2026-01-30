@@ -242,6 +242,7 @@
     let quizActive = false;
     let autoSubmitted = false;
     let pollAttempts = 0;
+    let quizStartTime = null; // Track actual quiz start time
 
     // Debug logging
     function addDebugLog(message, data = null) {
@@ -352,9 +353,8 @@
           setId: activeSet._id 
         });
         
-        // FIXED: Added eventId parameter
         const result = await eventAPI.startSet({
-          eventId,          // ← This was missing!
+          eventId,
           participantId,
           setId: activeSet._id
         });
@@ -375,6 +375,9 @@
         answers = new Array(questions.length).fill(null);
         timeRemaining = result.timeRemaining || (activeSet.timeLimit * 60);
 
+        // Record the actual start time
+        quizStartTime = Date.now();
+        addDebugLog(`⏱️ Quiz start time recorded: ${new Date(quizStartTime).toLocaleTimeString()}`);
         addDebugLog(`⏱️ Time remaining: ${timeRemaining} seconds`);
 
         // Show quiz, hide waiting
@@ -491,6 +494,17 @@
         `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
+    // Calculate time spent in seconds
+    function getTimeSpentSeconds() {
+      if (!quizStartTime) {
+        addDebugLog('⚠️ Warning: Quiz start time not recorded');
+        return 0;
+      }
+      const timeSpent = Math.floor((Date.now() - quizStartTime) / 1000);
+      addDebugLog(`⏱️ Time spent calculated: ${timeSpent} seconds`);
+      return timeSpent;
+    }
+
     // ---------------- FULLSCREEN ----------------
     async function enterFullscreen() {
       const elem = document.documentElement;
@@ -555,22 +569,28 @@
       quizActive = false;
       clearInterval(timerInterval);
 
-      console.log("Auto-submitting quiz:", reason);
+      addDebugLog("🚨 Auto-submitting quiz:", reason);
 
       try {
         const score = calculateScore();
+        const timeSpent = getTimeSpentSeconds();
+
+        addDebugLog("📊 Submitting with data:", { score, timeSpent, answers: answers.length });
 
         await eventAPI.submitSet({
           eventId,
           participantId,
           setId: currentSet._id,
           score,
-          answers
+          answers,
+          timeTaken: timeSpent // Send time spent in seconds
         });
 
+        addDebugLog("✅ Auto-submit successful");
         document.getElementById('warningModal').style.display = 'flex';
         
       } catch (error) {
+        addDebugLog("❌ Auto-submit error:", error.message);
         console.error("Auto-submit error:", error);
         alert("Quiz auto-submitted due to: " + reason);
         window.location.href = 'challenge.html';
@@ -595,18 +615,24 @@
 
         quizActive = false;
         const score = calculateScore();
+        const timeSpent = getTimeSpentSeconds();
+
+        addDebugLog("📊 Manual submit with data:", { score, timeSpent, answers: answers.length });
 
         await eventAPI.submitSet({
           eventId,
           participantId,
           setId: currentSet._id,
           score,
-          answers
+          answers,
+          timeTaken: timeSpent // Send time spent in seconds
         });
 
+        addDebugLog("✅ Manual submit successful");
         alert(`Quiz submitted successfully!`);
         window.location.href = 'challenge.html';
       } catch (error) {
+        addDebugLog("❌ Manual submit error:", error.message);
         console.error("Error submitting quiz:", error);
         alert("Error submitting: " + error.message);
       }

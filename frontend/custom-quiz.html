@@ -1,4 +1,3 @@
-const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -485,6 +484,9 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
   <script type="module">
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
 
+    // ✅ FIXED: API_BASE_URL moved inside script, not at top of HTML
+    const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
+
     // Quiz state
     let quizConfig = null;
     let questions = [];
@@ -492,6 +494,7 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
     let userAnswers = [];
     let timerInterval = null;
     let timeRemaining = 0;
+    let quizStartTime = null;
 
     // Initialize
     requireAuth().then(() => {
@@ -536,7 +539,9 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
       try {
         const token = await getAuthToken();
         
-        const response = await fetch('${API_BASE_URL}/practice/custom-questions', {
+        console.log('Fetching questions from:', `${API_BASE_URL}/practice/custom-questions`);
+        
+        const response = await fetch(`${API_BASE_URL}/practice/custom-questions`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -551,7 +556,7 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
         });
 
         if (!response.ok) {
-          const error = await response.json();
+          const error = await response.json().catch(() => ({ error: 'Network error' }));
           throw new Error(error.error || 'Failed to fetch questions');
         }
 
@@ -568,6 +573,7 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
         
         // Initialize quiz
         timeRemaining = quizConfig.timeLimit * 60; // Convert to seconds
+        quizStartTime = Date.now(); // Record start time
         startTimer();
         renderQuestion();
         renderPalette();
@@ -575,7 +581,7 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
         document.getElementById('loadingOverlay').classList.remove('active');
       } catch (error) {
         console.error('Error fetching questions:', error);
-        alert(`Failed to load questions: ${error.message}`);
+        alert(`Failed to load questions: ${error.message}\n\nPlease check:\n1. Backend server is running\n2. CORS is configured\n3. Network connection`);
         window.location.href = 'create-custom.html';
       }
     }
@@ -644,6 +650,12 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
       } else if (timeRemaining <= 300) {
         timerDisplay.classList.add('warning');
       }
+    }
+
+    // Calculate time spent
+    function getTimeSpent() {
+      if (!quizStartTime) return 0;
+      return Math.floor((Date.now() - quizStartTime) / 1000);
     }
 
     // Render current question
@@ -799,8 +811,11 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
         const token = await getAuthToken();
         
         const questionIds = questions.map(q => q._id);
+        const timeSpent = getTimeSpent();
         
-        const response = await fetch('${API_BASE_URL}/practice/custom-quiz/submit', {
+        console.log('Submitting quiz with time spent:', timeSpent, 'seconds');
+        
+        const response = await fetch(`${API_BASE_URL}/practice/custom-quiz/submit`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -809,13 +824,13 @@ const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
           body: JSON.stringify({
             questionIds,
             answers: userAnswers,
-            timeSpent: (quizConfig.timeLimit * 60) - timeRemaining,
+            timeSpent: timeSpent,
             quizConfig
           })
         });
 
         if (!response.ok) {
-          const error = await response.json();
+          const error = await response.json().catch(() => ({ error: 'Network error' }));
           throw new Error(error.error || 'Failed to submit quiz');
         }
 
