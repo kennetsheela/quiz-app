@@ -343,6 +343,18 @@
       </button>
     </div>
 
+    <!-- Debug Info Panel -->
+    <div id="debugPanel" style="background: #1a1a2e; color: #0f0; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-family: monospace; font-size: 0.85rem; display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <strong style="color: #00ff00;">🔍 DEBUG MODE</strong>
+        <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Hide</button>
+      </div>
+      <div id="debugContent">Loading data...</div>
+    </div>
+    <button onclick="document.getElementById('debugPanel').style.display='block'" style="position: fixed; bottom: 20px; right: 20px; background: #1a1a2e; color: #0f0; border: 2px solid #0f0; padding: 10px 15px; border-radius: 8px; cursor: pointer; z-index: 1000; font-family: monospace;">
+      🔍 Debug
+    </button>
+
     <div class="dashboard-grid">
       <!-- Sets Control Panel -->
       <div class="sets-panel">
@@ -603,7 +615,18 @@
       const totalQuestions = getTotalQuestions(resultSetId);
       const score = result.score;
       const percentage = calculatePercentage(score, resultSetId);
-      const timeSpent = result.timeTaken || 0; // timeTaken should be in seconds
+      
+      // Check multiple possible field names for time spent
+      // Try: timeTaken, timeSpent, duration, time
+      const timeSpent = result.timeTaken || result.timeSpent || result.duration || result.time || 0;
+      
+      // DEBUG: Log the first participant's data to console
+      if (!window.debugLoggedOnce) {
+        console.log('🔍 DEBUG - Participant result structure:', result);
+        console.log('🔍 Available fields:', Object.keys(result));
+        console.log('🔍 Time spent value:', timeSpent);
+        window.debugLoggedOnce = true;
+      }
       
       return { score, percentage, totalQuestions, timeSpent };
     }
@@ -825,6 +848,38 @@
         const { participants } = await eventAPI.getParticipants(eventId);
         allParticipants = participants;
         
+        // DEBUG: Show sample participant data
+        if (participants.length > 0) {
+          const sampleParticipant = participants[0];
+          const sampleResult = sampleParticipant.setResults?.[0];
+          
+          const debugContent = document.getElementById('debugContent');
+          if (debugContent) {
+            debugContent.innerHTML = `
+              <div><strong>Total Participants:</strong> ${participants.length}</div>
+              <div><strong>Sample Participant:</strong> ${sampleParticipant.rollNo}</div>
+              <div style="margin-top: 10px;"><strong>Sample Result Fields:</strong></div>
+              <div style="margin-left: 20px; color: #00ffff;">
+                ${sampleResult ? Object.keys(sampleResult).map(key => 
+                  `• ${key}: ${typeof sampleResult[key] === 'object' ? 'Object' : sampleResult[key]}`
+                ).join('<br>') : 'No results yet'}
+              </div>
+              <div style="margin-top: 10px;"><strong>Time Field Values:</strong></div>
+              <div style="margin-left: 20px; color: #ffff00;">
+                ${sampleResult ? `
+                  • timeTaken: ${sampleResult.timeTaken || 'undefined'}<br>
+                  • timeSpent: ${sampleResult.timeSpent || 'undefined'}<br>
+                  • duration: ${sampleResult.duration || 'undefined'}<br>
+                  • time: ${sampleResult.time || 'undefined'}
+                ` : 'No results yet'}
+              </div>
+            `;
+            
+            console.log('📊 Full Sample Participant:', sampleParticipant);
+            console.log('📊 Sample Result:', sampleResult);
+          }
+        }
+        
         const departments = [...new Set(participants.map(p => p.department))].sort();
         const deptSelect = document.getElementById('filterDepartment');
         const currentDept = deptSelect.value;
@@ -899,12 +954,21 @@
         return;
       }
 
-      const participantsHTML = filteredParticipants.map(p => {
+      const participantsHTML = filteredParticipants.map((p, index) => {
         const result = selectedSetId 
           ? p.setResults.find(r => r.setId === selectedSetId)
           : p.setResults[0];
         
         const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
+        
+        // DEBUG: Log first 3 participants
+        if (index < 3) {
+          console.log(`Participant ${p.rollNo}:`, {
+            result: result,
+            timeSpent: timeSpent,
+            formatted: formatTimeSpent(timeSpent)
+          });
+        }
         
         const scoreDisplay = score !== null ? `${score}/${totalQuestions}` : '-';
         const percentageDisplay = percentage !== null ? percentage.toFixed(2) + '%' : '-';
