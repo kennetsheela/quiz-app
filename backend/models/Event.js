@@ -25,6 +25,14 @@ const EventSchema = new mongoose.Schema({
   studentPassword: { type: String, required: true },
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
+  
+  // ✅ ADD THIS FIELD FOR TIMEZONE SUPPORT
+  timezone: { 
+    type: String, 
+    default: 'UTC',
+    required: false 
+  },
+  
   sets: [EventSetSchema],
   createdBy: { type: String, required: true }, // Firebase UID
   createdAt: { type: Date, default: Date.now }

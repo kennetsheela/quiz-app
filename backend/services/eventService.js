@@ -80,31 +80,30 @@ async function createEvent(data, files, userId) {
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedStudentPassword = await bcrypt.hash(studentPassword, 10);
 
-  // ✅ FIXED: Parse datetime strings as local time without timezone conversion
-  // Input format: "2026-01-29T21:52:00"
-  // We need to create Date object that represents this EXACT time in local timezone
+  // ✅ FIXED FOR RENDER: Parse ISO string with timezone offset
+  // Frontend sends: "2026-01-29T21:52:00.000+05:30" (with timezone offset)
+  // Render server is in UTC, but Date constructor handles the offset automatically
   
-  // Method 1: Parse the components directly to avoid timezone issues
-  const parseLocalDateTime = (dateTimeString) => {
-    // Split "2026-01-29T21:52:00" into parts
-    const [datePart, timePart] = dateTimeString.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hours, minutes, seconds = 0] = timePart.split(':').map(Number);
-    
-    // Create date using local timezone components
-    return new Date(year, month - 1, day, hours, minutes, seconds);
-  };
+  const timezone = data.timezone || 'UTC';
   
-  const startDate = parseLocalDateTime(startTime);
-  const endDate = parseLocalDateTime(endTime);
+  console.log("📅 Received datetime strings:");
+  console.log("Start Time Input:", startTime);
+  console.log("End Time Input:", endTime);
+  console.log("User Timezone:", timezone);
+  console.log("Server Timezone:", process.env.TZ || 'UTC');
   
-  console.log("📅 Creating event with times:");
-  console.log("Input start time:", startTime);
-  console.log("Parsed Start Date:", startDate);
-  console.log("Input end time:", endTime);
-  console.log("Parsed End Date:", endDate);
-  console.log("Start ISO:", startDate.toISOString());
-  console.log("End ISO:", endDate.toISOString());
+  // Parse the ISO strings - they contain timezone offset, so Date will handle it correctly
+  const startDate = new Date(startTime);
+  const endDate = new Date(endTime);
+  
+  // Validate dates
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    throw new Error("Invalid date format received");
+  }
+  
+  console.log("📅 Parsed dates (stored as UTC in MongoDB):");
+  console.log("Start Date UTC:", startDate.toISOString());
+  console.log("End Date UTC:", endDate.toISOString());
 
   const event = await Event.create({
     eventName,
@@ -112,11 +111,18 @@ async function createEvent(data, files, userId) {
     studentPassword: hashedStudentPassword,
     startTime: startDate,
     endTime: endDate,
+    timezone: timezone,
     sets: eventSets,
     createdBy: userId
   });
 
-  console.log(`✅ Event created with ${eventSets.length} sets`);
+  console.log(`✅ Event created successfully!`);
+  console.log(`   Name: ${eventName}`);
+  console.log(`   Timezone: ${timezone}`);
+  console.log(`   Start (UTC): ${startDate.toISOString()}`);
+  console.log(`   End (UTC): ${endDate.toISOString()}`);
+  console.log(`   Sets: ${eventSets.length}`);
+  
   return event;
 }
 

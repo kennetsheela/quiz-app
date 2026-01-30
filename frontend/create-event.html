@@ -269,27 +269,40 @@
         return;
       }
 
-      // ✅ IMPORTANT: Format datetime to prevent timezone conversion
-      // Convert datetime-local format to ISO string without timezone conversion
-      const startDate = new Date(startTime);
-      const endDate = new Date(endTime);
-      
-      // Format as ISO string but preserve local time
-      const formatLocalDateTime = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+      // ✅ FIX FOR RENDER: Send datetime with timezone offset
+      // This ensures the server knows the EXACT local time intended
+      const formatWithTimezone = (dateTimeLocal) => {
+        // Parse the datetime-local value (e.g., "2026-01-29T21:52")
+        const [datePart, timePart] = dateTimeLocal.split('T');
+        const [year, month, day] = datePart.split('-');
+        const [hours, minutes] = timePart.split(':');
+        
+        // Create a date object in LOCAL timezone
+        const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+        
+        // Get timezone offset in minutes (e.g., -330 for IST which is +5:30)
+        const offsetMinutes = localDate.getTimezoneOffset();
+        
+        // Convert to ISO string and remove the 'Z' to add custom offset
+        const isoString = localDate.toISOString();
+        
+        // Calculate offset in HH:MM format
+        const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+        const offsetMins = Math.abs(offsetMinutes) % 60;
+        const offsetSign = offsetMinutes <= 0 ? '+' : '-';
+        const offsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+        
+        // Return ISO string with timezone offset
+        return isoString.replace('Z', offsetString);
       };
 
       const formData = new FormData();
       formData.append("eventName", document.getElementById("eventName").value);
       formData.append("adminPassword", document.getElementById("adminPassword").value);
       formData.append("studentPassword", document.getElementById("studentPassword").value);
-      formData.append("startTime", formatLocalDateTime(startDate));
-      formData.append("endTime", formatLocalDateTime(endDate));
+      formData.append("startTime", formatWithTimezone(startTime));
+      formData.append("endTime", formatWithTimezone(endTime));
+      formData.append("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone); // e.g., "Asia/Kolkata"
 
       const sets = [];
       const setContainers = document.querySelectorAll(".set-container");
@@ -320,9 +333,10 @@
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
 
-        console.log("Sending times:", {
-          start: formatLocalDateTime(startDate),
-          end: formatLocalDateTime(endDate)
+        console.log("📅 Sending to server:", {
+          startTime: formatWithTimezone(startTime),
+          endTime: formatWithTimezone(endTime),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
         });
 
         const result = await eventAPI.createEvent(formData);
