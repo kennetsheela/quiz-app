@@ -83,6 +83,19 @@
       background: var(--error);
       color: white;
     }
+
+    .bulk-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+    }
+
+    .bulk-actions button {
+      flex: 1;
+    }
     
     .stats-panel {
       background: var(--card-bg);
@@ -345,6 +358,17 @@
       background: #00ff00;
       color: #1a1a2e;
     }
+
+    .sets-count-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--accent-primary);
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
@@ -387,10 +411,26 @@
     <div class="dashboard-grid">
       <!-- Sets Control Panel -->
       <div class="sets-panel">
-        <h2>Quiz Sets Control</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h2>
+            Quiz Sets Control
+            <span id="activeSetsCount" class="sets-count-badge">0 Active</span>
+          </h2>
+        </div>
         <p style="color: var(--text-secondary); margin-bottom: 20px;">
-          Click to analyze • Toggle to activate/deactivate
+          Click to analyze • Toggle individual sets or use bulk actions
         </p>
+        
+        <!-- Bulk Actions -->
+        <div class="bulk-actions">
+          <button class="btn btn-success" onclick="activateAllSets()">
+            <i class="fas fa-check-double"></i> Activate All
+          </button>
+          <button class="btn btn-danger" onclick="deactivateAllSets()">
+            <i class="fas fa-times"></i> Deactivate All
+          </button>
+        </div>
+
         <div id="setsContainer">
           <div class="loading">
             <div class="spinner"></div>
@@ -533,7 +573,7 @@
   <div class="password-modal" id="passwordModal">
     <div class="modal-content">
       <h3>Admin Authentication</h3>
-      <p style="margin: 20px 0;">Enter admin password to continue</p>
+      <p style="margin: 20px 0;" id="passwordModalMessage">Enter admin password to continue</p>
       <input type="password" id="adminPassword" placeholder="Admin Password" style="margin-bottom: 20px;">
       <div style="display: flex; gap: 10px;">
         <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
@@ -675,10 +715,8 @@
       const score = result.score;
       const percentage = calculatePercentage(score, resultSetId);
       
-      // Check ALL possible field names for time data
       let timeSpent = null;
       
-      // Check different field names (backend might use different naming)
       if (result.timeTaken !== undefined && result.timeTaken !== null) {
         timeSpent = result.timeTaken;
       } else if (result.timeSpent !== undefined && result.timeSpent !== null) {
@@ -688,15 +726,6 @@
       } else if (result.time !== undefined && result.time !== null) {
         timeSpent = result.time;
       }
-      
-      debugLog(`Participant ${participant.rollNo} time data:`, {
-        timeTaken: result.timeTaken,
-        timeSpent: result.timeSpent,
-        duration: result.duration,
-        time: result.time,
-        finalTimeSpent: timeSpent,
-        formatted: formatTimeSpent(timeSpent)
-      });
       
       return { score, percentage, totalQuestions, timeSpent };
     }
@@ -715,6 +744,13 @@
       }
     }
 
+    // Update active sets count
+    function updateActiveSetsCount() {
+      if (!currentEvent) return;
+      const activeCount = currentEvent.sets.filter(s => s.isActive).length;
+      document.getElementById('activeSetsCount').textContent = `${activeCount} Active`;
+    }
+
     async function loadEvent() {
       try {
         debugLog('Loading event...', { eventId });
@@ -729,6 +765,7 @@
         
         document.getElementById('eventTitle').textContent = event.eventName;
         renderSets(event.sets);
+        updateActiveSetsCount();
         await loadStats();
         await loadParticipants();
         
@@ -801,6 +838,24 @@
     window.toggleSet = function(setId, enable, event) {
       event.stopPropagation();
       pendingAction = { setId, enable };
+      document.getElementById('passwordModalMessage').textContent = 
+        `Enter admin password to ${enable ? 'activate' : 'deactivate'} this set`;
+      document.getElementById('passwordModal').classList.add('active');
+    };
+
+    // Bulk activate all sets
+    window.activateAllSets = function() {
+      pendingAction = { bulkActivate: true };
+      document.getElementById('passwordModalMessage').textContent = 
+        'Enter admin password to activate all sets';
+      document.getElementById('passwordModal').classList.add('active');
+    };
+
+    // Bulk deactivate all sets
+    window.deactivateAllSets = function() {
+      pendingAction = { bulkDeactivate: true };
+      document.getElementById('passwordModalMessage').textContent = 
+        'Enter admin password to deactivate all sets';
       document.getElementById('passwordModal').classList.add('active');
     };
 
@@ -823,7 +878,28 @@
           await eventAPI.deleteEvent(eventId, password);
           alert('Event deleted successfully!');
           window.location.href = 'challenge.html';
+        } else if (pendingAction.bulkActivate || pendingAction.bulkDeactivate) {
+          // Bulk operation
+          const enable = pendingAction.bulkActivate;
+          const setIds = currentEvent.sets.map(s => s._id);
+          
+          debugLog(`Bulk ${enable ? 'activating' : 'deactivating'} sets`, { setIds });
+          
+          // Call API for each set
+          for (const setId of setIds) {
+            await eventAPI.toggleSet({
+              eventId,
+              setId,
+              adminPassword: password,
+              enable
+            });
+          }
+          
+          alert(`All sets ${enable ? 'activated' : 'deactivated'} successfully!`);
+          closePasswordModal();
+          loadEvent();
         } else {
+          // Single set toggle
           await eventAPI.toggleSet({
             eventId,
             setId: pendingAction.setId,
@@ -891,7 +967,6 @@
       
       if (timesWithValues.length === 0) {
         document.getElementById('avgTime').textContent = 'N/A';
-        debugLog('No time data available for average calculation');
         return;
       }
       
@@ -900,12 +975,6 @@
       const avgMinutes = Math.floor(avgSeconds / 60);
       
       document.getElementById('avgTime').textContent = `${avgMinutes}m`;
-      debugLog('Average time calculated', {
-        completed: completed.length,
-        withTimeData: timesWithValues.length,
-        avgSeconds,
-        avgMinutes
-      });
     }
 
     function calculateSetSpecificStats() {
@@ -944,19 +1013,6 @@
         
         debugLog('Participants loaded', { count: participants.length });
         
-        // Show sample participant data in debug
-        if (participants.length > 0) {
-          const sample = participants[0];
-          const sampleResult = sample.setResults?.[0];
-          
-          debugLog('Sample participant structure', {
-            rollNo: sample.rollNo,
-            setResultsCount: sample.setResults?.length || 0,
-            firstResultFields: sampleResult ? Object.keys(sampleResult) : [],
-            firstResultData: sampleResult
-          });
-        }
-        
         const departments = [...new Set(participants.map(p => p.department))].sort();
         const deptSelect = document.getElementById('filterDepartment');
         const currentDept = deptSelect.value;
@@ -972,49 +1028,26 @@
       }
     }
 
-    // Handle filter changes with logging
     window.handleFilterChange = function(filterType) {
-      debugLog(`Filter changed: ${filterType}`, {
-        sortBy: document.getElementById('sortBy').value,
-        department: document.getElementById('filterDepartment').value,
-        score: document.getElementById('filterScore').value
-      });
       applyFilters();
     };
 
     function applyFilters() {
-      debugLog('Applying filters...', {
-        totalParticipants: allParticipants.length,
-        selectedSet: selectedSetId
-      });
-      
       let filtered = [...allParticipants];
       
-      // Filter by selected set
       if (selectedSetId) {
-        const beforeCount = filtered.length;
         filtered = filtered.filter(p => 
           p.setResults.some(r => r.setId === selectedSetId)
         );
-        debugLog('Filtered by set', { before: beforeCount, after: filtered.length });
       }
       
-      // Filter by department
       const deptFilter = document.getElementById('filterDepartment').value;
       if (deptFilter !== 'all') {
-        const beforeCount = filtered.length;
         filtered = filtered.filter(p => p.department === deptFilter);
-        debugLog('Filtered by department', { 
-          department: deptFilter, 
-          before: beforeCount, 
-          after: filtered.length 
-        });
       }
       
-      // Filter by score range
       const scoreFilter = document.getElementById('filterScore').value;
       if (scoreFilter !== 'all') {
-        const beforeCount = filtered.length;
         filtered = filtered.filter(p => {
           const { percentage } = getParticipantScoreData(p, selectedSetId);
           
@@ -1025,14 +1058,8 @@
           if (scoreFilter === 'below50') return percentage < 50;
           return true;
         });
-        debugLog('Filtered by score', { 
-          range: scoreFilter, 
-          before: beforeCount, 
-          after: filtered.length 
-        });
       }
       
-      // Sort participants
       const sortBy = document.getElementById('sortBy').value;
       filtered.sort((a, b) => {
         const aData = getParticipantScoreData(a, selectedSetId);
@@ -1046,8 +1073,6 @@
         if (sortBy === 'roll-desc') return b.rollNo.localeCompare(a.rollNo);
         return 0;
       });
-      
-      debugLog('Sorted by', { sortBy, finalCount: filtered.length });
       
       filteredParticipants = filtered;
       window.filteredParticipants = filtered;
@@ -1100,7 +1125,6 @@
       }).join('');
 
       document.getElementById('participantsBody').innerHTML = participantsHTML;
-      debugLog('Participants rendered', { count: filteredParticipants.length });
     }
 
     window.sortTable = function(field) {
@@ -1114,7 +1138,6 @@
         sortBy.value = sortBy.value === 'time-asc' ? 'time-desc' : 'time-asc';
       }
       
-      debugLog('Table sorted by', { field, newValue: sortBy.value });
       applyFilters();
     };
 
@@ -1209,12 +1232,10 @@
       document.getElementById('filterDepartment').value = 'all';
       document.getElementById('filterScore').value = 'all';
       document.getElementById('statsTitle').textContent = 'Overall Statistics';
-      debugLog('Filters reset');
       renderSets(currentEvent.sets);
       applyFilters();
     };
 
-    // Export Functions (simplified versions - full implementations remain the same)
     window.exportData = function() {
       document.getElementById('exportModal').classList.add('active');
     };

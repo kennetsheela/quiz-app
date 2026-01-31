@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Brain Break</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+
+    .game-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .game-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .game-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .game-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .game-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-primary);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .game-card.active {
+      border-color: var(--success);
+      background: rgba(72, 187, 120, 0.1);
+    }
+
+    .game-card i {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: var(--accent-primary);
+    }
+
+    .game-card h3 {
+      margin: 10px 0;
+      color: var(--text-primary);
+    }
+
+    .game-card p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .game-area {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      min-height: 400px;
+      display: none;
+    }
+
+    .game-area.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Memory Match Game */
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .memory-card {
+      aspect-ratio: 1;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .memory-card.flipped {
+      background: var(--accent-primary);
+      color: white;
+      transform: rotateY(180deg);
+    }
+
+    .memory-card.matched {
+      background: var(--success);
+      color: white;
+      cursor: default;
+      animation: matched 0.5s;
+    }
+
+    @keyframes matched {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Pattern Game */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    .pattern-cell {
+      aspect-ratio: 1;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .pattern-cell.lit {
+      background: var(--accent-primary);
+      box-shadow: 0 0 20px var(--accent-primary);
+    }
+
+    .pattern-cell.active {
+      background: var(--success);
+      box-shadow: 0 0 20px var(--success);
+    }
+
+    /* Word Scramble */
+    .word-display {
+      text-align: center;
+      margin: 30px 0;
+    }
+
+    .scrambled-word {
+      font-size: 2.5rem;
+      font-weight: bold;
+      letter-spacing: 10px;
+      color: var(--accent-primary);
+      margin: 20px 0;
+    }
+
+    .word-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 15px;
+      font-size: 1.2rem;
+      text-align: center;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      margin: 20px auto;
+      display: block;
+    }
+
+    .word-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    /* Math Speed */
+    .math-problem {
+      text-align: center;
+      margin: 30px 0;
+    }
+
+    .math-equation {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--accent-primary);
+      margin: 30px 0;
+    }
+
+    .answer-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .answer-btn {
+      padding: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-radius: 10px;
+      border: none;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .answer-btn:hover {
+      background: var(--accent-primary);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .answer-btn.correct {
+      background: var(--success);
+      color: white;
+      animation: correct 0.5s;
+    }
+
+    .answer-btn.wrong {
+      background: var(--error);
+      color: white;
+      animation: shake 0.5s;
+    }
+
+    @keyframes correct {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    /* Game Stats */
+    .game-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--accent-primary);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 5px;
+    }
+
+    .game-controls {
+      text-align: center;
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .hint-text {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin: 15px 0;
+      font-style: italic;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--accent-primary);
+      border-radius: 15px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .timer-display {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--warning);
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .success-message {
+      text-align: center;
+      padding: 30px;
+      background: rgba(72, 187, 120, 0.1);
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+
+    .success-message i {
+      font-size: 4rem;
+      color: var(--success);
+      margin-bottom: 15px;
+    }
+
+    .success-message h3 {
+      color: var(--success);
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Appbar -->
+  <div class="appbar">
+    <h2>AptioGen</h2>
+    
+    <div class="nav-links">
+      <a href="explore.html">Explore</a>
+      <a href="challenge.html">Challenge</a>
+      <a href="brain-break.html" class="active">Brain Break</a>
+      <a href="level-up.html">Level Up</a>
+    </div>
+    
+    <div class="right-icons">
+      <i class="fa-solid fa-moon theme-toggle"></i>
+      <div class="dropdown" id="userDropdown">
+        <i class="fa-solid fa-user"></i>
+        <div class="dropdown-content">
+          <a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+          <hr>
+          <a href="contact.html"><i class="fa-solid fa-phone"></i> Contact</a>
+          <hr>
+          <a href="about.html"><i class="fa-solid fa-info-circle"></i> About us</a>
+          <hr>
+          <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container game-container">
+    <div class="game-header">
+      <h1>🎮 Brain Break Games</h1>
+      <p style="color: var(--text-secondary);">Take a quick break and refresh your mind!</p>
+    </div>
+
+    <!-- Game Selector -->
+    <div class="game-selector">
+      <div class="game-card active" onclick="selectGame('memory')">
+        <i class="fas fa-brain"></i>
+        <h3>Memory Match</h3>
+        <p>Find matching pairs of icons</p>
+      </div>
+
+      <div class="game-card" onclick="selectGame('pattern')">
+        <i class="fas fa-th"></i>
+        <h3>Pattern Master</h3>
+        <p>Remember and repeat the pattern</p>
+      </div>
+
+      <div class="game-card" onclick="selectGame('word')">
+        <i class="fas fa-spell-check"></i>
+        <h3>Word Scramble</h3>
+        <p>Unscramble the technical terms</p>
+      </div>
+
+      <div class="game-card" onclick="selectGame('math')">
+        <i class="fas fa-calculator"></i>
+        <h3>Math Speed</h3>
+        <p>Quick mental math challenge</p>
+      </div>
+    </div>
+
+    <!-- Memory Match Game -->
+    <div id="memoryGame" class="game-area active">
+      <div class="game-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="memoryMoves">0</div>
+          <div class="stat-label">Moves</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="memoryMatches">0/8</div>
+          <div class="stat-label">Matches</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="memoryTime">0:00</div>
+          <div class="stat-label">Time</div>
+        </div>
+      </div>
+
+      <div class="memory-grid" id="memoryGrid"></div>
+
+      <div class="game-controls">
+        <button class="btn btn-primary" onclick="initMemoryGame()">
+          <i class="fas fa-redo"></i> New Game
+        </button>
+      </div>
+    </div>
+
+    <!-- Pattern Master Game -->
+    <div id="patternGame" class="game-area">
+      <div class="game-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="patternLevel">1</div>
+          <div class="stat-label">Level</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="patternScore">0</div>
+          <div class="stat-label">Score</div>
+        </div>
+      </div>
+
+      <p class="hint-text" id="patternHint">Watch the pattern...</p>
+
+      <div class="pattern-grid" id="patternGrid"></div>
+
+      <div class="game-controls">
+        <button class="btn btn-primary" id="patternStart" onclick="startPattern()">
+          <i class="fas fa-play"></i> Start
+        </button>
+        <button class="btn btn-secondary" onclick="resetPattern()">
+          <i class="fas fa-redo"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Word Scramble Game -->
+    <div id="wordGame" class="game-area">
+      <div class="game-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="wordScore">0</div>
+          <div class="stat-label">Score</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="wordStreak">0</div>
+          <div class="stat-label">Streak</div>
+        </div>
+      </div>
+
+      <div class="word-display">
+        <div class="category-badge" id="wordCategory">Category</div>
+        <div class="scrambled-word" id="scrambledWord">LOADING</div>
+        <p class="hint-text" id="wordHint">Unscramble the word above</p>
+        <input 
+          type="text" 
+          class="word-input" 
+          id="wordInput" 
+          placeholder="Type your answer..."
+          onkeypress="if(event.key==='Enter') checkWord()"
+        >
+      </div>
+
+      <div class="game-controls">
+        <button class="btn btn-primary" onclick="checkWord()">
+          <i class="fas fa-check"></i> Submit
+        </button>
+        <button class="btn btn-secondary" onclick="skipWord()">
+          <i class="fas fa-forward"></i> Skip
+        </button>
+        <button class="btn btn-warning" onclick="showHint()">
+          <i class="fas fa-lightbulb"></i> Hint
+        </button>
+      </div>
+    </div>
+
+    <!-- Math Speed Game -->
+    <div id="mathGame" class="game-area">
+      <div class="game-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="mathScore">0</div>
+          <div class="stat-label">Score</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="mathStreak">0</div>
+          <div class="stat-label">Streak</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="mathAccuracy">100%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+      </div>
+
+      <div class="timer-display" id="mathTimer">30</div>
+
+      <div class="math-problem">
+        <div class="math-equation" id="mathEquation">5 + 3 = ?</div>
+        <div class="answer-options" id="mathOptions"></div>
+      </div>
+
+      <div class="game-controls">
+        <button class="btn btn-primary" id="mathStart" onclick="startMath()">
+          <i class="fas fa-play"></i> Start (30s)
+        </button>
+        <button class="btn btn-secondary" onclick="resetMath()">
+          <i class="fas fa-redo"></i> Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, setupLogoutButton } from "./js/auth.js";
+
+    requireAuth();
+    setupLogoutButton();
+
+    // Dropdown functionality
+    const dropdown = document.getElementById('userDropdown');
+    const dropdownIcon = dropdown.querySelector('.fa-user');
+
+    dropdownIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('active');
+      }
+    });
+
+    dropdown.querySelector('.dropdown-content').addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // Game Selection
+    let currentGame = 'memory';
+
+    window.selectGame = function(game) {
+      currentGame = game;
+      
+      // Update card selection
+      document.querySelectorAll('.game-card').forEach(card => card.classList.remove('active'));
+      event.target.closest('.game-card').classList.add('active');
+      
+      // Show selected game
+      document.querySelectorAll('.game-area').forEach(area => area.classList.remove('active'));
+      document.getElementById(game + 'Game').classList.add('active');
+    };
+
+    // ==================== MEMORY MATCH GAME ====================
+    const memoryIcons = ['🎯', '🚀', '💡', '🔥', '⭐', '🎨', '🎭', '🎪'];
+    let memoryCards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let moves = 0;
+    let memoryTimer = null;
+    let memorySeconds = 0;
+
+    window.initMemoryGame = function() {
+      memoryCards = [...memoryIcons, ...memoryIcons].sort(() => Math.random() - 0.5);
+      flippedCards = [];
+      matchedPairs = 0;
+      moves = 0;
+      memorySeconds = 0;
+      
+      document.getElementById('memoryMoves').textContent = '0';
+      document.getElementById('memoryMatches').textContent = '0/8';
+      document.getElementById('memoryTime').textContent = '0:00';
+      
+      const grid = document.getElementById('memoryGrid');
+      grid.innerHTML = memoryCards.map((icon, index) => `
+        <div class="memory-card" data-index="${index}" onclick="flipCard(${index})">
+          <span style="display: none;">${icon}</span>
+        </div>
+      `).join('');
+      
+      if (memoryTimer) clearInterval(memoryTimer);
+      memoryTimer = setInterval(() => {
+        memorySeconds++;
+        const mins = Math.floor(memorySeconds / 60);
+        const secs = memorySeconds % 60;
+        document.getElementById('memoryTime').textContent = 
+          `${mins}:${secs.toString().padStart(2, '0')}`;
+      }, 1000);
+    };
+
+    window.flipCard = function(index) {
+      if (flippedCards.length >= 2) return;
+      
+      const card = document.querySelector(`[data-index="${index}"]`);
+      if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      
+      card.classList.add('flipped');
+      card.querySelector('span').style.display = 'block';
+      flippedCards.push({ index, icon: memoryCards[index], element: card });
+      
+      if (flippedCards.length === 2) {
+        moves++;
+        document.getElementById('memoryMoves').textContent = moves;
+        
+        setTimeout(checkMatch, 800);
+      }
+    };
+
+    function checkMatch() {
+      const [card1, card2] = flippedCards;
+      
+      if (card1.icon === card2.icon) {
+        card1.element.classList.add('matched');
+        card2.element.classList.add('matched');
+        card1.element.classList.remove('flipped');
+        card2.element.classList.remove('flipped');
+        
+        matchedPairs++;
+        document.getElementById('memoryMatches').textContent = `${matchedPairs}/8`;
+        
+        if (matchedPairs === 8) {
+          clearInterval(memoryTimer);
+          setTimeout(() => {
+            alert(`🎉 Congratulations! You won in ${moves} moves and ${memorySeconds} seconds!`);
+          }, 500);
+        }
+      } else {
+        setTimeout(() => {
+          card1.element.classList.remove('flipped');
+          card2.element.classList.remove('flipped');
+          card1.element.querySelector('span').style.display = 'none';
+          card2.element.querySelector('span').style.display = 'none';
+        }, 200);
+      }
+      
+      flippedCards = [];
+    }
+
+    // ==================== PATTERN MASTER GAME ====================
+    let patternSequence = [];
+    let playerSequence = [];
+    let patternLevel = 1;
+    let patternScore = 0;
+    let isPlaying = false;
+
+    function initPatternGrid() {
+      const grid = document.getElementById('patternGrid');
+      grid.innerHTML = Array(9).fill(0).map((_, i) => 
+        `<div class="pattern-cell" data-cell="${i}" onclick="patternClick(${i})"></div>`
+      ).join('');
+    }
+
+    window.startPattern = function() {
+      if (isPlaying) return;
+      
+      isPlaying = true;
+      playerSequence = [];
+      patternSequence.push(Math.floor(Math.random() * 9));
+      
+      document.getElementById('patternHint').textContent = 'Watch the pattern...';
+      document.getElementById('patternStart').disabled = true;
+      
+      playPattern();
+    };
+
+    function playPattern() {
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i > 0) {
+          document.querySelector(`[data-cell="${patternSequence[i-1]}"]`).classList.remove('lit');
+        }
+        
+        if (i < patternSequence.length) {
+          document.querySelector(`[data-cell="${patternSequence[i]}"]`).classList.add('lit');
+          i++;
+        } else {
+          document.querySelector(`[data-cell="${patternSequence[i-1]}"]`).classList.remove('lit');
+          clearInterval(interval);
+          document.getElementById('patternHint').textContent = 'Your turn! Repeat the pattern.';
+        }
+      }, 600);
+    }
+
+    window.patternClick = function(cell) {
+      if (!isPlaying || playerSequence.length >= patternSequence.length) return;
+      
+      const cellElement = document.querySelector(`[data-cell="${cell}"]`);
+      cellElement.classList.add('active');
+      setTimeout(() => cellElement.classList.remove('active'), 300);
+      
+      playerSequence.push(cell);
+      
+      // Check if correct
+      if (playerSequence[playerSequence.length - 1] !== patternSequence[playerSequence.length - 1]) {
+        // Wrong!
+        document.getElementById('patternHint').textContent = '❌ Wrong! Game Over.';
+        isPlaying = false;
+        document.getElementById('patternStart').disabled = false;
+        setTimeout(resetPattern, 2000);
+        return;
+      }
+      
+      // Check if pattern complete
+      if (playerSequence.length === patternSequence.length) {
+        patternScore += patternLevel * 10;
+        patternLevel++;
+        
+        document.getElementById('patternLevel').textContent = patternLevel;
+        document.getElementById('patternScore').textContent = patternScore;
+        document.getElementById('patternHint').textContent = '✅ Correct! Next level...';
+        
+        setTimeout(() => {
+          isPlaying = false;
+          document.getElementById('patternStart').disabled = false;
+        }, 1500);
+      }
+    };
+
+    window.resetPattern = function() {
+      patternSequence = [];
+      playerSequence = [];
+      patternLevel = 1;
+      patternScore = 0;
+      isPlaying = false;
+      
+      document.getElementById('patternLevel').textContent = '1';
+      document.getElementById('patternScore').textContent = '0';
+      document.getElementById('patternHint').textContent = 'Watch the pattern...';
+      document.getElementById('patternStart').disabled = false;
+      
+      document.querySelectorAll('.pattern-cell').forEach(cell => {
+        cell.classList.remove('lit', 'active');
+      });
+    };
+
+    // ==================== WORD SCRAMBLE GAME ====================
+    const wordCategories = {
+      'Programming': [
+        { word: 'ALGORITHM', hint: 'Step-by-step procedure' },
+        { word: 'FUNCTION', hint: 'Reusable code block' },
+        { word: 'VARIABLE', hint: 'Storage location' },
+        { word: 'RECURSION', hint: 'Function calling itself' },
+        { word: 'INHERITANCE', hint: 'OOP concept' },
+        { word: 'DATABASE', hint: 'Organized data storage' },
+        { word: 'COMPILER', hint: 'Code translator' },
+        { word: 'DEBUGGING', hint: 'Finding errors' }
+      ],
+      'Data Structures': [
+        { word: 'QUEUE', hint: 'FIFO structure' },
+        { word: 'STACK', hint: 'LIFO structure' },
+        { word: 'TREE', hint: 'Hierarchical structure' },
+        { word: 'GRAPH', hint: 'Nodes and edges' },
+        { word: 'LINKED', hint: '___ List' },
+        { word: 'ARRAY', hint: 'Indexed collection' }
+      ],
+      'Mathematics': [
+        { word: 'THEOREM', hint: 'Proven statement' },
+        { word: 'MATRIX', hint: 'Rectangular array' },
+        { word: 'VECTOR', hint: 'Magnitude and direction' },
+        { word: 'CALCULUS', hint: 'Study of change' },
+        { word: 'DERIVATIVE', hint: 'Rate of change' }
+      ]
+    };
+
+    let currentWord = null;
+    let wordScore = 0;
+    let wordStreak = 0;
+    let hintsUsed = 0;
+
+    function getRandomWord() {
+      const categories = Object.keys(wordCategories);
+      const category = categories[Math.floor(Math.random() * categories.length)];
+      const words = wordCategories[category];
+      const wordObj = words[Math.floor(Math.random() * words.length)];
+      
+      return { ...wordObj, category };
+    }
+
+    function scrambleWord(word) {
+      const arr = word.split('');
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr.join('');
+    }
+
+    function loadNewWord() {
+      currentWord = getRandomWord();
+      let scrambled = scrambleWord(currentWord.word);
+      
+      // Make sure it's actually scrambled
+      while (scrambled === currentWord.word && currentWord.word.length > 3) {
+        scrambled = scrambleWord(currentWord.word);
+      }
+      
+      document.getElementById('wordCategory').textContent = currentWord.category;
+      document.getElementById('scrambledWord').textContent = scrambled;
+      document.getElementById('wordHint').textContent = 'Unscramble the word above';
+      document.getElementById('wordInput').value = '';
+      document.getElementById('wordInput').focus();
+      hintsUsed = 0;
+    }
+
+    window.checkWord = function() {
+      const input = document.getElementById('wordInput').value.toUpperCase().trim();
+      
+      if (!input) return;
+      
+      if (input === currentWord.word) {
+        wordScore += Math.max(10 - hintsUsed * 3, 5);
+        wordStreak++;
+        
+        document.getElementById('wordScore').textContent = wordScore;
+        document.getElementById('wordStreak').textContent = wordStreak;
+        document.getElementById('wordHint').textContent = '✅ Correct!';
+        document.getElementById('wordHint').style.color = 'var(--success)';
+        
+        setTimeout(() => {
+          document.getElementById('wordHint').style.color = '';
+          loadNewWord();
+        }, 1000);
+      } else {
+        wordStreak = 0;
+        document.getElementById('wordStreak').textContent = '0';
+        document.getElementById('wordHint').textContent = '❌ Try again!';
+        document.getElementById('wordHint').style.color = 'var(--error)';
+        
+        setTimeout(() => {
+          document.getElementById('wordHint').style.color = '';
+          document.getElementById('wordHint').textContent = 'Unscramble the word above';
+        }, 1500);
+      }
+    };
+
+    window.skipWord = function() {
+      wordStreak = 0;
+      document.getElementById('wordStreak').textContent = '0';
+      loadNewWord();
+    };
+
+    window.showHint = function() {
+      if (hintsUsed === 0) {
+        document.getElementById('wordHint').textContent = `💡 Hint: ${currentWord.hint}`;
+        hintsUsed++;
+      }
+    };
+
+    // ==================== MATH SPEED GAME ====================
+    let mathScore = 0;
+    let mathStreak = 0;
+    let mathTotal = 0;
+    let mathCorrect = 0;
+    let mathTimeLeft = 30;
+    let mathTimer = null;
+    let currentProblem = null;
+
+    function generateMathProblem() {
+      const operations = ['+', '-', '×'];
+      const op = operations[Math.floor(Math.random() * operations.length)];
+      
+      let num1, num2, answer;
+      
+      if (op === '+') {
+        num1 = Math.floor(Math.random() * 50) + 1;
+        num2 = Math.floor(Math.random() * 50) + 1;
+        answer = num1 + num2;
+      } else if (op === '-') {
+        num1 = Math.floor(Math.random() * 50) + 20;
+        num2 = Math.floor(Math.random() * num1);
+        answer = num1 - num2;
+      } else {
+        num1 = Math.floor(Math.random() * 12) + 1;
+        num2 = Math.floor(Math.random() * 12) + 1;
+        answer = num1 * num2;
+      }
+      
+      return { num1, num2, op, answer };
+    }
+
+    function showMathProblem() {
+      currentProblem = generateMathProblem();
+      document.getElementById('mathEquation').textContent = 
+        `${currentProblem.num1} ${currentProblem.op} ${currentProblem.num2} = ?`;
+      
+      // Generate options
+      const options = [currentProblem.answer];
+      while (options.length < 4) {
+        const wrong = currentProblem.answer + Math.floor(Math.random() * 20) - 10;
+        if (wrong !== currentProblem.answer && !options.includes(wrong) && wrong > 0) {
+          options.push(wrong);
+        }
+      }
+      
+      options.sort(() => Math.random() - 0.5);
+      
+      document.getElementById('mathOptions').innerHTML = options.map(opt => 
+        `<button class="answer-btn" onclick="checkMathAnswer(${opt})">${opt}</button>`
+      ).join('');
+    }
+
+    window.startMath = function() {
+      mathScore = 0;
+      mathStreak = 0;
+      mathTotal = 0;
+      mathCorrect = 0;
+      mathTimeLeft = 30;
+      
+      document.getElementById('mathScore').textContent = '0';
+      document.getElementById('mathStreak').textContent = '0';
+      document.getElementById('mathAccuracy').textContent = '100%';
+      document.getElementById('mathStart').disabled = true;
+      
+      showMathProblem();
+      
+      mathTimer = setInterval(() => {
+        mathTimeLeft--;
+        document.getElementById('mathTimer').textContent = mathTimeLeft;
+        
+        if (mathTimeLeft <= 0) {
+          endMath();
+        }
+      }, 1000);
+    };
+
+    window.checkMathAnswer = function(answer) {
+      const buttons = document.querySelectorAll('.answer-btn');
+      mathTotal++;
+      
+      if (answer === currentProblem.answer) {
+        mathCorrect++;
+        mathScore += (5 + mathStreak);
+        mathStreak++;
+        
+        buttons.forEach(btn => {
+          if (parseInt(btn.textContent) === answer) {
+            btn.classList.add('correct');
+          }
+        });
+        
+        setTimeout(() => {
+          showMathProblem();
+        }, 300);
+      } else {
+        mathStreak = 0;
+        
+        buttons.forEach(btn => {
+          if (parseInt(btn.textContent) === answer) {
+            btn.classList.add('wrong');
+          } else if (parseInt(btn.textContent) === currentProblem.answer) {
+            btn.classList.add('correct');
+          }
+        });
+        
+        setTimeout(() => {
+          showMathProblem();
+        }, 800);
+      }
+      
+      document.getElementById('mathScore').textContent = mathScore;
+      document.getElementById('mathStreak').textContent = mathStreak;
+      
+      const accuracy = mathTotal > 0 ? Math.round((mathCorrect / mathTotal) * 100) : 100;
+      document.getElementById('mathAccuracy').textContent = accuracy + '%';
+    };
+
+    function endMath() {
+      clearInterval(mathTimer);
+      document.getElementById('mathStart').disabled = false;
+      
+      const accuracy = mathTotal > 0 ? Math.round((mathCorrect / mathTotal) * 100) : 0;
+      alert(`⏱️ Time's up!\n\nScore: ${mathScore}\nAnswered: ${mathTotal} questions\nCorrect: ${mathCorrect}\nAccuracy: ${accuracy}%`);
+    }
+
+    window.resetMath = function() {
+      if (mathTimer) clearInterval(mathTimer);
+      
+      mathScore = 0;
+      mathStreak = 0;
+      mathTotal = 0;
+      mathCorrect = 0;
+      mathTimeLeft = 30;
+      
+      document.getElementById('mathScore').textContent = '0';
+      document.getElementById('mathStreak').textContent = '0';
+      document.getElementById('mathAccuracy').textContent = '100%';
+      document.getElementById('mathTimer').textContent = '30';
+      document.getElementById('mathStart').disabled = false;
+      document.getElementById('mathEquation').textContent = '5 + 3 = ?';
+      document.getElementById('mathOptions').innerHTML = '';
+    };
+
+    // Initialize games on load
+    initMemoryGame();
+    initPatternGrid();
+    loadNewWord();
+  </script>
+  <script src="js/theme.js" type="module"></script>
+</body>
+</html>
