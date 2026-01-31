@@ -13,6 +13,8 @@
   z-index: 1000;
   box-shadow: 0 2px 10px var(--shadow);
   border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .appbar h2 {
@@ -28,6 +30,7 @@
   display: flex;
   gap: 20px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .nav-links a {
@@ -36,6 +39,7 @@
   font-weight: 500;
   transition: all 0.3s ease;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .nav-links a:hover,
@@ -48,6 +52,7 @@
   display: flex;
   gap: 20px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .right-icons i {
@@ -103,6 +108,7 @@
   gap: 12px;
   font-size: 14px;
   transition: all 0.3s ease;
+  word-wrap: break-word;
 }
 
 .dropdown-content a:hover {
@@ -145,6 +151,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  word-wrap: break-word;
 }
 
 .sidebar a:hover {
@@ -172,6 +179,7 @@
   align-items: center;
   background: var(--input-bg);
   max-width: 500px;
+  width: 100%;
   border: 2px solid var(--border-color);
   border-radius: 25px;
   padding: 10px 20px;
@@ -181,7 +189,7 @@
 
 .search-bar:focus-within {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .search-bar input {
@@ -192,11 +200,13 @@
   font-size: 16px;
   padding: 0 10px;
   color: var(--text-primary);
+  min-width: 0;
 }
 
 .search-bar i {
   color: var(--text-secondary);
   font-size: 18px;
+  flex-shrink: 0;
 }
 
 /* Content Boxes */
@@ -205,6 +215,7 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 30px;
   padding: 30px 0;
+  width: 100%;
 }
 
 .content-box {
@@ -220,6 +231,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  word-wrap: break-word;
 }
 
 .content-box:hover {
@@ -255,6 +267,7 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 25px;
   margin-top: 30px;
+  width: 100%;
 }
 
 .event-card {
@@ -263,6 +276,7 @@
   padding: 24px;
   border: 2px solid var(--border-color);
   transition: all 0.3s ease;
+  word-wrap: break-word;
 }
 
 .event-card:hover {
@@ -284,22 +298,26 @@
   color: var(--text-secondary);
   font-size: 14px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .event-card .event-date i {
   color: var(--accent-primary);
+  flex-shrink: 0;
 }
 
 .event-actions {
   display: flex;
   gap: 10px;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .event-actions button {
   flex: 1;
   padding: 10px;
   font-size: 13px;
+  min-width: 100px;
 }
 
 /* Modal */
@@ -315,6 +333,7 @@
   justify-content: center;
   align-items: center;
   backdrop-filter: blur(5px);
+  padding: 20px;
 }
 
 .modal.active {
@@ -326,7 +345,7 @@
   padding: 32px;
   border-radius: 20px;
   max-width: 500px;
-  width: 90%;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 40px var(--shadow);
@@ -348,6 +367,7 @@
   margin-bottom: 20px;
   text-align: center;
   color: var(--text-primary);
+  word-wrap: break-word;
 }
 
 .modal-content input {
@@ -365,6 +385,7 @@
   padding: 30px;
   border-radius: 20px;
   margin-top: 30px;
+  width: 100%;
 }
 
 .quiz-question {
@@ -373,6 +394,7 @@
   border-radius: 12px;
   margin-bottom: 20px;
   border-left: 4px solid var(--accent-primary);
+  word-wrap: break-word;
 }
 
 .quiz-question p {
@@ -392,6 +414,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  word-wrap: break-word;
 }
 
 .quiz-options label:hover {
@@ -403,6 +426,7 @@
   width: auto;
   margin-right: 12px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 #timer {
@@ -424,12 +448,16 @@ table {
   background: var(--card-bg);
   border-radius: 10px;
   overflow: hidden;
+  overflow-x: auto;
+  display: block;
 }
 
 th, td {
   padding: 15px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  word-wrap: break-word;
+  min-width: 100px;
 }
 
 th {
@@ -445,30 +473,171 @@ tr:hover {
   background: var(--bg-tertiary);
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 768px) {
   .appbar {
-    flex-direction: column;
-    padding: 15px;
-    gap: 15px;
+    padding: 12px 15px;
+  }
+  
+  .appbar h2 {
+    font-size: 1.25rem;
   }
   
   .nav-links {
     width: 100%;
     justify-content: center;
-    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .nav-links a {
+    padding: 6px 12px;
+    font-size: 14px;
   }
   
   .right-icons {
-    width: 100%;
-    justify-content: center;
+    gap: 15px;
   }
   
   .content-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+  }
+  
+  .content-box {
+    min-height: 180px;
+    padding: 20px;
+  }
+  
+  .content-box i {
+    font-size: 48px;
   }
   
   .event-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
+    padding: 24px;
+  }
+  
+  #timer {
+    font-size: 1.5rem;
+    padding: 15px;
+  }
+  
+  table {
+    font-size: 14px;
+  }
+  
+  th, td {
+    padding: 10px;
+    min-width: 80px;
+  }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 480px) {
+  .appbar {
+    padding: 10px;
+  }
+  
+  .appbar h2 {
+    font-size: 1.1rem;
+  }
+  
+  .nav-links {
+    gap: 8px;
+  }
+  
+  .nav-links a {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .right-icons {
+    gap: 12px;
+  }
+  
+  .right-icons i {
+    font-size: 18px;
+  }
+  
+  .search-bar {
+    padding: 8px 15px;
+  }
+  
+  .search-bar input {
+    font-size: 14px;
+  }
+  
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .content-box {
+    min-height: 150px;
+    padding: 15px;
+  }
+  
+  .content-box i {
+    font-size: 40px;
+    margin-bottom: 15px;
+  }
+  
+  .content-box h3 {
+    font-size: 1.1rem;
+  }
+  
+  .content-box p {
+    font-size: 13px;
+  }
+  
+  .event-card {
+    padding: 16px;
+  }
+  
+  .event-actions {
+    flex-direction: column;
+  }
+  
+  .event-actions button {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .modal {
+    padding: 10px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+  }
+  
+  .quiz-section {
+    padding: 20px;
+  }
+  
+  .quiz-question {
+    padding: 16px;
+  }
+  
+  #timer {
+    font-size: 1.3rem;
+    padding: 12px;
+  }
+  
+  table {
+    font-size: 12px;
+  }
+  
+  th, td {
+    padding: 8px;
+    min-width: 60px;
+  }
+  
+  .dropdown-content {
+    min-width: 180px;
   }
 }

@@ -1,41 +1,41 @@
 /* Root Variables - Light Theme */
 :root[data-theme="light"] {
-  --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-primary: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f8f9fa;
-  --text-primary: #2d3748;
-  --text-secondary: #4a5568;
+  --bg-tertiary: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
   --text-inverse: #ffffff;
-  --accent-primary: #667eea;
-  --accent-secondary: #764ba2;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #2563eb;
   --border-color: #e2e8f0;
-  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow: rgba(37, 99, 235, 0.1);
   --overlay: rgba(0, 0, 0, 0.5);
-  --success: #48bb78;
-  --error: #f56565;
-  --warning: #ed8936;
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
   --card-bg: rgba(255, 255, 255, 0.95);
   --input-bg: #ffffff;
 }
 
 /* Root Variables - Dark Theme */
 :root[data-theme="dark"] {
-  --bg-primary: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-  --bg-secondary: #1a202c;
-  --bg-tertiary: #2d3748;
-  --text-primary: #e2e8f0;
-  --text-secondary: #cbd5e0;
-  --text-inverse: #1a202c;
-  --accent-primary: #805ad5;
-  --accent-secondary: #d53f8c;
-  --border-color: #4a5568;
-  --shadow: rgba(0, 0, 0, 0.3);
+  --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-inverse: #0f172a;
+  --accent-primary: #60a5fa;
+  --accent-secondary: #3b82f6;
+  --border-color: #334155;
+  --shadow: rgba(96, 165, 250, 0.2);
   --overlay: rgba(0, 0, 0, 0.7);
-  --success: #68d391;
-  --error: #fc8181;
-  --warning: #f6ad55;
-  --card-bg: rgba(45, 55, 72, 0.95);
-  --input-bg: #2d3748;
+  --success: #34d399;
+  --error: #f87171;
+  --warning: #fbbf24;
+  --card-bg: rgba(30, 41, 59, 0.95);
+  --input-bg: #1e293b;
 }
 
 /* Global Styles */
@@ -52,6 +52,7 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   transition: all 0.3s ease;
+  overflow-x: hidden;
 }
 
 /* Typography */
@@ -60,6 +61,7 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
   margin-bottom: 1rem;
   color: var(--text-primary);
+  word-wrap: break-word;
 }
 
 h1 { font-size: 2.5rem; }
@@ -72,12 +74,14 @@ h6 { font-size: 1rem; }
 p {
   margin-bottom: 1rem;
   color: var(--text-secondary);
+  word-wrap: break-word;
 }
 
 a {
   color: var(--accent-primary);
   text-decoration: none;
   transition: all 0.3s ease;
+  word-wrap: break-word;
 }
 
 a:hover {
@@ -89,6 +93,7 @@ a:hover {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  width: 100%;
 }
 
 /* Cards */
@@ -100,6 +105,8 @@ a:hover {
   border: 1px solid var(--border-color);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  width: 100%;
+  overflow: hidden;
 }
 
 .card:hover {
@@ -118,6 +125,9 @@ button, .btn {
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn-primary {
@@ -169,12 +179,13 @@ input, select, textarea {
   background: var(--input-bg);
   color: var(--text-primary);
   transition: all 0.3s ease;
+  max-width: 100%;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 label {
@@ -182,6 +193,7 @@ label {
   margin-bottom: 8px;
   font-weight: 500;
   color: var(--text-primary);
+  word-wrap: break-word;
 }
 
 /* Loading */
@@ -230,12 +242,14 @@ label {
 .gap-1 { gap: 0.5rem; }
 .gap-2 { gap: 1rem; }
 .gap-3 { gap: 1.5rem; }
+.flex-wrap { flex-wrap: wrap; }
 
 /* Responsive */
 @media (max-width: 768px) {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.75rem; }
-  h3 { font-size: 1.5rem; }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.1rem; }
   
   .container {
     padding: 15px;
@@ -243,5 +257,35 @@ label {
   
   .card {
     padding: 16px;
+  }
+  
+  button, .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  /* Make all text wrappable on mobile */
+  * {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.1rem; }
+  
+  .container {
+    padding: 10px;
+  }
+  
+  .card {
+    padding: 12px;
+  }
+  
+  button, .btn {
+    padding: 8px 12px;
+    font-size: 12px;
   }
 }
