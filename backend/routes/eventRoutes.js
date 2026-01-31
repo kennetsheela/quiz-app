@@ -165,16 +165,28 @@ router.post("/start-set", verifyToken, async (req, res) => {
 
 /* ===========================
    Submit Set (Student)
+   ⚠️ UPDATED: Now accepts timeTaken parameter
 =========================== */
 router.post("/submit-set", verifyToken, async (req, res) => {
   try {
-    const { participantId, setId, answers } = req.body;
+    // ✅ ADDED: Extract timeTaken from request body
+    const { participantId, setId, answers, timeTaken } = req.body;
+
+    // 🔍 DEBUG: Log received data
+    console.log('📊 Submit Set Request:', {
+      participantId,
+      setId,
+      answersCount: answers?.length || 0,
+      timeTaken: timeTaken || 0,
+      timeTakenType: typeof timeTaken
+    });
 
     const result = await EventService.submitSet({
       participantId,
       setId,
       userId: req.user.uid,
       answers,
+      timeTaken: timeTaken || 0, // ✅ ADDED: Pass timeTaken to service
     });
 
     res.json({
@@ -219,6 +231,15 @@ router.get("/:eventId/participants", verifyToken, async (req, res) => {
     const participants = await EventParticipant.find({
       eventId: req.params.eventId,
     }).sort({ createdAt: -1 });
+
+    // 🔍 DEBUG: Log participant data structure
+    if (participants.length > 0) {
+      console.log('📊 Sample Participant Data:', {
+        rollNo: participants[0].rollNo,
+        setResultsCount: participants[0].setResults?.length || 0,
+        firstResult: participants[0].setResults?.[0] || null
+      });
+    }
 
     res.json({ participants });
   } catch (error) {
@@ -277,11 +298,13 @@ router.get(
       );
 
       if (result.timeUp) {
+        // ✅ UPDATED: Include timeTaken when auto-submitting on time-up
         const submitResult = await EventService.submitSet({
           participantId,
           setId,
           userId: req.user.uid,
           answers: [],
+          timeTaken: result.totalTimeLimit || 0, // Use full time limit
         });
 
         return res.json({
@@ -304,13 +327,15 @@ router.get(
 =========================== */
 router.post("/tab-switch", verifyToken, async (req, res) => {
   try {
-    const { participantId, setId } = req.body;
+    // ✅ UPDATED: Extract timeTaken if provided
+    const { participantId, setId, timeTaken } = req.body;
 
     const submitResult = await EventService.submitSet({
       participantId,
       setId,
       userId: req.user.uid,
       answers: [],
+      timeTaken: timeTaken || 0, // ✅ ADDED: Include timeTaken
     });
 
     res.json({

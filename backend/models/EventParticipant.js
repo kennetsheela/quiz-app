@@ -42,6 +42,12 @@ const EventParticipantSchema = new mongoose.Schema({
         type: Number,
         default: 0
       },
+      // ✅ ADD THIS FIELD - Time spent in seconds
+      timeTaken: {
+        type: Number,
+        default: 0,
+        required: false
+      },
       autoSubmitAt: {
         type: Date,
         default: null
