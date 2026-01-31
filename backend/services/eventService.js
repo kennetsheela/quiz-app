@@ -286,7 +286,10 @@ async function startSet(participantId, setId, userId) {
   };
 }
 
-async function submitSet({ participantId, setId, userId, answers }) {
+// ✅ FIXED: Accept timeTaken parameter from frontend
+async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
+  console.log('📊 Submit received:', { participantId, setId, timeTaken, answersLength: answers?.length });
+  
   const participant = await EventParticipant.findById(participantId);
   
   if (!participant || participant.userId !== userId) {
@@ -306,7 +309,10 @@ async function submitSet({ participantId, setId, userId, answers }) {
 
   const now = new Date();
   const startTime = participant.setResults[resultIndex].startedAt;
-  const timeTaken = Math.floor((now - startTime) / 1000); // seconds
+  
+  // ✅ Use frontend timeTaken if provided, otherwise calculate from timestamps
+  const actualTimeTaken = timeTaken || Math.floor((now - startTime) / 1000);
+  
   const autoSubmitTime = participant.setResults[resultIndex].autoSubmitAt;
   
   if (now > autoSubmitTime) {
@@ -342,12 +348,12 @@ async function submitSet({ participantId, setId, userId, answers }) {
     });
   });
 
-  // ✅ FIXED: Store detailed results
+  // ✅ Store ALL data including timeTaken
   participant.setResults[resultIndex].score = score;
   participant.setResults[resultIndex].completedAt = now;
   participant.setResults[resultIndex].totalQuestions = questions.length;
   participant.setResults[resultIndex].answers = answers;
-  participant.setResults[resultIndex].timeTaken = timeTaken;
+  participant.setResults[resultIndex].timeTaken = actualTimeTaken; // ✅ Store in seconds
   participant.setResults[resultIndex].correctAnswers = correctAnswers;
   participant.setResults[resultIndex].wrongAnswers = wrongAnswers;
   participant.setResults[resultIndex].skipped = skipped;
@@ -355,8 +361,10 @@ async function submitSet({ participantId, setId, userId, answers }) {
   await participant.save();
 
   const percentage = Math.round((score / questions.length) * 100);
+  const timeInMinutes = Math.floor(actualTimeTaken / 60);
+  const timeInSeconds = actualTimeTaken % 60;
 
-  console.log(`✅ Quiz submitted: ${score}/${questions.length} (${percentage}%) by user ${userId}`);
+  console.log(`✅ Quiz submitted: ${score}/${questions.length} (${percentage}%) in ${timeInMinutes}m ${timeInSeconds}s by user ${userId}`);
 
   return { 
     score, 
@@ -366,7 +374,7 @@ async function submitSet({ participantId, setId, userId, answers }) {
     skipped,
     results,
     percentage,
-    timeTaken: Math.floor(timeTaken / 60) // minutes
+    timeTaken: actualTimeTaken // ✅ Return in seconds
   };
 }
 
