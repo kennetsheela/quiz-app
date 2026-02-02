@@ -1,4 +1,3 @@
-practiceRoutes.js
 const express = require("express");
 const router = express.Router();
 const { verifyToken } = require("./authRoutes");
@@ -157,7 +156,7 @@ router.post("/sets/start", verifyToken, async (req, res) => {
   }
 });
 
-// ⭐ UPDATED: Submit a practice set with per-question time tracking
+// ⭐ CORRECTED: Submit a practice set with per-question time tracking
 router.post("/sets/submit", verifyToken, async (req, res) => {
   try {
     const { category, topic, level, setNumber, answers, timings } = req.body;
@@ -166,7 +165,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    console.log("📝 Submitting set:", { 
+    console.log("📝 [Backend] Submitting set:", { 
       category, 
       topic, 
       level, 
@@ -177,7 +176,11 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     });
     
     if (timings && timings.length > 0) {
-      console.log("⏱️ Received per-question timings:", timings);
+      console.log("⏱️ [Backend] Received per-question timings:", timings);
+      console.log("⏱️ [Backend] First timing:", timings[0], "seconds");
+      console.log("⏱️ [Backend] Last timing:", timings[timings.length - 1], "seconds");
+    } else {
+      console.warn("⚠️ [Backend] NO TIMINGS RECEIVED!");
     }
 
     // Find the practice set to get correct answers
@@ -192,7 +195,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Practice set not found" });
     }
 
-    console.log("✅ Found set with", set.questions.length, "questions");
+    console.log("✅ [Backend] Found set with", set.questions.length, "questions");
 
     // Find user's progress
     const progress = await PracticeProgress.findOne({
@@ -217,8 +220,10 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correctAnswer;
       
-      // ⭐ Get per-question time (handle missing timings gracefully)
-      const timeSpent = timings && timings[index] !== undefined ? timings[index] : null;
+      // ⭐ CRITICAL FIX: Get per-question time and ensure it's included in results
+      const timeSpent = timings && timings[index] !== undefined && timings[index] !== null 
+        ? timings[index] 
+        : null;
       
       const isCorrect = userAnswer && 
                        normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
@@ -227,28 +232,42 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
         score++;
       }
       
-      console.log(`Question ${index + 1}:`, {
-        userAnswer,
-        correctAnswer,
+      console.log(`[Backend] Q${index + 1}:`, {
+        userAnswer: userAnswer?.substring(0, 20),
+        correctAnswer: correctAnswer?.substring(0, 20),
         isCorrect,
-        timeSpent,
-        normalized_user: normalizeAnswer(userAnswer),
-        normalized_correct: normalizeAnswer(correctAnswer)
+        timeSpent: timeSpent !== null ? `${timeSpent}s` : 'NULL'
       });
       
-      results.push({
+      // ⭐ CRITICAL: Ensure timeSpent is ALWAYS included in the result object
+      const resultObject = {
         question: question.question,
         questionId: question._id.toString(),
         selectedAnswer: userAnswer || null,
         correctAnswer: correctAnswer,
         isCorrect: isCorrect,
         explanation: question.explanation || null,
-        timeSpent: timeSpent // ⭐ Include per-question time
-      });
+        timeSpent: timeSpent  // ⭐ THIS MUST BE HERE!
+      };
+      
+      results.push(resultObject);
     });
 
-    console.log("📊 Final score:", score, "/", set.questions.length);
-    console.log("📋 Results array:", results.length, "items");
+    console.log("📊 [Backend] Final score:", score, "/", set.questions.length);
+    console.log("📋 [Backend] Results array length:", results.length);
+    
+    // ⭐ VERIFY: Check that results have timing data
+    const resultsWithTime = results.filter(r => r.timeSpent !== null && r.timeSpent !== undefined);
+    console.log(`⏱️ [Backend] ${resultsWithTime.length}/${results.length} results have timing data`);
+    
+    if (resultsWithTime.length > 0) {
+      console.log("✅ [Backend] First result with time:", {
+        question: results[0].question.substring(0, 30) + "...",
+        timeSpent: results[0].timeSpent
+      });
+    } else {
+      console.error("❌ [Backend] NO RESULTS HAVE TIMING DATA! This will break the frontend!");
+    }
 
     // ⭐ Update progress with per-question timing data
     progress.completed = true;
@@ -263,19 +282,30 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     progress.isActive = false;
     await progress.save();
 
-    console.log("✅ Set submitted successfully. Score:", score, "/", set.questions.length);
+    console.log("✅ [Backend] Set submitted successfully. Score:", score, "/", set.questions.length);
 
-    res.json({
+    // ⭐ CRITICAL: Build response object with timing data
+    const responseObject = {
       success: true,
       message: "Set submitted successfully",
       score,
       totalQuestions: set.questions.length,
       percentage: Math.round((score / set.questions.length) * 100),
-      results, // ⭐ Now includes timeSpent for each question
+      results: results, // ⭐ This MUST include timeSpent for each question
       completedAt: progress.completedAt
+    };
+    
+    // ⭐ FINAL VERIFICATION: Log what we're sending back
+    console.log("📤 [Backend] Sending response with", responseObject.results.length, "results");
+    console.log("🔍 [Backend] First result being sent:", {
+      hasTimeSpent: 'timeSpent' in responseObject.results[0],
+      timeSpent: responseObject.results[0].timeSpent,
+      keys: Object.keys(responseObject.results[0])
     });
+
+    res.json(responseObject);
   } catch (error) {
-    console.error("❌ Submit set error:", error);
+    console.error("❌ [Backend] Submit set error:", error);
     res.status(500).json({ 
       error: error.message,
       details: "Failed to submit quiz answers"
@@ -434,12 +464,12 @@ router.post("/custom-questions", verifyToken, async (req, res) => {
   }
 });
 
-// ⭐ UPDATED: Submit custom quiz with per-question time tracking
+// ⭐ CORRECTED: Submit custom quiz with per-question time tracking
 router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
   try {
     const { questionIds, answers, timeSpent, timings, quizConfig } = req.body;
 
-    console.log("📝 Submitting custom quiz:", { 
+    console.log("📝 [Backend] Submitting custom quiz:", { 
       questionCount: questionIds.length, 
       timeSpent,
       hasTimings: !!timings,
@@ -447,7 +477,7 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
     });
 
     if (timings && timings.length > 0) {
-      console.log("⏱️ Received per-question timings:", timings);
+      console.log("⏱️ [Backend] Received per-question timings:", timings);
     }
 
     // Fetch questions with correct answers
@@ -463,8 +493,10 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correctAnswer;
       
-      // ⭐ Get per-question time (handle missing timings gracefully)
-      const questionTime = timings && timings[index] !== undefined ? timings[index] : null;
+      // ⭐ CRITICAL FIX: Get per-question time and ensure it's included in results
+      const questionTime = timings && timings[index] !== undefined && timings[index] !== null 
+        ? timings[index] 
+        : null;
       
       const isCorrect = userAnswer && 
                        userAnswer.toString().trim().toLowerCase() === 
@@ -472,6 +504,7 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
 
       if (isCorrect) score++;
 
+      // ⭐ CRITICAL: Ensure timeSpent is included in result object
       results.push({
         questionId: question._id.toString(),
         question: question.question,
@@ -489,7 +522,8 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
     const totalQuestions = questions.length;
     const percentage = Math.round((score / totalQuestions) * 100);
 
-    console.log("✅ Custom quiz submitted. Score:", score, "/", totalQuestions);
+    console.log("✅ [Backend] Custom quiz submitted. Score:", score, "/", totalQuestions);
+    console.log(`⏱️ [Backend] ${results.filter(r => r.timeSpent !== null).length}/${results.length} results have timing data`);
 
     res.json({
       success: true,
@@ -502,7 +536,7 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Submit custom quiz error:", error);
+    console.error("❌ [Backend] Submit custom quiz error:", error);
     res.status(500).json({ 
       error: error.message,
       details: "Failed to submit quiz"
