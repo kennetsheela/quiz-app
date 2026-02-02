@@ -149,6 +149,9 @@ export const authAPI = {
 };
 
 // Practice APIs
+// ===== UPDATED api.js - Replace your practiceAPI section =====
+
+// Practice APIs
 export const practiceAPI = {
   getSets: (category, topic, level) => 
     apiCall(`/practice/sets?category=${category}&topic=${topic}&level=${level}`),
@@ -160,10 +163,58 @@ export const practiceAPI = {
     body: JSON.stringify(data)
   }),
   
-  submitSet: (data) => apiCall("/practice/sets/submit", {
-    method: "POST",
-    body: JSON.stringify(data)
-  }),
+  // ⭐ UPDATED: Add debug logging to verify timings are being sent
+  submitSet: (data) => {
+    // ⭐ Debug: Log what we're sending
+    console.log("📤 [api.js] submitSet called with:", {
+      category: data.category,
+      topic: data.topic,
+      level: data.level,
+      setNumber: data.setNumber,
+      answersCount: data.answers?.length,
+      timingsCount: data.timings?.length,
+      hasTimings: !!data.timings,
+      timings: data.timings
+    });
+    
+    // ⭐ Verify data structure before sending
+    if (!data.timings) {
+      console.warn("⚠️ [api.js] WARNING: No timings in data object!");
+    } else if (data.timings.length === 0) {
+      console.warn("⚠️ [api.js] WARNING: Timings array is empty!");
+    } else {
+      console.log("✅ [api.js] Timings present:", data.timings.length, "items");
+    }
+    
+    return apiCall("/practice/sets/submit", {
+      method: "POST",
+      body: JSON.stringify(data)
+    }).then(result => {
+      // ⭐ Debug: Log what we received back
+      console.log("📥 [api.js] submitSet response:", result);
+      
+      if (result.results && result.results.length > 0) {
+        const firstResult = result.results[0];
+        console.log("🔍 [api.js] First result:", {
+          question: firstResult.question?.substring(0, 50) + "...",
+          hasTimeSpent: firstResult.timeSpent !== undefined,
+          timeSpent: firstResult.timeSpent
+        });
+        
+        const hasTimeData = result.results.some(r => 
+          r.timeSpent !== undefined && r.timeSpent !== null
+        );
+        
+        if (hasTimeData) {
+          console.log("✅ [api.js] Backend returned per-question time data!");
+        } else {
+          console.error("❌ [api.js] Backend did NOT return per-question time data!");
+        }
+      }
+      
+      return result;
+    });
+  },
   
   getProgress: () => apiCall("/practice/progress"),
   
