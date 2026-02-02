@@ -159,16 +159,29 @@ router.post("/sets/start", verifyToken, async (req, res) => {
 // Submit a practice set
 // Replace the /sets/submit endpoint in your practiceRoutes.js with this:
 
+// Updated /sets/submit endpoint with timing support
+// Replace your existing /sets/submit endpoint with this:
+
 router.post("/sets/submit", verifyToken, async (req, res) => {
   try {
-    const { category, topic, level, setNumber, answers } = req.body;
+    const { category, topic, level, setNumber, answers, timings } = req.body; // ⭐ Added timings
 
     if (!category || !topic || !level || !setNumber || !answers) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    console.log("📝 Submitting set:", { category, topic, level, setNumber, answersCount: answers.length });
-    console.log("📦 Received answers format:", answers);
+    console.log("📝 Submitting set:", { 
+      category, 
+      topic, 
+      level, 
+      setNumber, 
+      answersCount: answers.length,
+      hasTimings: !!timings // ⭐ Log if timings are present
+    });
+    
+    if (timings) {
+      console.log("⏱️ Received timings:", timings);
+    }
 
     // Find the practice set to get correct answers
     const set = await PracticeSet.findOne({ 
@@ -197,19 +210,17 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Progress record not found. Please start the set first." });
     }
 
-    // ✅ FIX: Calculate score based on array of answers
+    // Calculate score and build results
     let score = 0;
     const results = [];
 
-    // Normalize function for string comparison
     const normalizeAnswer = (ans) => ans ? ans.toString().trim().toLowerCase() : '';
 
-    // Iterate through questions in order
     set.questions.forEach((question, index) => {
-      const userAnswer = answers[index]; // Get answer by index
+      const userAnswer = answers[index];
       const correctAnswer = question.correctAnswer;
+      const timeSpent = timings && timings[index] ? timings[index] : null; // ⭐ Get timing for this question
       
-      // Compare normalized answers
       const isCorrect = userAnswer && 
                        normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
       
@@ -221,6 +232,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
         userAnswer,
         correctAnswer,
         isCorrect,
+        timeSpent, // ⭐ Log time spent
         normalized_user: normalizeAnswer(userAnswer),
         normalized_correct: normalizeAnswer(correctAnswer)
       });
@@ -231,7 +243,8 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
         selectedAnswer: userAnswer || null,
         correctAnswer: correctAnswer,
         isCorrect: isCorrect,
-        explanation: question.explanation || null
+        explanation: question.explanation || null,
+        timeSpent: timeSpent // ⭐ Include time spent in response
       });
     });
 
@@ -245,21 +258,21 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     progress.answers = results.map(r => ({
       questionId: r.questionId,
       selectedAnswer: r.selectedAnswer,
-      isCorrect: r.isCorrect
+      isCorrect: r.isCorrect,
+      timeSpent: r.timeSpent // ⭐ Store time spent in progress
     }));
     progress.isActive = false;
     await progress.save();
 
     console.log("✅ Set submitted successfully. Score:", score, "/", set.questions.length);
 
-    // ✅ FIX: Return detailed results with question text and explanations
     res.json({
       success: true,
       message: "Set submitted successfully",
       score,
       totalQuestions: set.questions.length,
       percentage: Math.round((score / set.questions.length) * 100),
-      results, // Include full results with questions and explanations
+      results, // ⭐ Now includes timeSpent for each question
       completedAt: progress.completedAt
     });
   } catch (error) {

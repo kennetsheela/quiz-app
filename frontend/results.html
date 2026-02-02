@@ -366,7 +366,7 @@
         </div>
       </div>
 
-      <!-- Time Breakdown Section -->
+      <!-- Time Breakdown Section - Only shows if per-question time data is available -->
       <div class="time-breakdown" id="timeBreakdown" style="display: none;">
         <h3>
           <i class="fas fa-stopwatch"></i>
@@ -441,9 +441,20 @@
       return 'normal';
     }
 
+    // ✅ NEW: Check if per-question time data is available
+    function hasPerQuestionTimeData(results) {
+      if (!results || results.length === 0) return false;
+      
+      // Check if at least one question has time data
+      return results.some(r => {
+        const time = r.timeSpent || r.timeTaken || r.duration;
+        return time !== undefined && time !== null && time > 0;
+      });
+    }
+
     function calculateTimeStats(results) {
       const times = results
-        .map(r => r.timeSpent)
+        .map(r => r.timeSpent || r.timeTaken || r.duration)
         .filter(t => t !== undefined && t !== null && t > 0);
       
       if (times.length === 0) return null;
@@ -462,28 +473,9 @@
         
         const storedResults = sessionStorage.getItem('quizResults');
         
-        console.log("📦 Raw stored results:", storedResults);
-        
         if (storedResults) {
           console.log("✅ Found stored results");
           resultsData = JSON.parse(storedResults);
-          console.log("📊 Parsed results data:", resultsData);
-          
-          // 🔍 CRITICAL DEBUG: Log the actual structure
-          console.log("🔍 CRITICAL - Score from backend:", resultsData.score);
-          console.log("🔍 CRITICAL - Total questions:", resultsData.totalQuestions);
-          console.log("🔍 CRITICAL - Results array:", resultsData.results);
-          
-          if (resultsData.results && resultsData.results.length > 0) {
-            console.log("🔍 CRITICAL - First result structure:", resultsData.results[0]);
-            console.log("🔍 CRITICAL - First result keys:", Object.keys(resultsData.results[0]));
-            console.log("🔍 CRITICAL - Time data:", {
-              timeSpent: resultsData.results[0].timeSpent,
-              timeTaken: resultsData.results[0].timeTaken,
-              duration: resultsData.results[0].duration
-            });
-          }
-          
           displayResults(resultsData);
           sessionStorage.removeItem('quizResults');
         } else {
@@ -520,12 +512,9 @@
     function displayResults(data) {
       console.log("🎨 Displaying full results:", data);
       
-      // ✅ FIX: Use the score from backend, don't recalculate
       const score = data.score || 0;
       const totalQuestions = data.totalQuestions || 0;
       const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
-      
-      console.log("📊 Using score from backend:", score, "/", totalQuestions);
       
       // Update score display
       document.getElementById('scoreDisplay').textContent = `${score}/${totalQuestions}`;
@@ -534,16 +523,13 @@
       document.getElementById('incorrectCount').textContent = totalQuestions - score;
       document.getElementById('accuracy').textContent = percentage + '%';
       
-      // Display time spent
+      // Display time spent (total time only)
       const timeSpent = data.timeSpent;
-      console.log("⏱️ Time spent value:", timeSpent);
       if (timeSpent !== undefined && timeSpent !== null) {
         const minutes = Math.floor(timeSpent / 60);
         const seconds = timeSpent % 60;
         document.getElementById('timeSpent').textContent = `${minutes}m ${seconds}s`;
-        console.log("⏱️ Displayed time:", `${minutes}m ${seconds}s`);
       } else {
-        console.warn("⚠️ Time spent not provided");
         document.getElementById('timeSpent').textContent = "N/A";
       }
       
@@ -564,60 +550,52 @@
         badge.className = 'performance-badge badge-poor';
       }
       
-      // Calculate time statistics
+      // ✅ NEW: Only calculate time statistics if per-question data exists
       let timeStats = null;
-      if (data.results && data.results.length > 0) {
+      const hasTimeData = hasPerQuestionTimeData(data.results);
+      
+      if (hasTimeData) {
         timeStats = calculateTimeStats(data.results);
         
         if (timeStats) {
-          console.log("⏱️ Time statistics:", timeStats);
+          console.log("⏱️ Time statistics available:", timeStats);
           document.getElementById('timeBreakdown').style.display = 'block';
           document.getElementById('avgTimePerQuestion').textContent = `${timeStats.avg}s`;
           document.getElementById('fastestQuestion').textContent = `${timeStats.fastest}s`;
           document.getElementById('slowestQuestion').textContent = `${timeStats.slowest}s`;
         }
+      } else {
+        console.log("ℹ️ Per-question time data not available - hiding time analysis");
       }
       
       // Display detailed results
       if (data.results && data.results.length > 0) {
         const questionsHTML = data.results.map((result, index) => {
-          // ✅ FIX: Try multiple possible field names and normalize strings for comparison
           const normalizeAnswer = (ans) => ans ? ans.toString().trim().toLowerCase() : '';
           
-          // Try different field names that backend might use
           const selectedAnswer = result.selectedAnswer || result.userAnswer || result.answer || null;
           const correctAnswer = result.correctAnswer || result.correct || null;
           
-          // Check isCorrect field or calculate it
           let isCorrect = result.isCorrect;
           if (isCorrect === undefined || isCorrect === null) {
-            // Calculate it by comparing normalized answers
             isCorrect = selectedAnswer && correctAnswer && 
                        normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer);
           }
           
-          // Get time spent for this question (try multiple field names)
+          // ✅ NEW: Only get time if available
           const questionTime = result.timeSpent || result.timeTaken || result.duration || null;
+          const showTimeForThisQuestion = hasTimeData && (questionTime !== null && questionTime !== undefined);
           
-          console.log(`Question ${index + 1}:`, {
-            isCorrect,
-            selectedAnswer,
-            correctAnswer,
-            questionTime,
-            normalized_selected: normalizeAnswer(selectedAnswer),
-            normalized_correct: normalizeAnswer(correctAnswer),
-            match: normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer)
-          });
-
-          // Determine time badge class
-          const timeClass = timeStats ? getTimeSpeedClass(questionTime, timeStats.avg) : 'normal';
+          const timeClass = timeStats && showTimeForThisQuestion 
+            ? getTimeSpeedClass(questionTime, timeStats.avg) 
+            : 'normal';
           
           return `
             <div class="question-item ${isCorrect ? 'correct' : 'incorrect'}">
               <div class="question-header">
                 <span class="question-number">Question ${index + 1}</span>
                 <div class="question-meta">
-                  ${questionTime !== null && questionTime !== undefined ? `
+                  ${showTimeForThisQuestion ? `
                     <span class="time-spent-badge ${timeClass}">
                       <i class="fas fa-clock"></i>
                       ${formatTime(questionTime)}
