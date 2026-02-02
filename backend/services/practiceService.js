@@ -82,7 +82,8 @@ async function startSet({ userId, category, topic, level, setNumber }) {
   return progress;
 }
 
-async function submitSet({ userId, category, topic, level, setNumber, answers }) {
+// ⭐ UPDATED: Added timings parameter for per-question time tracking
+async function submitSet({ userId, category, topic, level, setNumber, answers, timings }) {
   const progress = await PracticeProgress.findOne({
     userId,
     category,
@@ -116,6 +117,14 @@ async function submitSet({ userId, category, topic, level, setNumber, answers })
     throw new Error("Time limit exceeded");
   }
 
+  // ⭐ Log timing data if present
+  if (timings && timings.length > 0) {
+    console.log("⏱️ [PracticeService] Received per-question timings:", timings);
+    console.log("⏱️ [PracticeService] Total time from timings:", timings.reduce((sum, t) => sum + t, 0), "seconds");
+  } else {
+    console.log("⚠️ [PracticeService] No timing data received");
+  }
+
   // Calculate score
   let score = 0;
   const results = [];
@@ -123,6 +132,9 @@ async function submitSet({ userId, category, topic, level, setNumber, answers })
   set.questions.forEach((question, index) => {
     const userAnswer = answers[index];
     const isCorrect = userAnswer === question.correctAnswer;
+    
+    // ⭐ Get per-question time (handle missing timings gracefully)
+    const timeSpent = timings && timings[index] !== undefined ? timings[index] : null;
     
     if (isCorrect) score++;
 
@@ -132,26 +144,30 @@ async function submitSet({ userId, category, topic, level, setNumber, answers })
       selectedAnswer: userAnswer,
       correctAnswer: question.correctAnswer,
       isCorrect,
-      explanation: question.explanation
+      explanation: question.explanation,
+      timeSpent: timeSpent  // ⭐ Include per-question time
     });
   });
 
-  // Update progress
+  // ⭐ Update progress with per-question timing data
   progress.completed = true;
   progress.score = score;
   progress.completedAt = new Date();
   progress.answers = results.map(r => ({
     questionId: r.questionId,
     selectedAnswer: r.selectedAnswer,
-    isCorrect: r.isCorrect
+    isCorrect: r.isCorrect,
+    timeSpent: r.timeSpent  // ⭐ Store per-question time
   }));
 
   await progress.save();
 
+  console.log("✅ [PracticeService] Progress saved with timing data");
+
   return {
     score,
     totalQuestions: set.questions.length,
-    results,
+    results,  // ⭐ Now includes timeSpent for each question
     completedAt: progress.completedAt
   };
 }

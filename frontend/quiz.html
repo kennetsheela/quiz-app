@@ -226,6 +226,26 @@
       margin: 20px;
     }
 
+    /* Debug panel for time tracking */
+    .debug-panel {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #0f0;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      max-width: 300px;
+      z-index: 10000;
+      display: none; /* Hidden by default, enable for debugging */
+    }
+
+    .debug-panel.active {
+      display: block;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .quiz-header {
@@ -290,6 +310,11 @@
     </div>
   </div>
 
+  <!-- Debug panel for development (hidden by default) -->
+  <div class="debug-panel" id="debugPanel">
+    <div id="debugContent"></div>
+  </div>
+
   <div class="submit-modal" id="submitModal">
     <div class="modal-content">
       <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--warning); margin-bottom: 20px;"></i>
@@ -317,9 +342,12 @@
     let isSubmitting = false;
     let quizStartTime = null;
     
-    // ⭐ NEW: Per-question time tracking
+    // ⭐ Per-question time tracking
     let questionTimings = [];
     let questionStartTime = null;
+
+    // Debug mode - set to true to enable debug panel
+    const DEBUG_MODE = false;
 
     const TAB_KEY = `QUIZ_TAB_${window.location.pathname}`;
     const TAB_ID = Date.now().toString();
@@ -350,6 +378,26 @@
     const level = params.get('level');
     const setNumber = parseInt(params.get('set'));
 
+    // ⭐ Debug helper functions
+    function updateDebugPanel() {
+      if (!DEBUG_MODE) return;
+      
+      const debugPanel = document.getElementById('debugPanel');
+      const debugContent = document.getElementById('debugContent');
+      
+      if (debugPanel && debugContent) {
+        debugPanel.classList.add('active');
+        debugContent.innerHTML = `
+          <strong>Time Tracking Debug</strong><br>
+          Current Q: ${currentQuestion + 1}/${questions.length}<br>
+          Q Start: ${questionStartTime ? new Date(questionStartTime).toLocaleTimeString() : 'N/A'}<br>
+          Current Time: ${questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) + 's' : 'N/A'}<br>
+          Timings: [${questionTimings.map(t => t + 's').join(', ')}]<br>
+          Total: ${questionTimings.reduce((sum, t) => sum + t, 0)}s
+        `;
+      }
+    }
+
     async function initQuiz() {
       try {
         currentUser = await requireAuth();
@@ -370,7 +418,7 @@
         startTime = new Date(startResult.progress.startedAt);
         quizStartTime = Date.now();
         
-        console.log("⏱️ Quiz start time initialized:", quizStartTime);
+        console.log("⏱️ Quiz start time initialized:", new Date(quizStartTime).toISOString());
         
         timeRemaining = (startResult.progress.timeLimit || 10) * 60;
 
@@ -387,8 +435,9 @@
         questions = questionsData.questions;
         answers = new Array(questions.length).fill(null);
         
-        // ⭐ NEW: Initialize timing array
+        // ⭐ Initialize timing array with zeros
         questionTimings = new Array(questions.length).fill(0);
+        console.log("⏱️ Initialized timing array:", questionTimings);
 
         document.getElementById("quizTitle").textContent =
           `${formatText(category)} - ${formatText(topic)}`;
@@ -398,6 +447,9 @@
         renderQuestionNav();
         renderQuestion();
         startTimer();
+
+        // ⭐ Start timer for first question
+        startQuestionTimer();
 
         window.addEventListener('beforeunload', handleBeforeUnload);
 
@@ -415,6 +467,7 @@
       timerInterval = setInterval(() => {
         timeRemaining--;
         updateTimerDisplay();
+        updateDebugPanel(); // Update debug info
 
         if (timeRemaining <= 60) {
           document.getElementById("timer").classList.add("warning");
@@ -435,18 +488,26 @@
         `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
     }
 
-    // ⭐ NEW: Record time when question loads
+    // ⭐ Start timing for current question
     function startQuestionTimer() {
       questionStartTime = Date.now();
-      console.log(`⏱️ Started timer for question ${currentQuestion + 1}`);
+      console.log(`⏱️ [Q${currentQuestion + 1}] Timer started at:`, new Date(questionStartTime).toLocaleTimeString());
+      updateDebugPanel();
     }
 
-    // ⭐ NEW: Calculate and store time when leaving question
+    // ⭐ Stop timing and accumulate time for current question
     function stopQuestionTimer() {
       if (questionStartTime) {
         const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
+        
+        // ⭐ Accumulate time (in case user comes back to this question)
         questionTimings[currentQuestion] += timeSpent;
-        console.log(`⏱️ Question ${currentQuestion + 1} time: ${questionTimings[currentQuestion]}s (added ${timeSpent}s)`);
+        
+        console.log(`⏱️ [Q${currentQuestion + 1}] Time spent: ${timeSpent}s (Total: ${questionTimings[currentQuestion]}s)`);
+        
+        // Reset start time
+        questionStartTime = null;
+        updateDebugPanel();
       }
     }
 
@@ -457,27 +518,29 @@
 
     window.nextQuestion = function() {
       if (currentQuestion < questions.length - 1) {
-        stopQuestionTimer(); // ⭐ NEW: Stop timer before moving
+        stopQuestionTimer(); // ⭐ Stop timer before moving
         currentQuestion++;
         renderQuestion();
-        startQuestionTimer(); // ⭐ NEW: Start timer for new question
+        startQuestionTimer(); // ⭐ Start timer for new question
       }
     };
 
     window.prevQuestion = function() {
       if (currentQuestion > 0) {
-        stopQuestionTimer(); // ⭐ NEW: Stop timer before moving
+        stopQuestionTimer(); // ⭐ Stop timer before moving
         currentQuestion--;
         renderQuestion();
-        startQuestionTimer(); // ⭐ NEW: Start timer for new question
+        startQuestionTimer(); // ⭐ Start timer for new question
       }
     };
 
     window.goToQuestion = function(index) {
-      stopQuestionTimer(); // ⭐ NEW: Stop timer before moving
+      if (index === currentQuestion) return; // Already on this question
+      
+      stopQuestionTimer(); // ⭐ Stop timer before moving
       currentQuestion = index;
       renderQuestion();
-      startQuestionTimer(); // ⭐ NEW: Start timer for new question
+      startQuestionTimer(); // ⭐ Start timer for new question
     };
 
     window.confirmSubmit = function() {
@@ -504,8 +567,7 @@
     function renderQuestion() {
       const q = questions[currentQuestion];
       
-      console.log(`Question ${currentQuestion + 1}:`, q.question);
-      console.log(`Question length:`, q.question?.length);
+      console.log(`📝 Rendering Question ${currentQuestion + 1}:`, q.question?.substring(0, 50) + '...');
       
       const optionLabels = ['A','B','C','D'];
       
@@ -568,10 +630,7 @@
         if (answers[i]!==null) btn.classList.add("answered");
       });
       
-      // ⭐ NEW: Start timer for first question after render
-      if (currentQuestion === 0 && !questionStartTime) {
-        startQuestionTimer();
-      }
+      updateDebugPanel();
     }
 
     window.submitQuiz = async function() {
@@ -579,7 +638,7 @@
       
       isSubmitting = true;
       
-      // ⭐ NEW: Stop timer for current question before submitting
+      // ⭐ Stop timer for current question before submitting
       stopQuestionTimer();
       
       document.getElementById("submitModal").classList.remove("active");
@@ -591,21 +650,30 @@
         
         localStorage.removeItem(TAB_KEY);
 
-        console.log("📤 Submitting answers:", answers);
-        console.log("⏱️ Submitting timings:", questionTimings); // ⭐ NEW: Log timings
+        console.log("📤 Submitting quiz...");
+        console.log("📋 Answers:", answers);
+        console.log("⏱️ Per-question timings:", questionTimings);
+        console.log("⏱️ Total time tracked:", questionTimings.reduce((sum, t) => sum + t, 0), "seconds");
 
-        // ⭐ NEW: Submit both answers and timings
+        // ⭐ Verify timing data before submission
+        const validTimings = questionTimings.every(t => t >= 0);
+        if (!validTimings) {
+          console.error("❌ Invalid timing data detected!", questionTimings);
+        }
+
+        // ⭐ Submit with per-question timings
         const result = await practiceAPI.submitSet({
           category, 
           topic, 
           level, 
           setNumber, 
           answers,
-          timings: questionTimings // ⭐ NEW: Send per-question timings
+          timings: questionTimings // ⭐ Send per-question timings array
         });
 
         console.log("✅ Submit result:", result);
 
+        // Calculate total time spent
         const currentTime = Date.now();
         let timeSpentSeconds = 0;
         
@@ -615,17 +683,24 @@
           timeSpentSeconds = Math.floor((currentTime - startTime.getTime()) / 1000);
         }
         
-        console.log("⏱️ Total time spent (seconds):", timeSpentSeconds);
+        console.log("⏱️ Total quiz time:", timeSpentSeconds, "seconds");
 
         const resultsToStore = {
           score: result.score,
           totalQuestions: result.totalQuestions,
-          results: result.results,
+          results: result.results, // ⭐ Should contain timeSpent per question
           timeSpent: timeSpentSeconds,
           completedAt: result.completedAt
         };
         
         console.log("💾 Storing results in sessionStorage:", resultsToStore);
+        
+        // ⭐ Verify that results contain per-question time data
+        if (result.results && result.results.length > 0) {
+          const hasTimeData = result.results.some(r => r.timeSpent !== undefined && r.timeSpent !== null);
+          console.log(hasTimeData ? "✅ Per-question time data present in results" : "⚠️ No per-question time data in results");
+        }
+        
         sessionStorage.setItem('quizResults', JSON.stringify(resultsToStore));
         
         window.location.href = 

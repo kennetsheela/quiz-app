@@ -54,7 +54,11 @@ const PracticeProgressSchema = new mongoose.Schema({
   answers: [{
     questionId: mongoose.Schema.Types.ObjectId,
     selectedAnswer: String,
-    isCorrect: Boolean
+    isCorrect: Boolean,
+    timeSpent: {         // ⭐ NEW: Time spent on this question in seconds
+      type: Number,
+      default: null
+    }
   }]
 });
 

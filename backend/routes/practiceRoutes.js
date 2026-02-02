@@ -156,15 +156,10 @@ router.post("/sets/start", verifyToken, async (req, res) => {
   }
 });
 
-// Submit a practice set
-// Replace the /sets/submit endpoint in your practiceRoutes.js with this:
-
-// Updated /sets/submit endpoint with timing support
-// Replace your existing /sets/submit endpoint with this:
-
+// ⭐ UPDATED: Submit a practice set with per-question time tracking
 router.post("/sets/submit", verifyToken, async (req, res) => {
   try {
-    const { category, topic, level, setNumber, answers, timings } = req.body; // ⭐ Added timings
+    const { category, topic, level, setNumber, answers, timings } = req.body;
 
     if (!category || !topic || !level || !setNumber || !answers) {
       return res.status(400).json({ error: "All fields are required" });
@@ -176,11 +171,12 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       level, 
       setNumber, 
       answersCount: answers.length,
-      hasTimings: !!timings // ⭐ Log if timings are present
+      hasTimings: !!timings,
+      timingsLength: timings ? timings.length : 0
     });
     
-    if (timings) {
-      console.log("⏱️ Received timings:", timings);
+    if (timings && timings.length > 0) {
+      console.log("⏱️ Received per-question timings:", timings);
     }
 
     // Find the practice set to get correct answers
@@ -219,7 +215,9 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     set.questions.forEach((question, index) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correctAnswer;
-      const timeSpent = timings && timings[index] ? timings[index] : null; // ⭐ Get timing for this question
+      
+      // ⭐ Get per-question time (handle missing timings gracefully)
+      const timeSpent = timings && timings[index] !== undefined ? timings[index] : null;
       
       const isCorrect = userAnswer && 
                        normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
@@ -232,7 +230,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
         userAnswer,
         correctAnswer,
         isCorrect,
-        timeSpent, // ⭐ Log time spent
+        timeSpent,
         normalized_user: normalizeAnswer(userAnswer),
         normalized_correct: normalizeAnswer(correctAnswer)
       });
@@ -244,14 +242,14 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
         correctAnswer: correctAnswer,
         isCorrect: isCorrect,
         explanation: question.explanation || null,
-        timeSpent: timeSpent // ⭐ Include time spent in response
+        timeSpent: timeSpent // ⭐ Include per-question time
       });
     });
 
     console.log("📊 Final score:", score, "/", set.questions.length);
     console.log("📋 Results array:", results.length, "items");
 
-    // Update progress with completion data
+    // ⭐ Update progress with per-question timing data
     progress.completed = true;
     progress.completedAt = new Date();
     progress.score = score;
@@ -259,7 +257,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       questionId: r.questionId,
       selectedAnswer: r.selectedAnswer,
       isCorrect: r.isCorrect,
-      timeSpent: r.timeSpent // ⭐ Store time spent in progress
+      timeSpent: r.timeSpent // ⭐ Store per-question time in progress
     }));
     progress.isActive = false;
     await progress.save();
@@ -435,15 +433,21 @@ router.post("/custom-questions", verifyToken, async (req, res) => {
   }
 });
 
-// Submit custom quiz answers
+// ⭐ UPDATED: Submit custom quiz with per-question time tracking
 router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
   try {
-    const { questionIds, answers, timeSpent, quizConfig } = req.body;
+    const { questionIds, answers, timeSpent, timings, quizConfig } = req.body;
 
     console.log("📝 Submitting custom quiz:", { 
       questionCount: questionIds.length, 
-      timeSpent 
+      timeSpent,
+      hasTimings: !!timings,
+      timingsLength: timings ? timings.length : 0
     });
+
+    if (timings && timings.length > 0) {
+      console.log("⏱️ Received per-question timings:", timings);
+    }
 
     // Fetch questions with correct answers
     const questions = await QuestionBank.find({
@@ -457,6 +461,10 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
     questions.forEach((question, index) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correctAnswer;
+      
+      // ⭐ Get per-question time (handle missing timings gracefully)
+      const questionTime = timings && timings[index] !== undefined ? timings[index] : null;
+      
       const isCorrect = userAnswer && 
                        userAnswer.toString().trim().toLowerCase() === 
                        correctAnswer.toString().trim().toLowerCase();
@@ -471,24 +479,23 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
         isCorrect: isCorrect,
         category: question.category,
         topic: question.topic,
-        level: question.level
+        level: question.level,
+        explanation: question.explanation || null,
+        timeSpent: questionTime // ⭐ Include per-question time
       });
     });
 
     const totalQuestions = questions.length;
     const percentage = Math.round((score / totalQuestions) * 100);
 
-    // Optionally save to user's progress/history
-    // You can create a CustomQuizHistory model if needed
-
-    console.log("✅ Quiz submitted. Score:", score, "/", totalQuestions);
+    console.log("✅ Custom quiz submitted. Score:", score, "/", totalQuestions);
 
     res.json({
       success: true,
       score,
       totalQuestions,
       percentage,
-      results,
+      results, // ⭐ Now includes timeSpent for each question
       timeSpent,
       completedAt: new Date().toISOString()
     });
