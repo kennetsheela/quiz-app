@@ -351,6 +351,7 @@
 
     window.joinEvent = function(eventId) {
       currentEventId = eventId;
+      console.log('Join event clicked, eventId set to:', currentEventId);
       document.getElementById("loginModal").classList.add("active");
     };
 
@@ -360,7 +361,7 @@
 
     window.closeLoginModal = function() {
       document.getElementById("loginModal").classList.remove("active");
-      currentEventId = null;
+      // Don't reset currentEventId here - we'll need it after login
     };
 
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
@@ -369,6 +370,15 @@
       const rollNo = document.getElementById("rollNo").value;
       const department = document.getElementById("department").value;
       const password = document.getElementById("password").value;
+
+      // Validate that we have an eventId
+      if (!currentEventId) {
+        alert("Error: No event selected. Please try again.");
+        document.getElementById("loginModal").classList.remove("active");
+        return;
+      }
+
+      console.log('Logging in with eventId:', currentEventId);
 
       try {
         const result = await eventAPI.studentLogin({
@@ -381,8 +391,13 @@
         currentParticipantId = result.participantId;
         participantData = result.participant;
         
-        // Close login modal and show set selection
-        closeLoginModal();
+        console.log('Login successful, participantId:', currentParticipantId);
+        console.log('Current eventId before showSetSelection:', currentEventId);
+        
+        // Close login modal
+        document.getElementById("loginModal").classList.remove("active");
+        
+        // Show set selection - eventId is still preserved
         await showSetSelection();
         
       } catch (error) {
@@ -391,12 +406,23 @@
     });
 
     async function showSetSelection() {
+      console.log('showSetSelection called with eventId:', currentEventId);
+      
+      if (!currentEventId) {
+        console.error('ERROR: currentEventId is null in showSetSelection');
+        alert('Error: Event ID is missing. Please try joining the event again.');
+        return;
+      }
+      
       try {
         // Fetch event details to get available sets
+        console.log('Fetching event details for eventId:', currentEventId);
         const { event } = await eventAPI.getEvent(currentEventId);
+        console.log('Event fetched successfully:', event.eventName);
         
         // Filter only active sets
         const activeSets = event.sets.filter(set => set.isActive);
+        console.log('Active sets found:', activeSets.length);
         
         if (activeSets.length === 0) {
           // No active sets available
@@ -411,6 +437,7 @@
         } else if (activeSets.length === 1) {
           // Only one set - auto-select and start
           selectedSetId = activeSets[0]._id;
+          console.log('Auto-selecting single set:', selectedSetId);
           startSelectedQuiz();
           return;
         } else {
@@ -497,6 +524,7 @@
         return;
       }
       
+      console.log('Starting quiz with:', { eventId: currentEventId, participantId: currentParticipantId, setId: selectedSetId });
       window.location.href = `event-quiz.html?eventId=${currentEventId}&participantId=${currentParticipantId}&setId=${selectedSetId}`;
     };
 
