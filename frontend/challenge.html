@@ -112,13 +112,6 @@
       background: rgba(72, 187, 120, 0.1);
     }
 
-    .set-option.completed {
-      border-color: var(--warning);
-      background: rgba(251, 191, 36, 0.1);
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
     .set-option-header {
       display: flex;
       justify-content: space-between;
@@ -141,11 +134,6 @@
     .set-badge.available {
       background: rgba(72, 187, 120, 0.2);
       color: var(--success);
-    }
-
-    .set-badge.completed {
-      background: rgba(251, 191, 36, 0.2);
-      color: var(--warning);
     }
 
     .set-info {
@@ -224,26 +212,12 @@
     </div>
   </div>
 
-  <!-- Login Modal -->
-  <div id="loginModal" class="modal">
-    <div class="modal-content">
-      <h3>Join Event</h3>
-      <form id="loginForm">
-        <input type="text" id="rollNo" placeholder="Roll Number" required>
-        <input type="text" id="department" placeholder="Department" required>
-        <input type="password" id="password" placeholder="Event Password" required>
-        <button type="submit" class="btn btn-primary">Join Event</button>
-        <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Set Selection Modal -->
+  <!-- Set Selection Modal (appears FIRST) -->
   <div id="setSelectionModal" class="set-selection-modal">
     <div class="set-selection-content">
       <h3><i class="fas fa-list-check"></i> Choose a Quiz Set</h3>
       <p style="color: var(--text-secondary); margin-bottom: 20px;">
-        Select a quiz set to begin. You can attempt multiple sets.
+        Select which quiz set you want to attempt, then login to start.
       </p>
       
       <div id="availableSets" class="available-sets">
@@ -252,10 +226,27 @@
 
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeSetSelectionModal()">Cancel</button>
-        <button class="btn btn-primary" id="startQuizBtn" onclick="startSelectedQuiz()" disabled>
-          <i class="fas fa-play"></i> Start Quiz
+        <button class="btn btn-primary" id="continueBtn" onclick="continueToLogin()" disabled>
+          <i class="fas fa-arrow-right"></i> Continue to Login
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Login Modal (appears AFTER set selection) -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h3>Join Event</h3>
+      <p style="margin-bottom: 15px; color: var(--text-secondary);">
+        <strong>Selected Set:</strong> <span id="selectedSetName">-</span>
+      </p>
+      <form id="loginForm">
+        <input type="text" id="rollNo" placeholder="Roll Number" required>
+        <input type="text" id="department" placeholder="Department" required>
+        <input type="password" id="password" placeholder="Event Password" required>
+        <button type="submit" class="btn btn-primary">Start Quiz</button>
+        <button type="button" class="btn btn-secondary" onclick="backToSetSelection()">Back to Set Selection</button>
+      </form>
     </div>
   </div>
 
@@ -266,7 +257,8 @@
     let currentEventId = null;
     let currentParticipantId = null;
     let selectedSetId = null;
-    let participantData = null;
+    let selectedSetName = null;
+    let currentEventData = null;
 
     requireAuth();
     setupLogoutButton();
@@ -349,131 +341,56 @@
       }
     }
 
-    window.joinEvent = function(eventId) {
+    // STEP 1: User clicks "Join Event" - Show set selection
+    window.joinEvent = async function(eventId) {
       currentEventId = eventId;
-      console.log('Join event clicked, eventId set to:', currentEventId);
-      document.getElementById("loginModal").classList.add("active");
+      console.log('Join event clicked, eventId:', currentEventId);
+      
+      // Fetch event details to show available sets
+      try {
+        const { event } = await eventAPI.getEvent(eventId);
+        currentEventData = event;
+        
+        // Filter only active sets
+        const activeSets = event.sets.filter(set => set.isActive);
+        
+        if (activeSets.length === 0) {
+          // No active sets available
+          alert('No quiz sets are currently active for this event. Please try again later or contact the admin.');
+          return;
+        } else if (activeSets.length === 1) {
+          // Only one set - auto-select it and go directly to login
+          selectedSetId = activeSets[0]._id;
+          selectedSetName = activeSets[0].setName;
+          console.log('Auto-selected single set:', selectedSetName);
+          showLoginModal();
+        } else {
+          // Multiple sets - show selection modal
+          renderSetOptions(activeSets);
+          document.getElementById('setSelectionModal').classList.add('active');
+        }
+      } catch (error) {
+        console.error("Error loading event:", error);
+        alert("Error loading event details: " + error.message);
+      }
     };
 
     window.manageEvent = function(eventId) {
       window.location.href = `admin-panel.html?eventId=${eventId}`;
     };
 
-    window.closeLoginModal = function() {
-      document.getElementById("loginModal").classList.remove("active");
-      // Don't reset currentEventId here - we'll need it after login
-    };
-
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      
-      const rollNo = document.getElementById("rollNo").value;
-      const department = document.getElementById("department").value;
-      const password = document.getElementById("password").value;
-
-      // Validate that we have an eventId
-      if (!currentEventId) {
-        alert("Error: No event selected. Please try again.");
-        document.getElementById("loginModal").classList.remove("active");
-        return;
-      }
-
-      console.log('Logging in with eventId:', currentEventId);
-
-      try {
-        const result = await eventAPI.studentLogin({
-          eventId: currentEventId,
-          rollNo,
-          department,
-          password
-        });
-
-        currentParticipantId = result.participantId;
-        participantData = result.participant;
-        
-        console.log('Login successful, participantId:', currentParticipantId);
-        console.log('Current eventId before showSetSelection:', currentEventId);
-        
-        // Close login modal
-        document.getElementById("loginModal").classList.remove("active");
-        
-        // Show set selection - eventId is still preserved
-        await showSetSelection();
-        
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
-    });
-
-    async function showSetSelection() {
-      console.log('showSetSelection called with eventId:', currentEventId);
-      
-      if (!currentEventId) {
-        console.error('ERROR: currentEventId is null in showSetSelection');
-        alert('Error: Event ID is missing. Please try joining the event again.');
-        return;
-      }
-      
-      try {
-        // Fetch event details to get available sets
-        console.log('Fetching event details for eventId:', currentEventId);
-        const { event } = await eventAPI.getEvent(currentEventId);
-        console.log('Event fetched successfully:', event.eventName);
-        
-        // Filter only active sets
-        const activeSets = event.sets.filter(set => set.isActive);
-        console.log('Active sets found:', activeSets.length);
-        
-        if (activeSets.length === 0) {
-          // No active sets available
-          document.getElementById('availableSets').innerHTML = `
-            <div class="no-sets-message">
-              <i class="fas fa-inbox"></i>
-              <h4>No Quiz Sets Available</h4>
-              <p>There are currently no active quiz sets for this event.<br>
-              Please wait for the admin to activate a set.</p>
-            </div>
-          `;
-        } else if (activeSets.length === 1) {
-          // Only one set - auto-select and start
-          selectedSetId = activeSets[0]._id;
-          console.log('Auto-selecting single set:', selectedSetId);
-          startSelectedQuiz();
-          return;
-        } else {
-          // Multiple sets - show selection
-          renderSetOptions(activeSets);
-        }
-        
-        document.getElementById('setSelectionModal').classList.add('active');
-        
-      } catch (error) {
-        console.error("Error loading sets:", error);
-        alert("Error loading quiz sets: " + error.message);
-      }
-    }
-
+    // Render available sets for selection
     function renderSetOptions(sets) {
       const availableSetsDiv = document.getElementById('availableSets');
       
-      // Get completed set IDs from participant data
-      const completedSetIds = participantData?.setResults
-        ?.filter(r => r.completedAt)
-        .map(r => r.setId) || [];
-      
       availableSetsDiv.innerHTML = sets.map(set => {
-        const isCompleted = completedSetIds.includes(set._id);
-        const score = participantData?.setResults?.find(r => r.setId === set._id)?.score;
-        
         return `
-          <div class="set-option ${isCompleted ? 'completed' : ''}" 
-               onclick="${!isCompleted ? `selectSet('${set._id}')` : ''}"
+          <div class="set-option" 
+               onclick="selectSet('${set._id}', '${set.setName}')"
                data-set-id="${set._id}">
             <div class="set-option-header">
               <h4>${set.setName}</h4>
-              <span class="set-badge ${isCompleted ? 'completed' : 'available'}">
-                ${isCompleted ? '✓ Completed' : '● Available'}
-              </span>
+              <span class="set-badge available">● Available</span>
             </div>
             
             <div class="set-info">
@@ -485,25 +402,14 @@
                 <i class="fas fa-clock"></i>
                 <span>${set.timeLimit} minutes</span>
               </div>
-              ${isCompleted ? `
-                <div class="set-info-item">
-                  <i class="fas fa-trophy"></i>
-                  <span>Score: ${score}/${set.questions?.length || 0}</span>
-                </div>
-              ` : ''}
             </div>
-            
-            ${isCompleted ? `
-              <p style="margin-top: 10px; font-size: 0.85rem; color: var(--warning);">
-                <i class="fas fa-info-circle"></i> You have already completed this set
-              </p>
-            ` : ''}
           </div>
         `;
       }).join('');
     }
 
-    window.selectSet = function(setId) {
+    // STEP 2: User selects a set
+    window.selectSet = function(setId, setName) {
       // Remove previous selection
       document.querySelectorAll('.set-option').forEach(option => {
         option.classList.remove('selected');
@@ -511,31 +417,101 @@
       
       // Add selection to clicked set
       const selectedOption = document.querySelector(`[data-set-id="${setId}"]`);
-      if (selectedOption && !selectedOption.classList.contains('completed')) {
+      if (selectedOption) {
         selectedOption.classList.add('selected');
         selectedSetId = setId;
-        document.getElementById('startQuizBtn').disabled = false;
+        selectedSetName = setName;
+        document.getElementById('continueBtn').disabled = false;
+        console.log('Set selected:', setName);
       }
     };
 
-    window.startSelectedQuiz = function() {
+    // STEP 3: User clicks "Continue to Login"
+    window.continueToLogin = function() {
       if (!selectedSetId) {
         alert('Please select a quiz set first');
         return;
       }
       
-      console.log('Starting quiz with:', { eventId: currentEventId, participantId: currentParticipantId, setId: selectedSetId });
-      window.location.href = `event-quiz.html?eventId=${currentEventId}&participantId=${currentParticipantId}&setId=${selectedSetId}`;
+      // Close set selection modal
+      document.getElementById('setSelectionModal').classList.remove('active');
+      
+      // Show login modal
+      showLoginModal();
+    };
+
+    function showLoginModal() {
+      document.getElementById('selectedSetName').textContent = selectedSetName;
+      document.getElementById('loginModal').classList.add('active');
+    }
+
+    // Allow user to go back to set selection
+    window.backToSetSelection = function() {
+      document.getElementById('loginModal').classList.remove('active');
+      
+      // Show set selection again
+      const activeSets = currentEventData.sets.filter(set => set.isActive);
+      if (activeSets.length > 1) {
+        renderSetOptions(activeSets);
+        document.getElementById('setSelectionModal').classList.add('active');
+      } else {
+        // If only one set, going back means canceling completely
+        closeSetSelectionModal();
+      }
     };
 
     window.closeSetSelectionModal = function() {
       document.getElementById('setSelectionModal').classList.remove('active');
+      document.getElementById('loginModal').classList.remove('active');
       selectedSetId = null;
+      selectedSetName = null;
       currentEventId = null;
-      currentParticipantId = null;
-      participantData = null;
-      document.getElementById('startQuizBtn').disabled = true;
+      currentEventData = null;
+      document.getElementById('continueBtn').disabled = true;
     };
+
+    // STEP 4: User logs in and starts quiz
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const rollNo = document.getElementById("rollNo").value;
+      const department = document.getElementById("department").value;
+      const password = document.getElementById("password").value;
+
+      // Validate that we have all required data
+      if (!currentEventId) {
+        alert("Error: Event ID is missing. Please try again.");
+        closeSetSelectionModal();
+        return;
+      }
+
+      if (!selectedSetId) {
+        alert("Error: No quiz set selected. Please try again.");
+        closeSetSelectionModal();
+        return;
+      }
+
+      console.log('Logging in with:', { eventId: currentEventId, setId: selectedSetId });
+
+      try {
+        const result = await eventAPI.studentLogin({
+          eventId: currentEventId,
+          rollNo,
+          department,
+          password
+        });
+
+        currentParticipantId = result.participantId;
+        
+        console.log('Login successful, starting quiz with participantId:', currentParticipantId);
+        
+        // Redirect directly to quiz
+        window.location.href = `event-quiz.html?eventId=${currentEventId}&participantId=${currentParticipantId}&setId=${selectedSetId}`;
+        
+      } catch (error) {
+        alert("Login Error: " + error.message);
+      }
+    });
 
     // Refresh event statuses every 30 seconds
     setInterval(loadEvents, 30000);

@@ -142,11 +142,53 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     
     .question-number {
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .question-meta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .time-spent-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+    }
+
+    .time-spent-badge i {
+      font-size: 0.9rem;
+    }
+
+    .time-spent-badge.fast {
+      background: rgba(72, 187, 120, 0.1);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .time-spent-badge.normal {
+      background: rgba(66, 153, 225, 0.1);
+      border-color: #4299e1;
+      color: #4299e1;
+    }
+
+    .time-spent-badge.slow {
+      background: rgba(237, 137, 54, 0.1);
+      border-color: #ed8936;
+      color: #ed8936;
     }
     
     .result-icon {
@@ -231,6 +273,63 @@
         opacity: 0;
       }
     }
+
+    .time-breakdown {
+      background: var(--bg-tertiary);
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+
+    .time-breakdown h3 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-primary);
+    }
+
+    .time-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .time-stat {
+      text-align: center;
+      padding: 15px;
+      background: var(--card-bg);
+      border-radius: 8px;
+    }
+
+    .time-stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent-primary);
+      margin-bottom: 5px;
+    }
+
+    .time-stat-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .question-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .question-meta {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -257,13 +356,35 @@
         <div class="stat-box">
           <i class="fas fa-clock"></i>
           <h3 id="timeSpent">0m 0s</h3>
-          <p>Time Spent</p>
+          <p>Total Time</p>
         </div>
         
         <div class="stat-box">
           <i class="fas fa-chart-line"></i>
           <h3 id="accuracy">0%</h3>
           <p>Accuracy</p>
+        </div>
+      </div>
+
+      <!-- Time Breakdown Section -->
+      <div class="time-breakdown" id="timeBreakdown" style="display: none;">
+        <h3>
+          <i class="fas fa-stopwatch"></i>
+          Time Analysis
+        </h3>
+        <div class="time-stats">
+          <div class="time-stat">
+            <div class="time-stat-value" id="avgTimePerQuestion">0s</div>
+            <div class="time-stat-label">Avg per Question</div>
+          </div>
+          <div class="time-stat">
+            <div class="time-stat-value" id="fastestQuestion">0s</div>
+            <div class="time-stat-label">Fastest Answer</div>
+          </div>
+          <div class="time-stat">
+            <div class="time-stat-value" id="slowestQuestion">0s</div>
+            <div class="time-stat-label">Slowest Answer</div>
+          </div>
         </div>
       </div>
     </div>
@@ -305,6 +426,36 @@
 
     let resultsData = null;
 
+    function formatTime(seconds) {
+      if (!seconds && seconds !== 0) return 'N/A';
+      if (seconds < 60) return `${seconds}s`;
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}m ${secs}s`;
+    }
+
+    function getTimeSpeedClass(timeSpent, avgTime) {
+      if (!timeSpent || !avgTime) return 'normal';
+      if (timeSpent < avgTime * 0.7) return 'fast';
+      if (timeSpent > avgTime * 1.5) return 'slow';
+      return 'normal';
+    }
+
+    function calculateTimeStats(results) {
+      const times = results
+        .map(r => r.timeSpent)
+        .filter(t => t !== undefined && t !== null && t > 0);
+      
+      if (times.length === 0) return null;
+
+      const total = times.reduce((sum, t) => sum + t, 0);
+      const avg = Math.round(total / times.length);
+      const fastest = Math.min(...times);
+      const slowest = Math.max(...times);
+
+      return { avg, fastest, slowest, total };
+    }
+
     async function loadResults() {
       try {
         console.log("📊 Loading results...");
@@ -326,6 +477,11 @@
           if (resultsData.results && resultsData.results.length > 0) {
             console.log("🔍 CRITICAL - First result structure:", resultsData.results[0]);
             console.log("🔍 CRITICAL - First result keys:", Object.keys(resultsData.results[0]));
+            console.log("🔍 CRITICAL - Time data:", {
+              timeSpent: resultsData.results[0].timeSpent,
+              timeTaken: resultsData.results[0].timeTaken,
+              duration: resultsData.results[0].duration
+            });
           }
           
           displayResults(resultsData);
@@ -408,6 +564,20 @@
         badge.className = 'performance-badge badge-poor';
       }
       
+      // Calculate time statistics
+      let timeStats = null;
+      if (data.results && data.results.length > 0) {
+        timeStats = calculateTimeStats(data.results);
+        
+        if (timeStats) {
+          console.log("⏱️ Time statistics:", timeStats);
+          document.getElementById('timeBreakdown').style.display = 'block';
+          document.getElementById('avgTimePerQuestion').textContent = `${timeStats.avg}s`;
+          document.getElementById('fastestQuestion').textContent = `${timeStats.fastest}s`;
+          document.getElementById('slowestQuestion').textContent = `${timeStats.slowest}s`;
+        }
+      }
+      
       // Display detailed results
       if (data.results && data.results.length > 0) {
         const questionsHTML = data.results.map((result, index) => {
@@ -426,20 +596,35 @@
                        normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer);
           }
           
+          // Get time spent for this question (try multiple field names)
+          const questionTime = result.timeSpent || result.timeTaken || result.duration || null;
+          
           console.log(`Question ${index + 1}:`, {
             isCorrect,
             selectedAnswer,
             correctAnswer,
+            questionTime,
             normalized_selected: normalizeAnswer(selectedAnswer),
             normalized_correct: normalizeAnswer(correctAnswer),
             match: normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer)
           });
+
+          // Determine time badge class
+          const timeClass = timeStats ? getTimeSpeedClass(questionTime, timeStats.avg) : 'normal';
           
           return `
             <div class="question-item ${isCorrect ? 'correct' : 'incorrect'}">
               <div class="question-header">
                 <span class="question-number">Question ${index + 1}</span>
-                <i class="fas ${isCorrect ? 'fa-check-circle' : 'fa-times-circle'} result-icon ${isCorrect ? 'correct' : 'incorrect'}"></i>
+                <div class="question-meta">
+                  ${questionTime !== null && questionTime !== undefined ? `
+                    <span class="time-spent-badge ${timeClass}">
+                      <i class="fas fa-clock"></i>
+                      ${formatTime(questionTime)}
+                    </span>
+                  ` : ''}
+                  <i class="fas ${isCorrect ? 'fa-check-circle' : 'fa-times-circle'} result-icon ${isCorrect ? 'correct' : 'incorrect'}"></i>
+                </div>
               </div>
               
               <div class="question-text">${result.question}</div>

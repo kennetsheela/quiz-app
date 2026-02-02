@@ -1,4 +1,3 @@
-admin-panel.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -578,7 +577,7 @@ admin-panel.html
       <input type="password" id="adminPassword" placeholder="Admin Password" style="margin-bottom: 20px;">
       <div style="display: flex; gap: 10px;">
         <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="confirmAction()">Confirm</button>
+        <button class="btn btn-primary" id="confirmBtn" onclick="confirmAction()">Confirm</button>
       </div>
     </div>
   </div>
@@ -863,6 +862,14 @@ admin-panel.html
     window.closePasswordModal = function() {
       document.getElementById('passwordModal').classList.remove('active');
       document.getElementById('adminPassword').value = '';
+      
+      // Reset button state
+      const confirmBtn = document.getElementById('confirmBtn');
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm';
+      }
+      
       pendingAction = null;
     };
 
@@ -874,45 +881,77 @@ admin-panel.html
         return;
       }
 
+      const confirmBtn = document.getElementById('confirmBtn');
+      const originalText = confirmBtn.textContent;
+
       try {
         if (pendingAction.delete) {
+          // Delete event
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Deleting...';
+          
           await eventAPI.deleteEvent(eventId, password);
           alert('Event deleted successfully!');
           window.location.href = 'challenge.html';
+          
         } else if (pendingAction.bulkActivate || pendingAction.bulkDeactivate) {
           // Bulk operation
           const enable = pendingAction.bulkActivate;
           const setIds = currentEvent.sets.map(s => s._id);
           
-          debugLog(`Bulk ${enable ? 'activating' : 'deactivating'} sets`, { setIds });
+          // Disable the confirm button and show progress
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = `Processing ${setIds.length} sets...`;
           
-          // Call API for each set
-          for (const setId of setIds) {
-            await eventAPI.toggleSet({
-              eventId,
-              setId,
-              adminPassword: password,
-              enable
-            });
+          debugLog(`Bulk ${enable ? 'activating' : 'deactivating'} sets`, { count: setIds.length });
+          
+          // Process all sets with Promise.allSettled for parallel execution
+          const results = await Promise.allSettled(
+            setIds.map(setId => 
+              eventAPI.toggleSet({
+                eventId,
+                setId,
+                adminPassword: password,
+                enable
+              })
+            )
+          );
+          
+          // Check results
+          const successful = results.filter(r => r.status === 'fulfilled').length;
+          const failed = results.filter(r => r.status === 'rejected').length;
+          
+          debugLog('Bulk operation completed', { successful, failed });
+          
+          if (failed > 0) {
+            console.error('Some sets failed:', results.filter(r => r.status === 'rejected'));
+            alert(`Bulk operation completed with errors:\n${successful} succeeded, ${failed} failed`);
+          } else {
+            alert(`All ${successful} sets ${enable ? 'activated' : 'deactivated'} successfully!`);
           }
           
-          alert(`All sets ${enable ? 'activated' : 'deactivated'} successfully!`);
           closePasswordModal();
-          loadEvent();
+          await loadEvent();
+          
         } else {
           // Single set toggle
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = pendingAction.enable ? 'Activating...' : 'Deactivating...';
+          
           await eventAPI.toggleSet({
             eventId,
             setId: pendingAction.setId,
             adminPassword: password,
             enable: pendingAction.enable
           });
+          
           alert(pendingAction.enable ? 'Set activated!' : 'Set deactivated!');
           closePasswordModal();
-          loadEvent();
+          await loadEvent();
         }
       } catch (error) {
         console.error('Action error:', error);
+        
         if (error.message.includes('network') || error.message.includes('Failed to fetch')) {
           alert('Network error. Please check your connection and try again.');
         } else if (error.message.includes('password')) {
@@ -920,6 +959,10 @@ admin-panel.html
         } else {
           alert('Error: ' + error.message);
         }
+        
+        // Re-enable button
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
       }
     };
 
@@ -1246,23 +1289,107 @@ admin-panel.html
     };
 
     window.exportAsCSV = function() {
-      alert('CSV export - Implementation same as before');
+      const csvData = [
+        ['Roll No', 'Department', 'Score', 'Percentage', 'Time Spent', 'Status']
+      ];
+      
+      filteredParticipants.forEach(p => {
+        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
+        const result = selectedSetId 
+          ? p.setResults.find(r => r.setId === selectedSetId)
+          : p.setResults[0];
+        
+        csvData.push([
+          p.rollNo,
+          p.department,
+          score !== null ? `${score}/${totalQuestions}` : '-',
+          percentage !== null ? percentage.toFixed(2) + '%' : '-',
+          formatTimeSpent(timeSpent),
+          result?.completedAt ? 'Completed' : 'In Progress'
+        ]);
+      });
+      
+      const csv = csvData.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentEvent.eventName}_report.csv`;
+      a.click();
+      
       closeExportModal();
     };
 
     window.exportAsExcel = function() {
-      alert('Excel export - Implementation same as before');
+      const ws_data = [
+        ['Roll No', 'Department', 'Score', 'Percentage', 'Time Spent', 'Status']
+      ];
+      
+      filteredParticipants.forEach(p => {
+        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
+        const result = selectedSetId 
+          ? p.setResults.find(r => r.setId === selectedSetId)
+          : p.setResults[0];
+        
+        ws_data.push([
+          p.rollNo,
+          p.department,
+          score !== null ? `${score}/${totalQuestions}` : '-',
+          percentage !== null ? percentage.toFixed(2) : '-',
+          formatTimeSpent(timeSpent),
+          result?.completedAt ? 'Completed' : 'In Progress'
+        ]);
+      });
+      
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+      XLSX.utils.book_append_sheet(wb, ws, "Participants");
+      XLSX.writeFile(wb, `${currentEvent.eventName}_report.xlsx`);
+      
       closeExportModal();
     };
 
     window.exportAsPDF = function() {
-      alert('PDF export - Implementation same as before');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFontSize(18);
+      doc.text(currentEvent.eventName, 14, 20);
+      
+      doc.setFontSize(12);
+      doc.text(`Total Participants: ${filteredParticipants.length}`, 14, 30);
+      
+      const tableData = filteredParticipants.map(p => {
+        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
+        const result = selectedSetId 
+          ? p.setResults.find(r => r.setId === selectedSetId)
+          : p.setResults[0];
+        
+        return [
+          p.rollNo,
+          p.department,
+          score !== null ? `${score}/${totalQuestions}` : '-',
+          percentage !== null ? percentage.toFixed(2) + '%' : '-',
+          formatTimeSpent(timeSpent),
+          result?.completedAt ? 'Completed' : 'In Progress'
+        ];
+      });
+      
+      doc.autoTable({
+        head: [['Roll No', 'Department', 'Score', 'Percentage', 'Time', 'Status']],
+        body: tableData,
+        startY: 40
+      });
+      
+      doc.save(`${currentEvent.eventName}_report.pdf`);
       closeExportModal();
     };
 
     window.deleteEventConfirm = function() {
       if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
         document.getElementById('passwordModal').classList.add('active');
+        document.getElementById('passwordModalMessage').textContent = 
+          'Enter admin password to delete this event';
         pendingAction = { delete: true };
       }
     };
