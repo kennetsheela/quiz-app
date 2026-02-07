@@ -156,7 +156,7 @@ router.post("/sets/start", verifyToken, async (req, res) => {
   }
 });
 
-// ⭐ CORRECTED: Submit a practice set with per-question time tracking
+// Submit a practice set with per-question time tracking
 router.post("/sets/submit", verifyToken, async (req, res) => {
   try {
     const { category, topic, level, setNumber, answers, timings } = req.body;
@@ -177,8 +177,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     
     if (timings && timings.length > 0) {
       console.log("⏱️ [Backend] Received per-question timings:", timings);
-      console.log("⏱️ [Backend] First timing:", timings[0], "seconds");
-      console.log("⏱️ [Backend] Last timing:", timings[timings.length - 1], "seconds");
+      console.log("⏱️ [Backend] Total time:", timings.reduce((a, b) => a + b, 0), "seconds");
     } else {
       console.warn("⚠️ [Backend] NO TIMINGS RECEIVED!");
     }
@@ -220,10 +219,15 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correctAnswer;
       
-      // ⭐ CRITICAL FIX: Get per-question time and ensure it's included in results
-      const timeSpent = timings && timings[index] !== undefined && timings[index] !== null 
-        ? timings[index] 
-        : null;
+      // Get per-question time - CRITICAL: Ensure it's a number or null
+      let timeSpent = null;
+      if (timings && timings[index] !== undefined && timings[index] !== null) {
+        timeSpent = Number(timings[index]);
+        if (isNaN(timeSpent)) {
+          console.warn(`⚠️ [Backend] Invalid timeSpent for Q${index + 1}:`, timings[index]);
+          timeSpent = null;
+        }
+      }
       
       const isCorrect = userAnswer && 
                        normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
@@ -232,14 +236,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
         score++;
       }
       
-      console.log(`[Backend] Q${index + 1}:`, {
-        userAnswer: userAnswer?.substring(0, 20),
-        correctAnswer: correctAnswer?.substring(0, 20),
-        isCorrect,
-        timeSpent: timeSpent !== null ? `${timeSpent}s` : 'NULL'
-      });
-      
-      // ⭐ CRITICAL: Ensure timeSpent is ALWAYS included in the result object
+      // Build result object with GUARANTEED timeSpent field
       const resultObject = {
         question: question.question,
         questionId: question._id.toString(),
@@ -247,29 +244,29 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
         correctAnswer: correctAnswer,
         isCorrect: isCorrect,
         explanation: question.explanation || null,
-        timeSpent: timeSpent  // ⭐ THIS MUST BE HERE!
+        timeSpent: timeSpent  // Will be null or a number, never undefined
       };
       
       results.push(resultObject);
     });
 
     console.log("📊 [Backend] Final score:", score, "/", set.questions.length);
-    console.log("📋 [Backend] Results array length:", results.length);
     
-    // ⭐ VERIFY: Check that results have timing data
-    const resultsWithTime = results.filter(r => r.timeSpent !== null && r.timeSpent !== undefined);
-    console.log(`⏱️ [Backend] ${resultsWithTime.length}/${results.length} results have timing data`);
+    // Verify timing data in results
+    const resultsWithTime = results.filter(r => r.timeSpent !== null && r.timeSpent !== undefined && !isNaN(r.timeSpent));
+    console.log(`⏱️ [Backend] ${resultsWithTime.length}/${results.length} results have valid timing data`);
     
     if (resultsWithTime.length > 0) {
-      console.log("✅ [Backend] First result with time:", {
+      console.log("✅ [Backend] Sample result with time:", {
         question: results[0].question.substring(0, 30) + "...",
-        timeSpent: results[0].timeSpent
+        timeSpent: results[0].timeSpent,
+        type: typeof results[0].timeSpent
       });
     } else {
-      console.error("❌ [Backend] NO RESULTS HAVE TIMING DATA! This will break the frontend!");
+      console.warn("⚠️ [Backend] NO RESULTS HAVE TIMING DATA!");
     }
 
-    // ⭐ Update progress with per-question timing data
+    // Update progress with per-question timing data
     progress.completed = true;
     progress.completedAt = new Date();
     progress.score = score;
@@ -277,31 +274,30 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       questionId: r.questionId,
       selectedAnswer: r.selectedAnswer,
       isCorrect: r.isCorrect,
-      timeSpent: r.timeSpent // ⭐ Store per-question time in progress
+      timeSpent: r.timeSpent
     }));
     progress.isActive = false;
     await progress.save();
 
-    console.log("✅ [Backend] Set submitted successfully. Score:", score, "/", set.questions.length);
+    console.log("✅ [Backend] Progress saved to database");
 
-    // ⭐ CRITICAL: Build response object with timing data
+    // Build response object
     const responseObject = {
       success: true,
       message: "Set submitted successfully",
       score,
       totalQuestions: set.questions.length,
       percentage: Math.round((score / set.questions.length) * 100),
-      results: results, // ⭐ This MUST include timeSpent for each question
+      results: results,
       completedAt: progress.completedAt
     };
     
-    // ⭐ FINAL VERIFICATION: Log what we're sending back
-    console.log("📤 [Backend] Sending response with", responseObject.results.length, "results");
-    console.log("🔍 [Backend] First result being sent:", {
-      hasTimeSpent: 'timeSpent' in responseObject.results[0],
-      timeSpent: responseObject.results[0].timeSpent,
-      keys: Object.keys(responseObject.results[0])
-    });
+    // FINAL VERIFICATION before sending
+    console.log("📤 [Backend] Response summary:");
+    console.log("   - Results count:", responseObject.results.length);
+    console.log("   - First result has timeSpent:", 'timeSpent' in responseObject.results[0]);
+    console.log("   - First result timeSpent value:", responseObject.results[0].timeSpent);
+    console.log("   - First result timeSpent type:", typeof responseObject.results[0].timeSpent);
 
     res.json(responseObject);
   } catch (error) {
@@ -313,7 +309,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
   }
 });
 
-// Get user's progress history for level-up page
+// Get user's progress history
 router.get("/progress", verifyToken, async (req, res) => {
   try {
     console.log(`📊 Fetching progress for user: ${req.user.uid}`);
@@ -324,7 +320,7 @@ router.get("/progress", verifyToken, async (req, res) => {
 
     console.log(`📦 Found ${progress.length} progress records`);
 
-    // Format the response
+    // Format the response with timing data preserved
     const formattedProgress = progress.map(p => {
       const record = {
         _id: p._id,
@@ -343,13 +339,18 @@ router.get("/progress", verifyToken, async (req, res) => {
       
       if (p.completed) {
         console.log(`✅ Completed: ${p.category}-${p.topic} | Score: ${p.score}/${p.totalQuestions}`);
+        
+        // Check if timing data exists
+        const hasTimings = p.answers && p.answers.some(a => 
+          a.timeSpent !== null && a.timeSpent !== undefined && !isNaN(a.timeSpent)
+        );
+        console.log(`⏱️ Has timing data: ${hasTimings}`);
       }
       
       return record;
     });
 
     console.log(`📊 Returning ${formattedProgress.length} progress records`);
-    console.log(`✅ Completed: ${formattedProgress.filter(p => p.completed).length}`);
 
     res.json({ progress: formattedProgress });
   } catch (error) {
@@ -464,7 +465,7 @@ router.post("/custom-questions", verifyToken, async (req, res) => {
   }
 });
 
-// ⭐ CORRECTED: Submit custom quiz with per-question time tracking
+// Submit custom quiz with per-question time tracking
 router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
   try {
     const { questionIds, answers, timeSpent, timings, quizConfig } = req.body;
@@ -493,10 +494,14 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
       const userAnswer = answers[index];
       const correctAnswer = question.correctAnswer;
       
-      // ⭐ CRITICAL FIX: Get per-question time and ensure it's included in results
-      const questionTime = timings && timings[index] !== undefined && timings[index] !== null 
-        ? timings[index] 
-        : null;
+      // Get per-question time
+      let questionTime = null;
+      if (timings && timings[index] !== undefined && timings[index] !== null) {
+        questionTime = Number(timings[index]);
+        if (isNaN(questionTime)) {
+          questionTime = null;
+        }
+      }
       
       const isCorrect = userAnswer && 
                        userAnswer.toString().trim().toLowerCase() === 
@@ -504,7 +509,6 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
 
       if (isCorrect) score++;
 
-      // ⭐ CRITICAL: Ensure timeSpent is included in result object
       results.push({
         questionId: question._id.toString(),
         question: question.question,
@@ -515,7 +519,7 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
         topic: question.topic,
         level: question.level,
         explanation: question.explanation || null,
-        timeSpent: questionTime // ⭐ Include per-question time
+        timeSpent: questionTime
       });
     });
 
@@ -523,14 +527,16 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
     const percentage = Math.round((score / totalQuestions) * 100);
 
     console.log("✅ [Backend] Custom quiz submitted. Score:", score, "/", totalQuestions);
-    console.log(`⏱️ [Backend] ${results.filter(r => r.timeSpent !== null).length}/${results.length} results have timing data`);
+    
+    const resultsWithTime = results.filter(r => r.timeSpent !== null && !isNaN(r.timeSpent));
+    console.log(`⏱️ [Backend] ${resultsWithTime.length}/${results.length} results have timing data`);
 
     res.json({
       success: true,
       score,
       totalQuestions,
       percentage,
-      results, // ⭐ Now includes timeSpent for each question
+      results,
       timeSpent,
       completedAt: new Date().toISOString()
     });

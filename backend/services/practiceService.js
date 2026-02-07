@@ -1,4 +1,3 @@
-practiceService.js
 const PracticeSet = require("../models/PracticeSet");
 const PracticeProgress = require("../models/PracticeProgress");
 const QuestionBank = require("../models/QuestionBank");
@@ -83,7 +82,6 @@ async function startSet({ userId, category, topic, level, setNumber }) {
   return progress;
 }
 
-// ⭐ UPDATED: Added timings parameter for per-question time tracking
 async function submitSet({ userId, category, topic, level, setNumber, answers, timings }) {
   const progress = await PracticeProgress.findOne({
     userId,
@@ -118,10 +116,10 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
     throw new Error("Time limit exceeded");
   }
 
-  // ⭐ Log timing data if present
+  // Log timing data
   if (timings && timings.length > 0) {
     console.log("⏱️ [PracticeService] Received per-question timings:", timings);
-    console.log("⏱️ [PracticeService] Total time from timings:", timings.reduce((sum, t) => sum + t, 0), "seconds");
+    console.log("⏱️ [PracticeService] Total time:", timings.reduce((sum, t) => sum + (t || 0), 0), "seconds");
   } else {
     console.log("⚠️ [PracticeService] No timing data received");
   }
@@ -134,8 +132,15 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
     const userAnswer = answers[index];
     const isCorrect = userAnswer === question.correctAnswer;
     
-    // ⭐ Get per-question time (handle missing timings gracefully)
-    const timeSpent = timings && timings[index] !== undefined ? timings[index] : null;
+    // Get per-question time with validation
+    let timeSpent = null;
+    if (timings && timings[index] !== undefined && timings[index] !== null) {
+      timeSpent = Number(timings[index]);
+      if (isNaN(timeSpent)) {
+        console.warn(`⚠️ [PracticeService] Invalid timeSpent for Q${index + 1}`);
+        timeSpent = null;
+      }
+    }
     
     if (isCorrect) score++;
 
@@ -146,11 +151,11 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
       correctAnswer: question.correctAnswer,
       isCorrect,
       explanation: question.explanation,
-      timeSpent: timeSpent  // ⭐ Include per-question time
+      timeSpent: timeSpent
     });
   });
 
-  // ⭐ Update progress with per-question timing data
+  // Update progress with per-question timing data
   progress.completed = true;
   progress.score = score;
   progress.completedAt = new Date();
@@ -158,7 +163,7 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
     questionId: r.questionId,
     selectedAnswer: r.selectedAnswer,
     isCorrect: r.isCorrect,
-    timeSpent: r.timeSpent  // ⭐ Store per-question time
+    timeSpent: r.timeSpent
   }));
 
   await progress.save();
@@ -168,7 +173,7 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
   return {
     score,
     totalQuestions: set.questions.length,
-    results,  // ⭐ Now includes timeSpent for each question
+    results,
     completedAt: progress.completedAt
   };
 }

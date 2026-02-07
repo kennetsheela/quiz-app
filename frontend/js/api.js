@@ -4,9 +4,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/fi
 const API_BASE_URL = "https://quiz-app-mepj.onrender.com/api";
 
 // Feature flag to use localStorage fallback when backend is unavailable
-const USE_FALLBACK = false; // Backend is now ready on Render
+const USE_FALLBACK = false;
 
-// ✅ Get authentication token - waits for auth state if needed
+// Get authentication token - waits for auth state if needed
 async function getAuthToken() {
   return new Promise((resolve, reject) => {
     // If user is already authenticated, return immediately
@@ -37,7 +37,7 @@ async function getAuthToken() {
   });
 }
 
-// ✅ Generic API call wrapper with fallback
+// Generic API call wrapper with fallback
 async function apiCall(endpoint, options = {}) {
   try {
     const token = await getAuthToken();
@@ -149,9 +149,6 @@ export const authAPI = {
 };
 
 // Practice APIs
-// ===== UPDATED api.js - Replace your practiceAPI section =====
-
-// Practice APIs
 export const practiceAPI = {
   getSets: (category, topic, level) => 
     apiCall(`/practice/sets?category=${category}&topic=${topic}&level=${level}`),
@@ -163,10 +160,9 @@ export const practiceAPI = {
     body: JSON.stringify(data)
   }),
   
-  // ⭐ UPDATED: Add debug logging to verify timings are being sent
   submitSet: (data) => {
-    // ⭐ Debug: Log what we're sending
-    console.log("📤 [api.js] submitSet called with:", {
+    // Debug: Log what we're sending
+    console.log("📤 [api.js] submitSet payload:", {
       category: data.category,
       topic: data.topic,
       level: data.level,
@@ -174,45 +170,63 @@ export const practiceAPI = {
       answersCount: data.answers?.length,
       timingsCount: data.timings?.length,
       hasTimings: !!data.timings,
-      timings: data.timings
+      timingsSample: data.timings ? data.timings.slice(0, 3) : null
     });
     
-    // ⭐ Verify data structure before sending
-    if (!data.timings) {
-      console.warn("⚠️ [api.js] WARNING: No timings in data object!");
-    } else if (data.timings.length === 0) {
-      console.warn("⚠️ [api.js] WARNING: Timings array is empty!");
+    // Verify timings structure
+    if (!data.timings || data.timings.length === 0) {
+      console.error("❌ [api.js] NO TIMINGS in submission data!");
     } else {
       console.log("✅ [api.js] Timings present:", data.timings.length, "items");
+      
+      // Check for invalid values
+      const invalidTimings = data.timings.filter(t => 
+        t === undefined || t === null || isNaN(t) || t < 0
+      );
+      if (invalidTimings.length > 0) {
+        console.warn(`⚠️ [api.js] ${invalidTimings.length} invalid timing values found`);
+      }
     }
     
     return apiCall("/practice/sets/submit", {
       method: "POST",
       body: JSON.stringify(data)
     }).then(result => {
-      // ⭐ Debug: Log what we received back
-      console.log("📥 [api.js] submitSet response:", result);
+      // Debug: Log what we received
+      console.log("📥 [api.js] submitSet response received");
+      console.log("📋 [api.js] Response has results:", !!result.results);
+      console.log("📋 [api.js] Results count:", result.results?.length);
       
       if (result.results && result.results.length > 0) {
         const firstResult = result.results[0];
-        console.log("🔍 [api.js] First result:", {
-          question: firstResult.question?.substring(0, 50) + "...",
-          hasTimeSpent: firstResult.timeSpent !== undefined,
-          timeSpent: firstResult.timeSpent
+        console.log("🔍 [api.js] First result analysis:", {
+          hasQuestion: !!firstResult.question,
+          hasTimeSpent: 'timeSpent' in firstResult,
+          timeSpentValue: firstResult.timeSpent,
+          timeSpentType: typeof firstResult.timeSpent,
+          allKeys: Object.keys(firstResult)
         });
         
-        const hasTimeData = result.results.some(r => 
-          r.timeSpent !== undefined && r.timeSpent !== null
+        // Count results with timing data
+        const withTime = result.results.filter(r => 
+          r.timeSpent !== undefined && r.timeSpent !== null && !isNaN(r.timeSpent)
         );
         
-        if (hasTimeData) {
-          console.log("✅ [api.js] Backend returned per-question time data!");
+        console.log(`⏱️ [api.js] ${withTime.length}/${result.results.length} results have valid timing data`);
+        
+        if (withTime.length === 0) {
+          console.error("❌ [api.js] CRITICAL: Backend returned NO per-question timing data!");
+        } else if (withTime.length < result.results.length) {
+          console.warn(`⚠️ [api.js] Only ${withTime.length}/${result.results.length} results have timing data`);
         } else {
-          console.error("❌ [api.js] Backend did NOT return per-question time data!");
+          console.log("✅ [api.js] All results have timing data!");
         }
       }
       
       return result;
+    }).catch(error => {
+      console.error("❌ [api.js] submitSet error:", error);
+      throw error;
     });
   },
   
