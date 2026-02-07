@@ -1,4 +1,3 @@
-PracticeSet.js
 const mongoose = require("mongoose");
 
 const PracticeSetSchema = new mongoose.Schema({
