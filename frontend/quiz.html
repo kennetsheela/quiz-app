@@ -641,6 +641,11 @@
       // ⭐ Stop timer for current question before submitting
       stopQuestionTimer();
       
+      // 🚨 DEBUG LOG #1: Check questionTimings BEFORE submitting
+      console.log("🚨 DEBUG #1: questionTimings array =", questionTimings);
+      console.log("🚨 DEBUG #1: questionTimings length =", questionTimings.length);
+      console.log("🚨 DEBUG #1: Sample values:", questionTimings.slice(0, 5));
+      
       document.getElementById("submitModal").classList.remove("active");
 
       try {
@@ -655,12 +660,6 @@
         console.log("⏱️ Per-question timings:", questionTimings);
         console.log("⏱️ Total time tracked:", questionTimings.reduce((sum, t) => sum + t, 0), "seconds");
 
-        // ⭐ Verify timing data before submission
-        const validTimings = questionTimings.every(t => t >= 0);
-        if (!validTimings) {
-          console.error("❌ Invalid timing data detected!", questionTimings);
-        }
-
         // ⭐ Submit with per-question timings
         const result = await practiceAPI.submitSet({
           category, 
@@ -668,8 +667,14 @@
           level, 
           setNumber, 
           answers,
-          timings: questionTimings // ⭐ Send per-question timings array
+          timings: questionTimings
         });
+
+        // 🚨 DEBUG LOG #2: Check what backend returned
+        console.log("🚨 DEBUG #2: Got result from backend");
+        console.log("🚨 DEBUG #2: result.results[0] =", result.results[0]);
+        console.log("🚨 DEBUG #2: Has timeSpent?", 'timeSpent' in result.results[0]);
+        console.log("🚨 DEBUG #2: timeSpent value =", result.results[0].timeSpent);
 
         console.log("✅ Submit result:", result);
 
@@ -685,35 +690,20 @@
         
         console.log("⏱️ Total quiz time:", timeSpentSeconds, "seconds");
 
-const resultsToStore = {
-  score: result.score,
-  totalQuestions: result.totalQuestions,
-  results: result.results,
-  timeSpent: timeSpentSeconds,
-  completedAt: result.completedAt
-};
+        const resultsToStore = {
+          score: result.score,
+          totalQuestions: result.totalQuestions,
+          results: result.results,
+          timeSpent: timeSpentSeconds,
+          completedAt: result.completedAt
+        };
 
-// ⭐ DETAILED DEBUG
-console.log("💾 Storing results in sessionStorage:", resultsToStore);
-console.log("🔍 Backend returned results:", result.results);
-
-if (result.results && result.results.length > 0) {
-  console.log("🔍 First backend result:", result.results[0]);
-  console.log("🔍 First result has timeSpent?", 'timeSpent' in result.results[0]);
-  console.log("🔍 First result timeSpent value:", result.results[0].timeSpent);
-  
-  const backendHasTimings = result.results.some(r => 
-    'timeSpent' in r && r.timeSpent !== null && r.timeSpent !== undefined
-  );
-  console.log(backendHasTimings 
-    ? "✅ Backend DID return per-question timings!" 
-    : "❌ Backend did NOT return per-question timings!");
-}
-        // ⭐ Verify that results contain per-question time data
-        if (result.results && result.results.length > 0) {
-          const hasTimeData = result.results.some(r => r.timeSpent !== undefined && r.timeSpent !== null);
-          console.log(hasTimeData ? "✅ Per-question time data present in results" : "⚠️ No per-question time data in results");
-        }
+        // 🚨 DEBUG LOG #3: Check what we're storing
+        console.log("🚨 DEBUG #3: About to store in session");
+        console.log("🚨 DEBUG #3: resultsToStore.results[0] =", resultsToStore.results[0]);
+        console.log("🚨 DEBUG #3: Has timeSpent?", 'timeSpent' in resultsToStore.results[0]);
+        
+        console.log("💾 Storing results in sessionStorage:", resultsToStore);
         
         sessionStorage.setItem('quizResults', JSON.stringify(resultsToStore));
         
