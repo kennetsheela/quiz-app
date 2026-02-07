@@ -633,8 +633,133 @@
       updateDebugPanel();
     }
 
-    window.submitQuiz = async function() {
-      if (isSubmitting) return;
+window.submitQuiz = async function() {
+  if (isSubmitting) return;
+  
+  isSubmitting = true;
+  
+  // Stop timer for current question before submitting
+  stopQuestionTimer();
+  
+  document.getElementById("submitModal").classList.remove("active");
+
+  try {
+    clearInterval(timerInterval);
+    
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    
+    localStorage.removeItem(TAB_KEY);
+
+    console.log("📤 Submitting quiz...");
+    console.log("📋 Answers:", answers);
+    console.log("⏱️ Per-question timings:", questionTimings);
+    console.log("⏱️ Total time tracked:", questionTimings.reduce((sum, t) => sum + t, 0), "seconds");
+
+    // Verify timing data before submission
+    const validTimings = questionTimings.every(t => typeof t === 'number' && t >= 0);
+    if (!validTimings) {
+      console.error("❌ Invalid timing data detected!", questionTimings);
+    } else {
+      console.log("✅ All timings are valid numbers");
+    }
+
+    // ⭐ CRITICAL DEBUG: Log exact payload being sent
+    const submissionPayload = {
+      category, 
+      topic, 
+      level, 
+      setNumber, 
+      answers,
+      timings: questionTimings
+    };
+    
+    console.log("📦 [quiz.html] EXACT PAYLOAD being sent to backend:");
+    console.log(JSON.stringify(submissionPayload, null, 2));
+
+    // Submit with per-question timings
+    const result = await practiceAPI.submitSet(submissionPayload);
+
+    console.log("✅ [quiz.html] Submit result received from backend");
+    console.log("📥 [quiz.html] FULL RESPONSE from backend:");
+    console.log(JSON.stringify(result, null, 2));
+
+    // ⭐ CRITICAL: Check if backend response has timing data
+    if (!result.results || result.results.length === 0) {
+      console.error("❌ [quiz.html] Backend returned NO results array!");
+    } else {
+      console.log(`📊 [quiz.html] Backend returned ${result.results.length} results`);
+      
+      // Check first result in detail
+      const firstResult = result.results[0];
+      console.log("🔍 [quiz.html] First result from backend:", firstResult);
+      console.log("🔍 [quiz.html] First result keys:", Object.keys(firstResult));
+      console.log("🔍 [quiz.html] Has timeSpent?", 'timeSpent' in firstResult);
+      console.log("🔍 [quiz.html] timeSpent value:", firstResult.timeSpent);
+      console.log("🔍 [quiz.html] timeSpent type:", typeof firstResult.timeSpent);
+      
+      // Count how many have timing data
+      const withTimings = result.results.filter(r => 
+        'timeSpent' in r && r.timeSpent !== null && r.timeSpent !== undefined
+      );
+      
+      if (withTimings.length === 0) {
+        console.error("❌❌❌ CRITICAL: Backend returned ZERO results with timeSpent field!");
+        console.error("This means the backend code changes were NOT applied or deployed!");
+      } else if (withTimings.length < result.results.length) {
+        console.warn(`⚠️ Only ${withTimings.length}/${result.results.length} have timeSpent`);
+      } else {
+        console.log(`✅✅✅ SUCCESS: All ${result.results.length} results have timeSpent!`);
+      }
+    }
+
+    // Calculate total time spent
+    const currentTime = Date.now();
+    let timeSpentSeconds = 0;
+    
+    if (quizStartTime) {
+      timeSpentSeconds = Math.floor((currentTime - quizStartTime) / 1000);
+    } else if (startTime) {
+      timeSpentSeconds = Math.floor((currentTime - startTime.getTime()) / 1000);
+    }
+    
+    console.log("⏱️ Total quiz time:", timeSpentSeconds, "seconds");
+
+    const resultsToStore = {
+      score: result.score,
+      totalQuestions: result.totalQuestions,
+      results: result.results,
+      timeSpent: timeSpentSeconds,
+      completedAt: result.completedAt
+    };
+
+    // ⭐ FINAL VERIFICATION before storing
+    console.log("💾 [quiz.html] About to store in sessionStorage:");
+    console.log(JSON.stringify(resultsToStore, null, 2));
+    
+    if (resultsToStore.results && resultsToStore.results.length > 0) {
+      const firstStored = resultsToStore.results[0];
+      console.log("🔍 [quiz.html] First result being stored has timeSpent?", 'timeSpent' in firstStored);
+      console.log("🔍 [quiz.html] First result timeSpent value:", firstStored.timeSpent);
+      
+      if (!('timeSpent' in firstStored)) {
+        console.error("❌❌❌ PROBLEM: Backend did not include timeSpent in results!");
+        console.error("The backend code was not properly deployed or there's an error in the backend.");
+      }
+    }
+    
+    sessionStorage.setItem('quizResults', JSON.stringify(resultsToStore));
+    
+    console.log("✅ [quiz.html] Results stored in sessionStorage");
+    
+    window.location.href = 
+      `results.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber}`;
+      
+  } catch (err) {
+    isSubmitting = false;
+    console.error("❌ Submit error:", err);
+    alert("Error submitting quiz: " + err.message);
+  }
+};      if (isSubmitting) return;
       
       isSubmitting = true;
       
