@@ -96,7 +96,7 @@ router.get("/:eventId", async (req, res) => {
 });
 
 /* ===========================
-   NEW: Check Participation by Email
+   Check Participation by Email
 =========================== */
 router.get("/:eventId/check-participation/:email", async (req, res) => {
   try {
@@ -377,7 +377,7 @@ router.post("/toggle-set", verifyToken, async (req, res) => {
 });
 
 /* ===========================
-   Get Participants (Admin)
+   Get All Participants (Admin)
 =========================== */
 router.get("/:eventId/participants", verifyToken, async (req, res) => {
   try {
@@ -396,6 +396,30 @@ router.get("/:eventId/participants", verifyToken, async (req, res) => {
     res.json({ participants });
   } catch (error) {
     console.error("Get participants error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/* ===========================
+   ⭐ NEW: Get Single Participant
+=========================== */
+router.get("/participants/:participantId", verifyToken, async (req, res) => {
+  try {
+    const participant = await EventParticipant.findById(req.params.participantId);
+    
+    if (!participant) {
+      return res.status(404).json({ error: "Participant not found" });
+    }
+
+    console.log('📊 Fetched participant:', {
+      id: participant._id,
+      email: participant.email,
+      completedSets: participant.setResults?.length || 0
+    });
+
+    res.json({ participant });
+  } catch (error) {
+    console.error("Get participant error:", error);
     res.status(500).json({ error: error.message });
   }
 });
