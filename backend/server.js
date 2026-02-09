@@ -63,6 +63,7 @@ app.use("/api/events/student-login", authLimiter);
 /* ================= CORS ================= */
 app.use(cors({
   origin: [
+    'http://localhost:5000',
     'https://quiz-app-3e991.web.app',
     'https://quiz-app-3e991.firebaseapp.com',
     'http://localhost:3000',

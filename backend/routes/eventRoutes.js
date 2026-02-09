@@ -96,26 +96,147 @@ router.get("/:eventId", async (req, res) => {
 });
 
 /* ===========================
+   NEW: Check Participation by Email
+=========================== */
+router.get("/:eventId/check-participation/:email", async (req, res) => {
+  try {
+    const { eventId, email } = req.params;
+    
+    console.log(`🔍 Checking participation for email: ${email} in event: ${eventId}`);
+    
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Event not found' 
+      });
+    }
+
+    // Find participant by email (case-insensitive)
+    const participant = await EventParticipant.findOne({
+      eventId: eventId,
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
+    });
+
+    if (participant) {
+      // Check if they have any completed sets
+      const hasCompleted = participant.setResults && participant.setResults.length > 0;
+      
+      console.log(`✅ Participant found:`, {
+        email: participant.email,
+        hasCompleted,
+        completedSets: participant.setResults?.length || 0
+      });
+
+      // Calculate total score
+      const totalScore = participant.setResults?.reduce((sum, result) => 
+        sum + (result.score || 0), 0
+      ) || 0;
+      
+      return res.json({
+        success: true,
+        hasParticipated: true,
+        hasCompleted,
+        participant: {
+          name: `${participant.firstName} ${participant.lastName}`,
+          email: participant.email,
+          rollNo: participant.rollNo,
+          department: participant.department,
+          totalScore: totalScore,
+          completedSets: participant.setResults?.length || 0,
+          setResults: participant.setResults || []
+        }
+      });
+    }
+
+    console.log(`⏳ No participant found with email: ${email}`);
+    
+    return res.json({
+      success: true,
+      hasParticipated: false
+    });
+
+  } catch (error) {
+    console.error('❌ Error checking participation:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error',
+      error: error.message 
+    });
+  }
+});
+
+/* ===========================
    Student Login
+   ⚠️ UPDATED: Now checks for existing participant
 =========================== */
 router.post("/student-login", verifyToken, async (req, res) => {
   try {
     const { eventId, rollNo, department, password } = req.body;
 
+    console.log(`📝 Student login attempt:`, { 
+      eventId, 
+      rollNo, 
+      department,
+      userEmail: req.user.email 
+    });
+
+    // Check if this email already has a participant record
+    const existingParticipant = await EventParticipant.findOne({
+      eventId: eventId,
+      email: req.user.email
+    });
+
+    if (existingParticipant) {
+      // Check if they have completed any sets
+      const hasCompletedSets = existingParticipant.setResults && 
+                                existingParticipant.setResults.length > 0;
+
+      if (hasCompletedSets) {
+        console.log(`⚠️ User already completed event:`, {
+          email: req.user.email,
+          completedSets: existingParticipant.setResults.length
+        });
+
+        return res.status(400).json({ 
+          error: "You have already participated in this event",
+          alreadyCompleted: true,
+          participant: {
+            id: existingParticipant._id,
+            name: `${existingParticipant.firstName} ${existingParticipant.lastName}`,
+            email: existingParticipant.email,
+            completedSets: existingParticipant.setResults.length
+          }
+        });
+      }
+
+      // They registered but haven't completed - allow them to continue
+      console.log(`✅ Existing participant can continue:`, existingParticipant._id);
+      
+      return res.json({
+        message: "Login successful - continuing your session",
+        participantId: existingParticipant._id,
+      });
+    }
+
+    // New participant - proceed with normal login
     const participant = await EventService.studentLogin({
       eventId,
       userId: req.user.uid,
+      email: req.user.email,
       rollNo,
       department,
       password,
     });
+
+    console.log(`✅ New participant created:`, participant._id);
 
     res.json({
       message: "Login successful",
       participantId: participant._id,
     });
   } catch (error) {
-    console.error("Student login error:", error);
+    console.error("❌ Student login error:", error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -146,10 +267,43 @@ router.get("/:eventId/active-set", async (req, res) => {
 
 /* ===========================
    Start Set (Student)
+   ⚠️ UPDATED: Check if already completed
 =========================== */
 router.post("/start-set", verifyToken, async (req, res) => {
   try {
     const { participantId, setId } = req.body;
+
+    console.log(`🚀 Starting set:`, { participantId, setId });
+
+    // Check if participant already completed this set
+    const participant = await EventParticipant.findById(participantId);
+    
+    if (!participant) {
+      return res.status(404).json({ 
+        success: false,
+        error: "Participant not found" 
+      });
+    }
+
+    // Check if this set was already completed
+    const alreadyCompleted = participant.setResults?.find(
+      result => result.setId.toString() === setId
+    );
+
+    if (alreadyCompleted) {
+      console.log(`⚠️ Set already completed by participant:`, {
+        participantId,
+        setId,
+        score: alreadyCompleted.score
+      });
+
+      return res.status(400).json({
+        success: false,
+        error: "You have already completed this quiz",
+        alreadyCompleted: true,
+        result: alreadyCompleted
+      });
+    }
 
     const result = await EventService.startSet(
       participantId,
@@ -170,10 +324,8 @@ router.post("/start-set", verifyToken, async (req, res) => {
 =========================== */
 router.post("/submit-set", verifyToken, async (req, res) => {
   try {
-    // ✅ ADDED: Extract timeTaken from request body
     const { participantId, setId, answers, timeTaken } = req.body;
 
-    // 🔍 DEBUG: Log received data
     console.log('📊 Submit Set Request:', {
       participantId,
       setId,
@@ -187,7 +339,7 @@ router.post("/submit-set", verifyToken, async (req, res) => {
       setId,
       userId: req.user.uid,
       answers,
-      timeTaken: timeTaken || 0, // ✅ ADDED: Pass timeTaken to service
+      timeTaken: timeTaken || 0,
     });
 
     res.json({
@@ -233,7 +385,6 @@ router.get("/:eventId/participants", verifyToken, async (req, res) => {
       eventId: req.params.eventId,
     }).sort({ createdAt: -1 });
 
-    // 🔍 DEBUG: Log participant data structure
     if (participants.length > 0) {
       console.log('📊 Sample Participant Data:', {
         rollNo: participants[0].rollNo,
@@ -299,13 +450,12 @@ router.get(
       );
 
       if (result.timeUp) {
-        // ✅ UPDATED: Include timeTaken when auto-submitting on time-up
         const submitResult = await EventService.submitSet({
           participantId,
           setId,
           userId: req.user.uid,
           answers: [],
-          timeTaken: result.totalTimeLimit || 0, // Use full time limit
+          timeTaken: result.totalTimeLimit || 0,
         });
 
         return res.json({
@@ -328,7 +478,6 @@ router.get(
 =========================== */
 router.post("/tab-switch", verifyToken, async (req, res) => {
   try {
-    // ✅ UPDATED: Extract timeTaken if provided
     const { participantId, setId, timeTaken } = req.body;
 
     const submitResult = await EventService.submitSet({
@@ -336,7 +485,7 @@ router.post("/tab-switch", verifyToken, async (req, res) => {
       setId,
       userId: req.user.uid,
       answers: [],
-      timeTaken: timeTaken || 0, // ✅ ADDED: Include timeTaken
+      timeTaken: timeTaken || 0,
     });
 
     res.json({
