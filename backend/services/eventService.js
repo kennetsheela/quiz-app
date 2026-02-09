@@ -1,3 +1,4 @@
+//eventService.js
 const Event = require("../models/Event");
 const EventParticipant = require("../models/EventParticipant");
 const bcrypt = require("bcrypt");

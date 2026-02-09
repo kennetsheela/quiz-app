@@ -1,3 +1,4 @@
+//EventParticipantSchema.js
 const mongoose = require("mongoose");
 
 const EventParticipantSchema = new mongoose.Schema({

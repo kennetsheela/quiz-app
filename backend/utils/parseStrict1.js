@@ -1,3 +1,4 @@
+//parseStrict1.js
 function parseStrict(text, metadata = {}) {
   console.log("📄 Parsing text, length:", text.length);
   console.log("📝 First 500 characters:", text.substring(0, 500));

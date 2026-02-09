@@ -1,3 +1,4 @@
+//UserProgress.js
 const mongoose = require("mongoose");
 
 const UserProgressSchema = new mongoose.Schema({
