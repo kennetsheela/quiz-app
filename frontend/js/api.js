@@ -2,7 +2,7 @@
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const API_BASE_URL = "https://quiz-app-mepj.onrender.com/api";
+const API_BASE_URL = "http://localhost:5000/api";
 
 // Feature flag to use localStorage fallback when backend is unavailable
 const USE_FALLBACK = false;

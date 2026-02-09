@@ -66,6 +66,127 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .error-screen {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 60px;
+      text-align: center;
+      display: none;
+    }
+
+    .error-screen.show {
+      display: block;
+    }
+
+    .error-screen i {
+      font-size: 5rem;
+      color: var(--error);
+      margin-bottom: 20px;
+    }
+
+    .error-details {
+      background: var(--bg-tertiary);
+      border-left: 4px solid var(--error);
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+      border-radius: 8px;
+    }
+
+    .error-details h3 {
+      color: var(--error);
+      margin-bottom: 10px;
+    }
+
+    .error-details p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 5px 0;
+    }
+
+    .format-guide {
+      background: var(--bg-secondary);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .format-guide h4 {
+      color: var(--accent-primary);
+      margin-bottom: 15px;
+    }
+
+    .format-guide pre {
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+    }
+
+    .already-completed-screen {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 60px;
+      text-align: center;
+      display: none;
+    }
+
+    .already-completed-screen.show {
+      display: block;
+    }
+
+    .already-completed-screen i {
+      font-size: 5rem;
+      color: var(--success);
+      margin-bottom: 20px;
+    }
+
+    .completion-details {
+      background: var(--bg-tertiary);
+      border-left: 4px solid var(--success);
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+      border-radius: 8px;
+    }
+
+    .completion-details h3 {
+      color: var(--success);
+      margin-bottom: 15px;
+    }
+
+    .completion-details p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: var(--accent-primary);
+      font-size: 1.1rem;
+    }
     
     .debug-info {
       background: #1a1a1a;
@@ -97,6 +218,7 @@
       font-weight: 500;
       margin-bottom: 20px;
       line-height: 1.6;
+      white-space: pre-wrap;
     }
     
     .options-container {
@@ -201,6 +323,105 @@
       </div>
     </div>
 
+    <!-- Error Screen -->
+    <div id="errorScreen" class="error-screen">
+      <i class="fas fa-exclamation-circle"></i>
+      <h1>Quiz Loading Error</h1>
+      <p style="color: var(--text-secondary); margin: 20px 0;">
+        There was a problem loading the quiz questions.
+      </p>
+
+      <div class="error-details">
+        <h3><i class="fas fa-info-circle"></i> Error Details</h3>
+        <p id="errorMessage">Unknown error occurred</p>
+        <p id="errorDetails" style="font-size: 0.9rem; margin-top: 10px;"></p>
+      </div>
+
+      <div class="format-guide">
+        <h4><i class="fas fa-book"></i> Expected File Format</h4>
+        <p style="margin-bottom: 15px;">Please ensure your question file follows this format:</p>
+        <pre>
+=== TOPIC: Topic Name, LEVEL: easy ===
+
+1. What is the question text?
+A. First option
+B. Second option
+C. Third option
+D. Fourth option
+Answer: C
+
+2. Next question here?
+A. Option 1
+B. Option 2
+C. Option 3
+D. Option 4
+Answer: A
+        </pre>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
+          <strong>Requirements:</strong><br>
+          • Each question must be numbered (1., 2., Q1., etc.)<br>
+          • Exactly 4 options labeled A-D<br>
+          • Clear answer indication (Answer: A, Correct: B, etc.)<br>
+          • Topic and level markers at the start
+        </p>
+      </div>
+
+      <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+        <button class="btn btn-secondary" onclick="checkAgain()">
+          <i class="fas fa-sync"></i> Retry
+        </button>
+        <button class="btn btn-primary" onclick="window.location.href='challenge.html'">
+          <i class="fas fa-arrow-left"></i> Back to Events
+        </button>
+      </div>
+    </div>
+
+    <!-- Already Completed Screen -->
+    <div id="alreadyCompletedScreen" class="already-completed-screen">
+      <i class="fas fa-check-circle"></i>
+      <h1>Quiz Already Completed</h1>
+      <p style="color: var(--text-secondary); margin: 20px 0;">
+        You have already participated in this event.
+      </p>
+
+      <div class="completion-details">
+        <h3><i class="fas fa-trophy"></i> Your Performance</h3>
+        <div class="stat-row">
+          <span class="stat-label">Participant Name:</span>
+          <span class="stat-value" id="completedName">-</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Email:</span>
+          <span class="stat-value" id="completedEmail">-</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Roll Number:</span>
+          <span class="stat-value" id="completedRollNo">-</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Department:</span>
+          <span class="stat-value" id="completedDepartment">-</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Score:</span>
+          <span class="stat-value" id="completedScore">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Completed Sets:</span>
+          <span class="stat-value" id="completedSets">0</span>
+        </div>
+      </div>
+
+      <p style="margin: 20px 0; color: var(--text-secondary); font-size: 0.95rem;">
+        <i class="fas fa-info-circle"></i> 
+        Each participant can only take the quiz once per event.
+      </p>
+
+      <button class="btn btn-primary" onclick="window.location.href='challenge.html'">
+        <i class="fas fa-arrow-left"></i> Back to Events
+      </button>
+    </div>
+
     <!-- Quiz Interface (Hidden by default) -->
     <div id="quizInterface" style="display: none;">
       <div class="quiz-header">
@@ -242,7 +463,8 @@
     let quizActive = false;
     let autoSubmitted = false;
     let pollAttempts = 0;
-    let quizStartTime = null; // Track actual quiz start time
+    let quizStartTime = null;
+    let currentUserEmail = null;
 
     // Debug logging
     function addDebugLog(message, data = null) {
@@ -260,6 +482,46 @@
       console.log(message, data || '');
     }
 
+    // Show already completed screen
+    function showAlreadyCompleted(participantData) {
+      addDebugLog('✅ User already completed this event', participantData);
+      
+      document.getElementById('waitingScreen').style.display = 'none';
+      document.getElementById('quizInterface').style.display = 'none';
+      document.getElementById('errorScreen').classList.remove('show');
+      document.getElementById('alreadyCompletedScreen').classList.add('show');
+      
+      // Populate completion details
+      document.getElementById('completedName').textContent = participantData.name || '-';
+      document.getElementById('completedEmail').textContent = participantData.email || '-';
+      document.getElementById('completedRollNo').textContent = participantData.rollNo || '-';
+      document.getElementById('completedDepartment').textContent = participantData.department || '-';
+      document.getElementById('completedScore').textContent = participantData.totalScore || 0;
+      document.getElementById('completedSets').textContent = participantData.completedSets || 0;
+      
+      // Stop polling
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    }
+
+    // Show error screen
+    function showError(message, details = '') {
+      addDebugLog('❌ Showing error screen', { message, details });
+      
+      document.getElementById('waitingScreen').style.display = 'none';
+      document.getElementById('quizInterface').style.display = 'none';
+      document.getElementById('errorScreen').classList.add('show');
+      
+      document.getElementById('errorMessage').textContent = message;
+      document.getElementById('errorDetails').textContent = details;
+      
+      // Stop polling
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    }
+
     // ---------------- AUTH & INIT ----------------
     function waitForAuthAndInit() {
       addDebugLog('🔐 Waiting for authentication...');
@@ -267,6 +529,7 @@
       auth.onAuthStateChanged((user) => {
         if (user) {
           addDebugLog('✅ User authenticated', { uid: user.uid, email: user.email });
+          currentUserEmail = user.email;
           init();
         } else {
           addDebugLog('❌ Not authenticated, redirecting...');
@@ -284,8 +547,29 @@
       
       if (!eventId || !participantId) {
         addDebugLog('❌ Missing required parameters!');
-        alert("Missing eventId or participantId in URL!");
+        showError(
+          'Missing required parameters',
+          'Both eventId and participantId are required in the URL'
+        );
         return;
+      }
+
+      // Check if user already participated
+      if (currentUserEmail) {
+        try {
+          addDebugLog('🔍 Checking if user already participated...');
+          const participationCheck = await eventAPI.checkParticipation(eventId, currentUserEmail);
+          
+          addDebugLog('📊 Participation check result:', participationCheck);
+          
+          if (participationCheck.hasParticipated && participationCheck.hasCompleted) {
+            showAlreadyCompleted(participationCheck.participant);
+            return;
+          }
+        } catch (error) {
+          addDebugLog('⚠️ Could not check participation:', error.message);
+          // Continue anyway - don't block if check fails
+        }
       }
       
       try {
@@ -294,7 +578,7 @@
         await checkForActiveSet();
       } catch (error) {
         addDebugLog('❌ Initialization error', { error: error.message });
-        alert("Error: " + error.message);
+        showError('Initialization failed', error.message);
       }
     }
 
@@ -317,6 +601,16 @@
         const response = await eventAPI.getActiveSet(eventId);
         addDebugLog('📦 Response received', response);
 
+        // Check for parsing errors
+        if (response.success === false) {
+          addDebugLog('❌ API returned error', response);
+          showError(
+            response.message || 'Failed to load quiz',
+            response.details || 'Please contact the administrator'
+          );
+          return;
+        }
+
         // Check multiple possible response formats
         const activeSet = response.activeSet || response.set || response.data?.activeSet;
         
@@ -328,6 +622,15 @@
             timeLimit: activeSet.timeLimit,
             questionCount: activeSet.questions?.length
           });
+
+          // Validate questions exist
+          if (!activeSet.questions || activeSet.questions.length === 0) {
+            showError(
+              'No questions available',
+              'The quiz has no valid questions. Please check the file format and try uploading again.'
+            );
+            return;
+          }
           
           clearInterval(pollInterval);
           await startQuiz(activeSet);
@@ -336,11 +639,33 @@
         }
       } catch (error) {
         addDebugLog('❌ Poll error', { error: error.message, stack: error.stack });
+        
+        // Show error after multiple failed attempts
+        if (pollAttempts > 10) {
+          showError(
+            'Connection error',
+            `Failed to connect after ${pollAttempts} attempts. ${error.message}`
+          );
+        }
       }
     }
 
     window.checkAgain = function() {
       addDebugLog('🔄 Manual refresh requested');
+      
+      // Hide all screens and show waiting screen
+      document.getElementById('errorScreen').classList.remove('show');
+      document.getElementById('alreadyCompletedScreen').classList.remove('show');
+      document.getElementById('waitingScreen').style.display = 'block';
+      
+      // Reset poll counter
+      pollAttempts = 0;
+      
+      // Restart polling
+      if (!pollInterval) {
+        pollInterval = setInterval(checkForActiveSet, 3000);
+      }
+      
       checkForActiveSet();
     };
 
@@ -360,15 +685,50 @@
         });
 
         addDebugLog('📋 Start set result', result);
+
+        // Check for errors in start response
+        if (result.success === false) {
+          if (result.alreadyCompleted) {
+            showError(
+              'Quiz Already Completed',
+              'You have already completed this quiz set. Each participant can only take each quiz once.'
+            );
+          } else {
+            showError(
+              result.message || 'Failed to start quiz',
+              result.details || ''
+            );
+          }
+          return;
+        }
         
         currentSet = activeSet;
         questions = result.questions || activeSet.questions || [];
         
         addDebugLog(`📝 Loaded ${questions.length} questions`);
         
+        // Validate questions structure
         if (questions.length === 0) {
-          addDebugLog('❌ No questions available!');
-          alert("No questions available for this quiz!");
+          showError(
+            'No questions available',
+            'The quiz set contains no valid questions. Please check the file format.'
+          );
+          return;
+        }
+
+        // Validate each question has required fields
+        const invalidQuestions = questions.filter(q => 
+          !q.question || 
+          !q.options || 
+          q.options.length !== 4 || 
+          !q.correctAnswer
+        );
+
+        if (invalidQuestions.length > 0) {
+          showError(
+            'Invalid question format',
+            `${invalidQuestions.length} question(s) are missing required fields (question text, 4 options, or correct answer)`
+          );
           return;
         }
 
@@ -409,7 +769,7 @@
 
       } catch (error) {
         addDebugLog('❌ Error starting quiz', { error: error.message, stack: error.stack });
-        alert("Error starting quiz: " + error.message);
+        showError('Failed to start quiz', error.message);
       }
     }
 
@@ -494,7 +854,6 @@
         `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    // Calculate time spent in seconds
     function getTimeSpentSeconds() {
       if (!quizStartTime) {
         addDebugLog('⚠️ Warning: Quiz start time not recorded');
@@ -583,7 +942,7 @@
           setId: currentSet._id,
           score,
           answers,
-          timeTaken: timeSpent // Send time spent in seconds
+          timeTaken: timeSpent
         });
 
         addDebugLog("✅ Auto-submit successful");
@@ -625,7 +984,7 @@
           setId: currentSet._id,
           score,
           answers,
-          timeTaken: timeSpent // Send time spent in seconds
+          timeTaken: timeSpent
         });
 
         addDebugLog("✅ Manual submit successful");
