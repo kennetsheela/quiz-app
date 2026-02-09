@@ -1,3 +1,4 @@
+//auth.js
 import { auth } from "./firebase.js";
 import { 
   onAuthStateChanged, 

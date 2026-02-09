@@ -1,3 +1,4 @@
+<!--quiz.html-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -327,544 +328,449 @@
     </div>
   </div>
 
-  <script type="module">
-    import { requireAuth } from "./js/auth.js";
-    import { practiceAPI } from "./js/api.js";
+  <!-- Replace the entire <script type="module"> section in quiz.html with this -->
+<script type="module">
+  import { requireAuth } from "./js/auth.js";
+  import { practiceAPI } from "./js/api.js";
 
-    let currentUser = null;
-    let questions = [];
-    let currentQuestion = 0;
-    let answers = [];
-    let timeRemaining = 0;
-    let timerInterval = null;
-    let setId = null;
-    let startTime = null;
-    let isSubmitting = false;
-    let quizStartTime = null;
+  let currentUser = null;
+  let questions = [];
+  let currentQuestion = 0;
+  let answers = [];
+  let timeRemaining = 0;
+  let timerInterval = null;
+  let setId = null;
+  let startTime = null;
+  let isSubmitting = false;
+  let quizStartTime = null;
+  
+  // ⭐ Per-question time tracking
+  let questionTimings = [];
+  let questionStartTime = null;
+
+  // Debug mode - set to true to enable debug panel
+  const DEBUG_MODE = false;
+
+  const TAB_KEY = `QUIZ_TAB_${window.location.pathname}`;
+  const TAB_ID = Date.now().toString();
+
+  if (localStorage.getItem(TAB_KEY)) {
+    alert("Quiz already open in another tab. Close it to continue.");
+    window.location.href = "dashboard.html";
+  } else {
+    localStorage.setItem(TAB_KEY, TAB_ID);
+  }
+
+  window.addEventListener("beforeunload", () => {
+    if (localStorage.getItem(TAB_KEY) === TAB_ID) {
+      localStorage.removeItem(TAB_KEY);
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && !isSubmitting) {
+      alert("Tab switching is not allowed! Quiz will be auto-submitted.");
+      submitQuiz();
+    }
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const category = params.get('category');
+  const topic = params.get('topic');
+  const level = params.get('level');
+  const setNumber = parseInt(params.get('set'));
+
+  // ⭐ Debug helper function
+  function updateDebugPanel() {
+    if (!DEBUG_MODE) return;
     
-    // ⭐ Per-question time tracking
-    let questionTimings = [];
-    let questionStartTime = null;
-
-    // Debug mode - set to true to enable debug panel
-    const DEBUG_MODE = false;
-
-    const TAB_KEY = `QUIZ_TAB_${window.location.pathname}`;
-    const TAB_ID = Date.now().toString();
-
-    if (localStorage.getItem(TAB_KEY)) {
-      alert("Quiz already open in another tab. Close it to continue.");
-      window.location.href = "dashboard.html";
-    } else {
-      localStorage.setItem(TAB_KEY, TAB_ID);
+    const debugPanel = document.getElementById('debugPanel');
+    const debugContent = document.getElementById('debugContent');
+    
+    if (debugPanel && debugContent) {
+      debugPanel.classList.add('active');
+      debugContent.innerHTML = `
+        <strong>Time Tracking Debug</strong><br>
+        Current Q: ${currentQuestion + 1}/${questions.length}<br>
+        Q Start: ${questionStartTime ? new Date(questionStartTime).toLocaleTimeString() : 'N/A'}<br>
+        Current Time: ${questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) + 's' : 'N/A'}<br>
+        Timings: [${questionTimings.map(t => t + 's').join(', ')}]<br>
+        Total: ${questionTimings.reduce((sum, t) => sum + t, 0)}s
+      `;
     }
+  }
 
-    window.addEventListener("beforeunload", () => {
-      if (localStorage.getItem(TAB_KEY) === TAB_ID) {
-        localStorage.removeItem(TAB_KEY);
+  async function initQuiz() {
+    try {
+      currentUser = await requireAuth();
+      console.log("✅ User authenticated:", currentUser.uid);
+      console.log("🎯 Quiz params:", { category, topic, level, setNumber });
+
+      // Start the set
+      const startResult = await practiceAPI.startSet({
+        category, topic, level, setNumber
+      });
+
+      console.log("✅ Start result:", startResult);
+
+      if (!startResult || !startResult.progress || !startResult.progress.setId) {
+        throw new Error("Invalid response from server. Missing setId in progress object.");
       }
-    });
 
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && !isSubmitting) {
-        alert("Tab switching is not allowed! Quiz will be auto-submitted.");
-        submitQuiz();
-      }
-    });
-
-    const params = new URLSearchParams(window.location.search);
-    const category = params.get('category');
-    const topic = params.get('topic');
-    const level = params.get('level');
-    const setNumber = parseInt(params.get('set'));
-
-    // ⭐ Debug helper functions
-    function updateDebugPanel() {
-      if (!DEBUG_MODE) return;
+      setId = startResult.progress.setId;
+      startTime = new Date(startResult.progress.startedAt);
+      quizStartTime = Date.now();
       
-      const debugPanel = document.getElementById('debugPanel');
-      const debugContent = document.getElementById('debugContent');
+      console.log("⏱️ Quiz start time initialized:", new Date(quizStartTime).toISOString());
+      console.log("📋 Set ID:", setId);
       
-      if (debugPanel && debugContent) {
-        debugPanel.classList.add('active');
-        debugContent.innerHTML = `
-          <strong>Time Tracking Debug</strong><br>
-          Current Q: ${currentQuestion + 1}/${questions.length}<br>
-          Q Start: ${questionStartTime ? new Date(questionStartTime).toLocaleTimeString() : 'N/A'}<br>
-          Current Time: ${questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) + 's' : 'N/A'}<br>
-          Timings: [${questionTimings.map(t => t + 's').join(', ')}]<br>
-          Total: ${questionTimings.reduce((sum, t) => sum + t, 0)}s
-        `;
+      timeRemaining = (startResult.progress.timeLimit || 10) * 60;
+
+      console.log("📋 Fetching questions for setId:", setId);
+      
+      // Fetch questions
+      const questionsData = await practiceAPI.getQuestions(setId);
+      
+      console.log("✅ Questions response:", questionsData);
+      
+      if (!questionsData || !questionsData.questions || questionsData.questions.length === 0) {
+        throw new Error("No questions found in this set");
       }
-    }
 
-    async function initQuiz() {
-      try {
-        currentUser = await requireAuth();
-        console.log("✅ User authenticated:", currentUser.uid);
-        console.log("🎯 Quiz params:", { category, topic, level, setNumber });
+      questions = questionsData.questions;
+      answers = new Array(questions.length).fill(null);
+      
+      // ⭐ Initialize timing array with zeros
+      questionTimings = new Array(questions.length).fill(0);
+      console.log("⏱️ Initialized timing array for", questions.length, "questions");
 
-        const startResult = await practiceAPI.startSet({
-          category, topic, level, setNumber
-        });
+      document.getElementById("quizTitle").textContent =
+        `${formatText(category)} - ${formatText(topic)}`;
+      document.getElementById("quizInfo").textContent =
+        `${formatText(level)} Level | Set ${setNumber} | ${questions.length} Questions`;
 
-        console.log("✅ Start result:", startResult);
+      renderQuestionNav();
+      renderQuestion();
+      startTimer();
 
-        if (!startResult || !startResult.progress || !startResult.progress.setId) {
-          throw new Error("Invalid response from server");
-        }
+      // ⭐ Start timer for first question
+      startQuestionTimer();
 
-        setId = startResult.progress.setId;
-        startTime = new Date(startResult.progress.startedAt);
-        quizStartTime = Date.now();
-        
-        console.log("⏱️ Quiz start time initialized:", new Date(quizStartTime).toISOString());
-        
-        timeRemaining = (startResult.progress.timeLimit || 10) * 60;
+      window.addEventListener('beforeunload', handleBeforeUnload);
 
-        console.log("📋 Fetching questions for setId:", setId);
-        
-        const questionsData = await practiceAPI.getQuestions(setId);
-        
-        console.log("✅ Questions loaded:", questionsData.totalQuestions, "questions");
-        
-        if (!questionsData.questions || questionsData.questions.length === 0) {
-          throw new Error("No questions found in this set");
-        }
-
-        questions = questionsData.questions;
-        answers = new Array(questions.length).fill(null);
-        
-        // ⭐ Initialize timing array with zeros
-        questionTimings = new Array(questions.length).fill(0);
-        console.log("⏱️ Initialized timing array:", questionTimings);
-
-        document.getElementById("quizTitle").textContent =
-          `${formatText(category)} - ${formatText(topic)}`;
-        document.getElementById("quizInfo").textContent =
-          `${formatText(level)} Level | Set ${setNumber} | ${questions.length} Questions`;
-
-        renderQuestionNav();
-        renderQuestion();
-        startTimer();
-
-        // ⭐ Start timer for first question
-        startQuestionTimer();
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-      } catch (error) {
-        console.error("❌ Quiz initialization error:", error);
-        alert(`Error: ${error.message}\n\nPlease try again or contact support.`);
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1000);
-      }
-    }
-
-    function startTimer() {
-      updateTimerDisplay();
-      timerInterval = setInterval(() => {
-        timeRemaining--;
-        updateTimerDisplay();
-        updateDebugPanel(); // Update debug info
-
-        if (timeRemaining <= 60) {
-          document.getElementById("timer").classList.add("warning");
-        }
-
-        if (timeRemaining <= 0) {
-          clearInterval(timerInterval);
-          alert("Time's up! Auto-submitting quiz...");
-          submitQuiz();
-        }
+    } catch (error) {
+      console.error("❌ Quiz initialization error:", error);
+      alert(`Error: ${error.message}\n\nPlease try again or contact support.`);
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
       }, 1000);
     }
-
-    function updateTimerDisplay() {
-      const minutes = Math.floor(timeRemaining / 60);
-      const seconds = timeRemaining % 60;
-      document.getElementById("timeDisplay").textContent =
-        `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-    }
-
-    // ⭐ Start timing for current question
-    function startQuestionTimer() {
-      questionStartTime = Date.now();
-      console.log(`⏱️ [Q${currentQuestion + 1}] Timer started at:`, new Date(questionStartTime).toLocaleTimeString());
-      updateDebugPanel();
-    }
-
-    // ⭐ Stop timing and accumulate time for current question
-    function stopQuestionTimer() {
-      if (questionStartTime) {
-        const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
-        
-        // ⭐ Accumulate time (in case user comes back to this question)
-        questionTimings[currentQuestion] += timeSpent;
-        
-        console.log(`⏱️ [Q${currentQuestion + 1}] Time spent: ${timeSpent}s (Total: ${questionTimings[currentQuestion]}s)`);
-        
-        // Reset start time
-        questionStartTime = null;
-        updateDebugPanel();
-      }
-    }
-
-    window.selectOption = function(option) {
-      answers[currentQuestion] = option;
-      renderQuestion();
-    };
-
-    window.nextQuestion = function() {
-      if (currentQuestion < questions.length - 1) {
-        stopQuestionTimer(); // ⭐ Stop timer before moving
-        currentQuestion++;
-        renderQuestion();
-        startQuestionTimer(); // ⭐ Start timer for new question
-      }
-    };
-
-    window.prevQuestion = function() {
-      if (currentQuestion > 0) {
-        stopQuestionTimer(); // ⭐ Stop timer before moving
-        currentQuestion--;
-        renderQuestion();
-        startQuestionTimer(); // ⭐ Start timer for new question
-      }
-    };
-
-    window.goToQuestion = function(index) {
-      if (index === currentQuestion) return; // Already on this question
-      
-      stopQuestionTimer(); // ⭐ Stop timer before moving
-      currentQuestion = index;
-      renderQuestion();
-      startQuestionTimer(); // ⭐ Start timer for new question
-    };
-
-    window.confirmSubmit = function() {
-      const unanswered = answers.filter(a => a === null).length;
-      const message = unanswered > 0 
-        ? `You have ${unanswered} unanswered question(s). Are you sure you want to submit?`
-        : "Are you sure you want to submit your quiz?";
-      
-      document.getElementById("submitWarning").textContent = message;
-      document.getElementById("submitModal").classList.add("active");
-    };
-
-    window.closeSubmitModal = function() {
-      document.getElementById("submitModal").classList.remove("active");
-    };
-
-    function renderQuestionNav() {
-      const navHTML = questions.map((_, i) => `
-        <button class="question-nav-btn ${i===0?'current':''}" onclick="goToQuestion(${i})">${i+1}</button>
-      `).join('');
-      document.getElementById("questionNav").innerHTML = navHTML;
-    }
-
-    function renderQuestion() {
-      const q = questions[currentQuestion];
-      
-      console.log(`📝 Rendering Question ${currentQuestion + 1}:`, q.question?.substring(0, 50) + '...');
-      
-      const optionLabels = ['A','B','C','D'];
-      
-      const questionCard = document.getElementById("questionCard");
-      questionCard.innerHTML = '';
-      
-      const questionNumber = document.createElement('div');
-      questionNumber.className = 'question-number';
-      questionNumber.innerHTML = `
-        <i class="fas fa-question-circle"></i>
-        Question ${currentQuestion+1} of ${questions.length}
-      `;
-      
-      const questionText = document.createElement('div');
-      questionText.className = 'question-text';
-      const cleanQuestion = (q.question || '')
-        .replace(/<br\s*\/?>/gi, ' ')
-        .replace(/\n/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      questionText.textContent = cleanQuestion;
-      
-      const optionsContainer = document.createElement('div');
-      optionsContainer.className = 'options-container';
-      
-      q.options.forEach((opt, i) => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = `option ${answers[currentQuestion]===opt?'selected':''}`;
-        optionDiv.onclick = () => selectOption(opt);
-        
-        const optionLabel = document.createElement('div');
-        optionLabel.className = 'option-label';
-        optionLabel.textContent = optionLabels[i];
-        
-        const optionText = document.createElement('div');
-        optionText.className = 'option-text';
-        optionText.textContent = opt;
-        
-        optionDiv.appendChild(optionLabel);
-        optionDiv.appendChild(optionText);
-        optionsContainer.appendChild(optionDiv);
-      });
-      
-      questionCard.appendChild(questionNumber);
-      questionCard.appendChild(questionText);
-      questionCard.appendChild(optionsContainer);
-
-      document.getElementById("prevBtn").disabled = currentQuestion === 0;
-      document.getElementById("nextBtn").style.display = 
-        currentQuestion === questions.length-1 ? "none" : "block";
-      document.getElementById("submitBtn").style.display = 
-        currentQuestion === questions.length-1 ? "block" : "none";
-
-      const progress = ((currentQuestion+1)/questions.length)*100;
-      document.getElementById("progressFill").style.width = progress + "%";
-
-      document.querySelectorAll(".question-nav-btn").forEach((btn,i)=>{
-        btn.classList.remove("current","answered");
-        if (i===currentQuestion) btn.classList.add("current");
-        if (answers[i]!==null) btn.classList.add("answered");
-      });
-      
-      updateDebugPanel();
-    }
-
-window.submitQuiz = async function() {
-  if (isSubmitting) return;
-  
-  isSubmitting = true;
-  
-  // Stop timer for current question before submitting
-  stopQuestionTimer();
-  
-  document.getElementById("submitModal").classList.remove("active");
-
-  try {
-    clearInterval(timerInterval);
-    
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-    
-    localStorage.removeItem(TAB_KEY);
-
-    console.log("📤 Submitting quiz...");
-    console.log("📋 Answers:", answers);
-    console.log("⏱️ Per-question timings:", questionTimings);
-    console.log("⏱️ Total time tracked:", questionTimings.reduce((sum, t) => sum + t, 0), "seconds");
-
-    // Verify timing data before submission
-    const validTimings = questionTimings.every(t => typeof t === 'number' && t >= 0);
-    if (!validTimings) {
-      console.error("❌ Invalid timing data detected!", questionTimings);
-    } else {
-      console.log("✅ All timings are valid numbers");
-    }
-
-    // ⭐ CRITICAL DEBUG: Log exact payload being sent
-    const submissionPayload = {
-      category, 
-      topic, 
-      level, 
-      setNumber, 
-      answers,
-      timings: questionTimings
-    };
-    
-    console.log("📦 [quiz.html] EXACT PAYLOAD being sent to backend:");
-    console.log(JSON.stringify(submissionPayload, null, 2));
-
-    // Submit with per-question timings
-    const result = await practiceAPI.submitSet(submissionPayload);
-
-    console.log("✅ [quiz.html] Submit result received from backend");
-    console.log("📥 [quiz.html] FULL RESPONSE from backend:");
-    console.log(JSON.stringify(result, null, 2));
-
-    // ⭐ CRITICAL: Check if backend response has timing data
-    if (!result.results || result.results.length === 0) {
-      console.error("❌ [quiz.html] Backend returned NO results array!");
-    } else {
-      console.log(`📊 [quiz.html] Backend returned ${result.results.length} results`);
-      
-      // Check first result in detail
-      const firstResult = result.results[0];
-      console.log("🔍 [quiz.html] First result from backend:", firstResult);
-      console.log("🔍 [quiz.html] First result keys:", Object.keys(firstResult));
-      console.log("🔍 [quiz.html] Has timeSpent?", 'timeSpent' in firstResult);
-      console.log("🔍 [quiz.html] timeSpent value:", firstResult.timeSpent);
-      console.log("🔍 [quiz.html] timeSpent type:", typeof firstResult.timeSpent);
-      
-      // Count how many have timing data
-      const withTimings = result.results.filter(r => 
-        'timeSpent' in r && r.timeSpent !== null && r.timeSpent !== undefined
-      );
-      
-      if (withTimings.length === 0) {
-        console.error("❌❌❌ CRITICAL: Backend returned ZERO results with timeSpent field!");
-        console.error("This means the backend code changes were NOT applied or deployed!");
-      } else if (withTimings.length < result.results.length) {
-        console.warn(`⚠️ Only ${withTimings.length}/${result.results.length} have timeSpent`);
-      } else {
-        console.log(`✅✅✅ SUCCESS: All ${result.results.length} results have timeSpent!`);
-      }
-    }
-
-    // Calculate total time spent
-    const currentTime = Date.now();
-    let timeSpentSeconds = 0;
-    
-    if (quizStartTime) {
-      timeSpentSeconds = Math.floor((currentTime - quizStartTime) / 1000);
-    } else if (startTime) {
-      timeSpentSeconds = Math.floor((currentTime - startTime.getTime()) / 1000);
-    }
-    
-    console.log("⏱️ Total quiz time:", timeSpentSeconds, "seconds");
-
-    const resultsToStore = {
-      score: result.score,
-      totalQuestions: result.totalQuestions,
-      results: result.results,
-      timeSpent: timeSpentSeconds,
-      completedAt: result.completedAt
-    };
-
-    // ⭐ FINAL VERIFICATION before storing
-    console.log("💾 [quiz.html] About to store in sessionStorage:");
-    console.log(JSON.stringify(resultsToStore, null, 2));
-    
-    if (resultsToStore.results && resultsToStore.results.length > 0) {
-      const firstStored = resultsToStore.results[0];
-      console.log("🔍 [quiz.html] First result being stored has timeSpent?", 'timeSpent' in firstStored);
-      console.log("🔍 [quiz.html] First result timeSpent value:", firstStored.timeSpent);
-      
-      if (!('timeSpent' in firstStored)) {
-        console.error("❌❌❌ PROBLEM: Backend did not include timeSpent in results!");
-        console.error("The backend code was not properly deployed or there's an error in the backend.");
-      }
-    }
-    
-    sessionStorage.setItem('quizResults', JSON.stringify(resultsToStore));
-    
-    console.log("✅ [quiz.html] Results stored in sessionStorage");
-    
-    window.location.href = 
-      `results.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber}`;
-      
-  } catch (err) {
-    isSubmitting = false;
-    console.error("❌ Submit error:", err);
-    alert("Error submitting quiz: " + err.message);
   }
-};      if (isSubmitting) return;
-      
-      isSubmitting = true;
-      
-      // ⭐ Stop timer for current question before submitting
-      stopQuestionTimer();
-      
-      document.getElementById("submitModal").classList.remove("active");
 
-      try {
+  function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      timeRemaining--;
+      updateTimerDisplay();
+      updateDebugPanel();
+
+      if (timeRemaining <= 60) {
+        document.getElementById("timer").classList.add("warning");
+      }
+
+      if (timeRemaining <= 0) {
         clearInterval(timerInterval);
-        
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-        
-        localStorage.removeItem(TAB_KEY);
-
-        console.log("📤 Submitting quiz...");
-        console.log("📋 Answers:", answers);
-        console.log("⏱️ Per-question timings:", questionTimings);
-        console.log("⏱️ Total time tracked:", questionTimings.reduce((sum, t) => sum + t, 0), "seconds");
-
-        // ⭐ Verify timing data before submission
-        const validTimings = questionTimings.every(t => t >= 0);
-        if (!validTimings) {
-          console.error("❌ Invalid timing data detected!", questionTimings);
-        }
-
-        // ⭐ Submit with per-question timings
-        const result = await practiceAPI.submitSet({
-          category, 
-          topic, 
-          level, 
-          setNumber, 
-          answers,
-          timings: questionTimings // ⭐ Send per-question timings array
-        });
-
-        console.log("✅ Submit result:", result);
-
-        // Calculate total time spent
-        const currentTime = Date.now();
-        let timeSpentSeconds = 0;
-        
-        if (quizStartTime) {
-          timeSpentSeconds = Math.floor((currentTime - quizStartTime) / 1000);
-        } else if (startTime) {
-          timeSpentSeconds = Math.floor((currentTime - startTime.getTime()) / 1000);
-        }
-        
-        console.log("⏱️ Total quiz time:", timeSpentSeconds, "seconds");
-
-const resultsToStore = {
-  score: result.score,
-  totalQuestions: result.totalQuestions,
-  results: result.results,
-  timeSpent: timeSpentSeconds,
-  completedAt: result.completedAt
-};
-
-// ⭐ DETAILED DEBUG
-console.log("💾 Storing results in sessionStorage:", resultsToStore);
-console.log("🔍 Backend returned results:", result.results);
-
-if (result.results && result.results.length > 0) {
-  console.log("🔍 First backend result:", result.results[0]);
-  console.log("🔍 First result has timeSpent?", 'timeSpent' in result.results[0]);
-  console.log("🔍 First result timeSpent value:", result.results[0].timeSpent);
-  
-  const backendHasTimings = result.results.some(r => 
-    'timeSpent' in r && r.timeSpent !== null && r.timeSpent !== undefined
-  );
-  console.log(backendHasTimings 
-    ? "✅ Backend DID return per-question timings!" 
-    : "❌ Backend did NOT return per-question timings!");
-}
-        // ⭐ Verify that results contain per-question time data
-        if (result.results && result.results.length > 0) {
-          const hasTimeData = result.results.some(r => r.timeSpent !== undefined && r.timeSpent !== null);
-          console.log(hasTimeData ? "✅ Per-question time data present in results" : "⚠️ No per-question time data in results");
-        }
-        
-        sessionStorage.setItem('quizResults', JSON.stringify(resultsToStore));
-        
-        window.location.href = 
-          `results.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber}`;
-          
-      } catch (err) {
-        isSubmitting = false;
-        console.error("❌ Submit error:", err);
-        alert("Error submitting quiz: " + err.message);
+        alert("Time's up! Auto-submitting quiz...");
+        submitQuiz();
       }
-    };
+    }, 1000);
+  }
 
-    function handleBeforeUnload(e) {
-      if (!isSubmitting) {
-        e.preventDefault();
-        e.returnValue = '';
+  function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    document.getElementById("timeDisplay").textContent =
+      `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+  }
+
+  // ⭐ Start timing for current question
+  function startQuestionTimer() {
+    questionStartTime = Date.now();
+    console.log(`⏱️ [Q${currentQuestion + 1}] Timer started at:`, new Date(questionStartTime).toLocaleTimeString());
+    updateDebugPanel();
+  }
+
+  // ⭐ Stop timing and accumulate time for current question
+  function stopQuestionTimer() {
+    if (questionStartTime) {
+      const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
+      
+      // ⭐ Accumulate time (in case user comes back to this question)
+      questionTimings[currentQuestion] += timeSpent;
+      
+      console.log(`⏱️ [Q${currentQuestion + 1}] Time spent: ${timeSpent}s (Total: ${questionTimings[currentQuestion]}s)`);
+      
+      // Reset start time
+      questionStartTime = null;
+      updateDebugPanel();
+    }
+  }
+
+  window.selectOption = function(option) {
+    answers[currentQuestion] = option;
+    renderQuestion();
+  };
+
+  window.nextQuestion = function() {
+    if (currentQuestion < questions.length - 1) {
+      stopQuestionTimer();
+      currentQuestion++;
+      renderQuestion();
+      startQuestionTimer();
+    }
+  };
+
+  window.prevQuestion = function() {
+    if (currentQuestion > 0) {
+      stopQuestionTimer();
+      currentQuestion--;
+      renderQuestion();
+      startQuestionTimer();
+    }
+  };
+
+  window.goToQuestion = function(index) {
+    if (index === currentQuestion) return;
+    
+    stopQuestionTimer();
+    currentQuestion = index;
+    renderQuestion();
+    startQuestionTimer();
+  };
+
+  window.confirmSubmit = function() {
+    const unanswered = answers.filter(a => a === null).length;
+    const message = unanswered > 0 
+      ? `You have ${unanswered} unanswered question(s). Are you sure you want to submit?`
+      : "Are you sure you want to submit your quiz?";
+    
+    document.getElementById("submitWarning").textContent = message;
+    document.getElementById("submitModal").classList.add("active");
+  };
+
+  window.closeSubmitModal = function() {
+    document.getElementById("submitModal").classList.remove("active");
+  };
+
+  function renderQuestionNav() {
+    const navHTML = questions.map((_, i) => `
+      <button class="question-nav-btn ${i===0?'current':''}" onclick="goToQuestion(${i})">${i+1}</button>
+    `).join('');
+    document.getElementById("questionNav").innerHTML = navHTML;
+  }
+
+  function renderQuestion() {
+    const q = questions[currentQuestion];
+    
+    console.log(`📝 Rendering Question ${currentQuestion + 1}`);
+    
+    const optionLabels = ['A','B','C','D'];
+    
+    const questionCard = document.getElementById("questionCard");
+    questionCard.innerHTML = '';
+    
+    const questionNumber = document.createElement('div');
+    questionNumber.className = 'question-number';
+    questionNumber.innerHTML = `
+      <i class="fas fa-question-circle"></i>
+      Question ${currentQuestion+1} of ${questions.length}
+    `;
+    
+    const questionText = document.createElement('div');
+    questionText.className = 'question-text';
+    const cleanQuestion = (q.question || '')
+      .replace(/<br\s*\/?>/gi, ' ')
+      .replace(/\n/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    questionText.textContent = cleanQuestion;
+    
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'options-container';
+    
+    q.options.forEach((opt, i) => {
+      const optionDiv = document.createElement('div');
+      optionDiv.className = `option ${answers[currentQuestion]===opt?'selected':''}`;
+      optionDiv.onclick = () => selectOption(opt);
+      
+      const optionLabel = document.createElement('div');
+      optionLabel.className = 'option-label';
+      optionLabel.textContent = optionLabels[i];
+      
+      const optionText = document.createElement('div');
+      optionText.className = 'option-text';
+      optionText.textContent = opt;
+      
+      optionDiv.appendChild(optionLabel);
+      optionDiv.appendChild(optionText);
+      optionsContainer.appendChild(optionDiv);
+    });
+    
+    questionCard.appendChild(questionNumber);
+    questionCard.appendChild(questionText);
+    questionCard.appendChild(optionsContainer);
+
+    document.getElementById("prevBtn").disabled = currentQuestion === 0;
+    document.getElementById("nextBtn").style.display = 
+      currentQuestion === questions.length-1 ? "none" : "block";
+    document.getElementById("submitBtn").style.display = 
+      currentQuestion === questions.length-1 ? "block" : "none";
+
+    const progress = ((currentQuestion+1)/questions.length)*100;
+    document.getElementById("progressFill").style.width = progress + "%";
+
+    document.querySelectorAll(".question-nav-btn").forEach((btn,i)=>{
+      btn.classList.remove("current","answered");
+      if (i===currentQuestion) btn.classList.add("current");
+      if (answers[i]!==null) btn.classList.add("answered");
+    });
+    
+    updateDebugPanel();
+  }
+
+  // ✅ FIXED: Single submitQuiz function with proper time tracking
+  window.submitQuiz = async function() {
+    if (isSubmitting) return;
+    
+    isSubmitting = true;
+    
+    // Stop timer for current question before submitting
+    stopQuestionTimer();
+    
+    document.getElementById("submitModal").classList.remove("active");
+
+    try {
+      clearInterval(timerInterval);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      localStorage.removeItem(TAB_KEY);
+
+      console.log("📤 [quiz.html] Submitting quiz...");
+      console.log("📋 [quiz.html] Answers:", answers);
+      console.log("⏱️ [quiz.html] Per-question timings:", questionTimings);
+      console.log("⏱️ [quiz.html] Total time tracked:", questionTimings.reduce((sum, t) => sum + t, 0), "seconds");
+
+      // Verify timing data
+      const validTimings = questionTimings.every(t => typeof t === 'number' && t >= 0);
+      if (!validTimings) {
+        console.error("❌ Invalid timing data detected!", questionTimings);
+      } else {
+        console.log("✅ All timings are valid numbers");
       }
-    }
 
-    function formatText(text) {
-      return text.split('-').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-    }
+      // Prepare submission payload
+      const submissionPayload = {
+        category, 
+        topic, 
+        level, 
+        setNumber, 
+        answers,
+        timings: questionTimings // ⭐ Send per-question timings
+      };
+      
+      console.log("📦 [quiz.html] Submission payload:");
+      console.log(JSON.stringify(submissionPayload, null, 2));
 
-    initQuiz();
-  </script>
+      // Submit to backend
+      const result = await practiceAPI.submitSet(submissionPayload);
+
+      console.log("✅ [quiz.html] Backend response received");
+      console.log("📥 [quiz.html] Response:", JSON.stringify(result, null, 2));
+
+      // Verify backend response
+      if (!result.results || result.results.length === 0) {
+        console.error("❌ Backend returned no results array!");
+      } else {
+        const firstResult = result.results[0];
+        console.log("🔍 [quiz.html] First result:", firstResult);
+        console.log("🔍 [quiz.html] Has timeSpent?", 'timeSpent' in firstResult);
+        console.log("🔍 [quiz.html] timeSpent value:", firstResult.timeSpent);
+        
+        const withTimings = result.results.filter(r => 
+          'timeSpent' in r && r.timeSpent !== null && r.timeSpent !== undefined
+        );
+        
+        if (withTimings.length === 0) {
+          console.error("❌ CRITICAL: Backend did NOT return timeSpent in results!");
+        } else if (withTimings.length < result.results.length) {
+          console.warn(`⚠️ Only ${withTimings.length}/${result.results.length} have timeSpent`);
+        } else {
+          console.log(`✅ SUCCESS: All ${result.results.length} results have timeSpent!`);
+        }
+      }
+
+      // Calculate total time
+      const currentTime = Date.now();
+      let timeSpentSeconds = 0;
+      
+      if (quizStartTime) {
+        timeSpentSeconds = Math.floor((currentTime - quizStartTime) / 1000);
+      } else if (startTime) {
+        timeSpentSeconds = Math.floor((currentTime - startTime.getTime()) / 1000);
+      }
+      
+      console.log("⏱️ Total quiz time:", timeSpentSeconds, "seconds");
+
+      // Prepare results for storage
+      const resultsToStore = {
+        score: result.score,
+        totalQuestions: result.totalQuestions,
+        results: result.results,
+        timeSpent: timeSpentSeconds,
+        completedAt: result.completedAt
+      };
+
+      console.log("💾 [quiz.html] Storing in sessionStorage:");
+      console.log(JSON.stringify(resultsToStore, null, 2));
+      
+      // Final verification
+      if (resultsToStore.results && resultsToStore.results.length > 0) {
+        const firstStored = resultsToStore.results[0];
+        console.log("🔍 First result has timeSpent?", 'timeSpent' in firstStored);
+        console.log("🔍 First result timeSpent:", firstStored.timeSpent);
+        
+        if (!('timeSpent' in firstStored)) {
+          console.error("❌ PROBLEM: Backend did not include timeSpent!");
+        }
+      }
+      
+      sessionStorage.setItem('quizResults', JSON.stringify(resultsToStore));
+      console.log("✅ Results stored successfully");
+      
+      // Redirect to results page
+      window.location.href = 
+        `results.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber}`;
+        
+    } catch (err) {
+      isSubmitting = false;
+      console.error("❌ Submit error:", err);
+      alert("Error submitting quiz: " + err.message);
+    }
+  };
+
+  function handleBeforeUnload(e) {
+    if (!isSubmitting) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  }
+
+  function formatText(text) {
+    return text.split('-').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  }
+
+  // Start quiz
+  initQuiz();
+</script>
 
   <script src="js/theme.js" type="module"></script>
 </body>
