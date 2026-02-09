@@ -303,6 +303,35 @@ export const eventAPI = {
     body: JSON.stringify(data)
   }),
   
+  // ⭐ NEW: Check if user already participated
+  checkParticipation: async (eventId, email) => {
+    try {
+      console.log("🔍 [api.js] Checking participation:", { eventId, email });
+      const encodedEmail = encodeURIComponent(email);
+      const response = await fetch(
+        `${API_BASE_URL}/events/${eventId}/check-participation/${encodedEmail}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to check participation');
+      }
+
+      console.log("✅ [api.js] Participation check result:", data);
+      return data;
+    } catch (error) {
+      console.error('❌ [api.js] Error checking participation:', error);
+      throw error;
+    }
+  },
+  
   getActiveSet: async (eventId) => {
     try {
       console.log("Fetching active set for event:", eventId);
@@ -359,7 +388,7 @@ export const eventAPI = {
   
   getParticipants: (eventId) => apiCall(`/events/${eventId}/participants`),
   
-  // ⭐ NEW: Get single participant data
+  // ⭐ Get single participant data
   getParticipant: async (participantId) => {
     try {
       console.log("📋 Fetching participant:", participantId);

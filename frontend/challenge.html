@@ -1,3 +1,4 @@
+//challenge.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -342,39 +343,59 @@
     }
 
     // STEP 1: User clicks "Join Event" - Show set selection
-    window.joinEvent = async function(eventId) {
-      currentEventId = eventId;
-      console.log('Join event clicked, eventId:', currentEventId);
+ // STEP 1: User clicks "Join Event" - Check participation first, then show set selection
+  window.joinEvent = async function(eventId) {
+  currentEventId = eventId;
+  console.log('Join event clicked, eventId:', currentEventId);
+  
+  try {
+    // ⭐ STEP 1A: Check if user already participated
+    const currentUser = auth.currentUser;
+    if (currentUser && currentUser.email) {
+      console.log('🔍 Checking participation for:', currentUser.email);
       
-      // Fetch event details to show available sets
       try {
-        const { event } = await eventAPI.getEvent(eventId);
-        currentEventData = event;
+        const participationCheck = await eventAPI.checkParticipation(eventId, currentUser.email);
         
-        // Filter only active sets
-        const activeSets = event.sets.filter(set => set.isActive);
+        console.log('📊 Participation check result:', participationCheck);
         
-        if (activeSets.length === 0) {
-          // No active sets available
-          alert('No quiz sets are currently active for this event. Please try again later or contact the admin.');
-          return;
-        } else if (activeSets.length === 1) {
-          // Only one set - auto-select it and go directly to login
-          selectedSetId = activeSets[0]._id;
-          selectedSetName = activeSets[0].setName;
-          console.log('Auto-selected single set:', selectedSetName);
-          showLoginModal();
-        } else {
-          // Multiple sets - show selection modal
-          renderSetOptions(activeSets);
-          document.getElementById('setSelectionModal').classList.add('active');
+        if (participationCheck.hasParticipated && participationCheck.hasCompleted) {
+          // ⭐ User already participated - show message and block
+          alert(`❌ You Have Already Attended This Quiz!\n\nName: ${participationCheck.participant.name}\nEmail: ${participationCheck.participant.email}\nScore: ${participationCheck.participant.totalScore}\nCompleted Sets: ${participationCheck.participant.completedSets}\n\nYou can only participate once per event.`);
+          return; // Stop here
         }
-      } catch (error) {
-        console.error("Error loading event:", error);
-        alert("Error loading event details: " + error.message);
+      } catch (checkError) {
+        console.warn('⚠️ Could not check participation:', checkError);
+        // Continue anyway if check fails
       }
-    };
-
+    }
+    
+    // ⭐ STEP 1B: Fetch event details to show available sets
+    const { event } = await eventAPI.getEvent(eventId);
+    currentEventData = event;
+    
+    // Filter only active sets
+    const activeSets = event.sets.filter(set => set.isActive);
+    
+    if (activeSets.length === 0) {
+      alert('No quiz sets are currently active for this event. Please try again later or contact the admin.');
+      return;
+    } else if (activeSets.length === 1) {
+      // Only one set - auto-select it and go directly to login
+      selectedSetId = activeSets[0]._id;
+      selectedSetName = activeSets[0].setName;
+      console.log('Auto-selected single set:', selectedSetName);
+      showLoginModal();
+    } else {
+      // Multiple sets - show selection modal
+      renderSetOptions(activeSets);
+      document.getElementById('setSelectionModal').classList.add('active');
+    }
+  } catch (error) {
+    console.error("Error loading event:", error);
+    alert("Error loading event details: " + error.message);
+  }
+};
     window.manageEvent = function(eventId) {
       window.location.href = `admin-panel.html?eventId=${eventId}`;
     };
