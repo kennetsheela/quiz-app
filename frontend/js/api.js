@@ -359,6 +359,21 @@ export const eventAPI = {
   
   getParticipants: (eventId) => apiCall(`/events/${eventId}/participants`),
   
+  // ⭐ NEW: Get single participant data
+  getParticipant: async (participantId) => {
+    try {
+      console.log("📋 Fetching participant:", participantId);
+      const result = await apiCall(`/events/participants/${participantId}`, {
+        method: "GET"
+      });
+      console.log("✅ Participant data:", result);
+      return result.participant;
+    } catch (error) {
+      console.error("❌ Get participant error:", error);
+      throw error;
+    }
+  },
+  
   getStats: (eventId) => apiCall(`/events/${eventId}/stats`),
   
   deleteEvent: (eventId, adminPassword) => apiCall(`/events/${eventId}`, {

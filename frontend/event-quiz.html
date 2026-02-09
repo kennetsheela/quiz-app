@@ -1,3 +1,4 @@
+<!--event-quiz.html-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +28,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
     }
     
     .timer {
@@ -48,156 +51,18 @@
       50% { opacity: 0.5; }
     }
     
-    .waiting-screen {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 60px;
-      text-align: center;
-    }
-    
-    .waiting-screen i {
-      font-size: 5rem;
-      color: var(--accent-primary);
-      margin-bottom: 20px;
-      animation: spin 2s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .error-screen {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 60px;
-      text-align: center;
-      display: none;
-    }
-
-    .error-screen.show {
-      display: block;
-    }
-
-    .error-screen i {
-      font-size: 5rem;
-      color: var(--error);
-      margin-bottom: 20px;
-    }
-
-    .error-details {
+    .progress-bar {
       background: var(--bg-tertiary);
-      border-left: 4px solid var(--error);
-      padding: 20px;
-      margin: 20px 0;
-      text-align: left;
-      border-radius: 8px;
-    }
-
-    .error-details h3 {
-      color: var(--error);
-      margin-bottom: 10px;
-    }
-
-    .error-details p {
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin: 5px 0;
-    }
-
-    .format-guide {
-      background: var(--bg-secondary);
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 20px;
-      text-align: left;
-    }
-
-    .format-guide h4 {
-      color: var(--accent-primary);
-      margin-bottom: 15px;
-    }
-
-    .format-guide pre {
-      background: #1a1a1a;
-      color: #00ff00;
-      padding: 15px;
-      border-radius: 5px;
-      overflow-x: auto;
-      font-size: 0.85rem;
-    }
-
-    .already-completed-screen {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 60px;
-      text-align: center;
-      display: none;
-    }
-
-    .already-completed-screen.show {
-      display: block;
-    }
-
-    .already-completed-screen i {
-      font-size: 5rem;
-      color: var(--success);
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
       margin-bottom: 20px;
     }
-
-    .completion-details {
-      background: var(--bg-tertiary);
-      border-left: 4px solid var(--success);
-      padding: 20px;
-      margin: 20px 0;
-      text-align: left;
-      border-radius: 8px;
-    }
-
-    .completion-details h3 {
-      color: var(--success);
-      margin-bottom: 15px;
-    }
-
-    .completion-details p {
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin: 8px 0;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .stat-row:last-child {
-      border-bottom: none;
-    }
-
-    .stat-label {
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    .stat-value {
-      font-weight: 600;
-      color: var(--accent-primary);
-      font-size: 1.1rem;
-    }
     
-    .debug-info {
-      background: #1a1a1a;
-      color: #00ff00;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 20px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      max-height: 200px;
-      overflow-y: auto;
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      transition: width 0.3s ease;
     }
     
     .question-card {
@@ -205,20 +70,32 @@
       border-radius: 15px;
       padding: 30px;
       margin-bottom: 20px;
+      min-height: 400px;
     }
     
     .question-number {
       color: var(--accent-primary);
       font-weight: 600;
       margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
     .question-text {
       font-size: 1.1rem;
       font-weight: 500;
-      margin-bottom: 20px;
-      line-height: 1.6;
+      margin-bottom: 25px;
+      line-height: 1.8;
+      color: var(--text-primary);
       white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      min-height: 50px;
+      max-width: 100%;
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .options-container {
@@ -234,13 +111,15 @@
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
+      min-height: 50px;
     }
     
     .option:hover {
       border-color: var(--accent-primary);
       background: var(--card-bg);
+      transform: translateX(5px);
     }
     
     .option.selected {
@@ -259,590 +138,450 @@
       justify-content: center;
       font-weight: 600;
       flex-shrink: 0;
+      margin-top: 2px;
     }
     
     .option.selected .option-label {
       background: white;
       color: var(--accent-primary);
     }
-
-    .warning-modal {
+    
+    .option-text {
+      flex: 1;
+      line-height: 1.6;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    
+    .navigation {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .question-nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+      gap: 8px;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .question-nav-btn {
+      aspect-ratio: 1;
+      border: 2px solid var(--border-color);
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      min-height: 45px;
+    }
+    
+    .question-nav-btn:hover {
+      border-color: var(--accent-primary);
+      transform: scale(1.05);
+    }
+    
+    .question-nav-btn.answered {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+    
+    .question-nav-btn.current {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+      transform: scale(1.1);
+    }
+    
+    .submit-modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.9);
+      background: var(--overlay);
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 10000;
+      z-index: 9999;
     }
-
-    .warning-content {
+    
+    .submit-modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
       background: var(--card-bg);
       padding: 40px;
       border-radius: 20px;
-      text-align: center;
       max-width: 500px;
+      text-align: center;
+      margin: 20px;
     }
 
-    .warning-content i {
+    .error-screen {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 40px;
+      text-align: center;
+      max-width: 600px;
+      margin: 50px auto;
+    }
+
+    .error-screen i {
       font-size: 4rem;
       color: var(--error);
       margin-bottom: 20px;
     }
+
+    .already-completed-screen {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 40px;
+      text-align: center;
+      max-width: 600px;
+      margin: 50px auto;
+    }
+
+    .already-completed-screen i {
+      font-size: 4rem;
+      color: var(--success);
+      margin-bottom: 20px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .quiz-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .question-text {
+        font-size: 1rem;
+      }
+
+      .question-nav {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+      }
+
+      .navigation {
+        flex-direction: column;
+      }
+
+      .navigation button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Warning Modal for Tab Switch -->
-  <div id="warningModal" class="warning-modal">
-    <div class="warning-content">
-      <i class="fas fa-exclamation-triangle"></i>
-      <h2>Quiz Auto-Submitted!</h2>
-      <p style="margin: 20px 0;">You left the quiz window or exited fullscreen. Your quiz has been automatically submitted.</p>
-      <button class="btn btn-primary" onclick="goToResults()">View Results</button>
+  <div class="quiz-container">
+    <div class="quiz-header">
+      <div>
+        <h2 id="quizTitle">Loading Quiz...</h2>
+        <p id="quizInfo" style="color: var(--text-secondary); margin: 5px 0 0 0;"></p>
+      </div>
+      <div class="timer" id="timer">
+        <i class="fas fa-clock"></i>
+        <span id="timeDisplay">00:00</span>
+      </div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+
+    <div class="question-nav" id="questionNav"></div>
+
+    <div class="question-card" id="questionCard">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading questions...</p>
+      </div>
+    </div>
+
+    <div class="navigation">
+      <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>
+        <i class="fas fa-arrow-left"></i> Previous
+      </button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+        Next <i class="fas fa-arrow-right"></i>
+      </button>
+      <button class="btn btn-success" id="submitBtn" onclick="confirmSubmit()" style="display: none;">
+        <i class="fas fa-check"></i> Submit Quiz
+      </button>
     </div>
   </div>
 
-  <div class="quiz-container">
-    <!-- Waiting Screen -->
-    <div id="waitingScreen" class="waiting-screen">
-      <i class="fas fa-spinner"></i>
-      <h1>Waiting for quiz to start...</h1>
-      <p id="waitingInfo" style="color: var(--text-secondary); margin-top: 20px;">
-        The administrator will activate the quiz shortly. Please wait.
-      </p>
-      <button class="btn btn-secondary" onclick="checkAgain()" style="margin-top: 30px;">
-        <i class="fas fa-sync"></i> Check Again
-      </button>
-      
-      <!-- Debug Info -->
-      <div class="debug-info" id="debugInfo">
-        <div>🔍 Initializing debug mode...</div>
-      </div>
-    </div>
-
-    <!-- Error Screen -->
-    <div id="errorScreen" class="error-screen">
-      <i class="fas fa-exclamation-circle"></i>
-      <h1>Quiz Loading Error</h1>
-      <p style="color: var(--text-secondary); margin: 20px 0;">
-        There was a problem loading the quiz questions.
-      </p>
-
-      <div class="error-details">
-        <h3><i class="fas fa-info-circle"></i> Error Details</h3>
-        <p id="errorMessage">Unknown error occurred</p>
-        <p id="errorDetails" style="font-size: 0.9rem; margin-top: 10px;"></p>
-      </div>
-
-      <div class="format-guide">
-        <h4><i class="fas fa-book"></i> Expected File Format</h4>
-        <p style="margin-bottom: 15px;">Please ensure your question file follows this format:</p>
-        <pre>
-=== TOPIC: Topic Name, LEVEL: easy ===
-
-1. What is the question text?
-A. First option
-B. Second option
-C. Third option
-D. Fourth option
-Answer: C
-
-2. Next question here?
-A. Option 1
-B. Option 2
-C. Option 3
-D. Option 4
-Answer: A
-        </pre>
-        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
-          <strong>Requirements:</strong><br>
-          • Each question must be numbered (1., 2., Q1., etc.)<br>
-          • Exactly 4 options labeled A-D<br>
-          • Clear answer indication (Answer: A, Correct: B, etc.)<br>
-          • Topic and level markers at the start
-        </p>
-      </div>
-
-      <div style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
-        <button class="btn btn-secondary" onclick="checkAgain()">
-          <i class="fas fa-sync"></i> Retry
-        </button>
-        <button class="btn btn-primary" onclick="window.location.href='challenge.html'">
-          <i class="fas fa-arrow-left"></i> Back to Events
-        </button>
-      </div>
-    </div>
-
-    <!-- Already Completed Screen -->
-    <div id="alreadyCompletedScreen" class="already-completed-screen">
-      <i class="fas fa-check-circle"></i>
-      <h1>Quiz Already Completed</h1>
-      <p style="color: var(--text-secondary); margin: 20px 0;">
-        You have already participated in this event.
-      </p>
-
-      <div class="completion-details">
-        <h3><i class="fas fa-trophy"></i> Your Performance</h3>
-        <div class="stat-row">
-          <span class="stat-label">Participant Name:</span>
-          <span class="stat-value" id="completedName">-</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Email:</span>
-          <span class="stat-value" id="completedEmail">-</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Roll Number:</span>
-          <span class="stat-value" id="completedRollNo">-</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Department:</span>
-          <span class="stat-value" id="completedDepartment">-</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Total Score:</span>
-          <span class="stat-value" id="completedScore">0</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Completed Sets:</span>
-          <span class="stat-value" id="completedSets">0</span>
-        </div>
-      </div>
-
-      <p style="margin: 20px 0; color: var(--text-secondary); font-size: 0.95rem;">
-        <i class="fas fa-info-circle"></i> 
-        Each participant can only take the quiz once per event.
-      </p>
-
-      <button class="btn btn-primary" onclick="window.location.href='challenge.html'">
-        <i class="fas fa-arrow-left"></i> Back to Events
-      </button>
-    </div>
-
-    <!-- Quiz Interface (Hidden by default) -->
-    <div id="quizInterface" style="display: none;">
-      <div class="quiz-header">
-        <div>
-          <h2 id="quizTitle">Event Quiz</h2>
-          <p id="quizInfo" style="color: var(--text-secondary); margin: 5px 0 0 0;"></p>
-        </div>
-        <div class="timer" id="timer">
-          <i class="fas fa-clock"></i>
-          <span id="timeDisplay">00:00</span>
-        </div>
-      </div>
-
-      <div id="questionsContainer"></div>
-
-      <div style="text-align: center; margin-top: 30px;">
-        <button class="btn btn-success" id="submitBtn" onclick="submitQuiz()" style="min-width: 200px;">
-          <i class="fas fa-check"></i> Submit Quiz
-        </button>
+  <div class="submit-modal" id="submitModal">
+    <div class="modal-content">
+      <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--warning); margin-bottom: 20px;"></i>
+      <h2>Submit Quiz?</h2>
+      <p id="submitWarning" style="margin: 20px 0;"></p>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="closeSubmitModal()">Cancel</button>
+        <button class="btn btn-success" onclick="submitQuiz()">Confirm Submit</button>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { auth } from "./js/firebase.js";
+    import { requireAuth } from "./js/auth.js";
     import { eventAPI } from "./js/api.js";
 
-    // Get URL params
-    const params = new URLSearchParams(window.location.search);
-    const eventId = params.get('eventId');
-    const participantId = params.get('participantId');
-
-    let currentSet = null;
+    let currentUser = null;
     let questions = [];
+    let currentQuestion = 0;
     let answers = [];
     let timeRemaining = 0;
     let timerInterval = null;
-    let pollInterval = null;
-    let quizActive = false;
-    let autoSubmitted = false;
-    let pollAttempts = 0;
+    let setId = null;
+    let eventId = null;
+    let participantId = null;
+    let startTime = null;
+    let isSubmitting = false;
     let quizStartTime = null;
-    let currentUserEmail = null;
+    
+    // Per-question time tracking
+    let questionTimings = [];
+    let questionStartTime = null;
 
-    // Debug logging
-    function addDebugLog(message, data = null) {
-      const debugDiv = document.getElementById('debugInfo');
-      if (debugDiv) {
-        const timestamp = new Date().toLocaleTimeString();
-        const logEntry = document.createElement('div');
-        logEntry.innerHTML = `[${timestamp}] ${message}`;
-        if (data) {
-          logEntry.innerHTML += `<br><span style="color: #00ffff">${JSON.stringify(data, null, 2)}</span>`;
-        }
-        debugDiv.appendChild(logEntry);
-        debugDiv.scrollTop = debugDiv.scrollHeight;
-      }
-      console.log(message, data || '');
+    const TAB_KEY = `EVENT_QUIZ_TAB_${window.location.pathname}`;
+    const TAB_ID = Date.now().toString();
+
+    // Get URL parameters
+    const params = new URLSearchParams(window.location.search);
+    eventId = params.get('eventId');
+    participantId = params.get('participantId');
+    setId = params.get('setId');
+
+    if (localStorage.getItem(TAB_KEY)) {
+      alert("Quiz already open in another tab. Close it to continue.");
+      window.location.href = `event-dashboard.html?eventId=${eventId}&participantId=${participantId}`;
+    } else {
+      localStorage.setItem(TAB_KEY, TAB_ID);
     }
 
-    // Show already completed screen
-    function showAlreadyCompleted(participantData) {
-      addDebugLog('✅ User already completed this event', participantData);
-      
-      document.getElementById('waitingScreen').style.display = 'none';
-      document.getElementById('quizInterface').style.display = 'none';
-      document.getElementById('errorScreen').classList.remove('show');
-      document.getElementById('alreadyCompletedScreen').classList.add('show');
-      
-      // Populate completion details
-      document.getElementById('completedName').textContent = participantData.name || '-';
-      document.getElementById('completedEmail').textContent = participantData.email || '-';
-      document.getElementById('completedRollNo').textContent = participantData.rollNo || '-';
-      document.getElementById('completedDepartment').textContent = participantData.department || '-';
-      document.getElementById('completedScore').textContent = participantData.totalScore || 0;
-      document.getElementById('completedSets').textContent = participantData.completedSets || 0;
-      
-      // Stop polling
-      if (pollInterval) {
-        clearInterval(pollInterval);
+    window.addEventListener("beforeunload", () => {
+      if (localStorage.getItem(TAB_KEY) === TAB_ID) {
+        localStorage.removeItem(TAB_KEY);
       }
-    }
+    });
 
-    // Show error screen
-    function showError(message, details = '') {
-      addDebugLog('❌ Showing error screen', { message, details });
-      
-      document.getElementById('waitingScreen').style.display = 'none';
-      document.getElementById('quizInterface').style.display = 'none';
-      document.getElementById('errorScreen').classList.add('show');
-      
-      document.getElementById('errorMessage').textContent = message;
-      document.getElementById('errorDetails').textContent = details;
-      
-      // Stop polling
-      if (pollInterval) {
-        clearInterval(pollInterval);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && !isSubmitting) {
+        alert("Tab switching is not allowed! Quiz will be auto-submitted.");
+        submitQuiz();
       }
-    }
+    });
 
-    // ---------------- AUTH & INIT ----------------
-    function waitForAuthAndInit() {
-      addDebugLog('🔐 Waiting for authentication...');
-      
-      auth.onAuthStateChanged((user) => {
-        if (user) {
-          addDebugLog('✅ User authenticated', { uid: user.uid, email: user.email });
-          currentUserEmail = user.email;
-          init();
-        } else {
-          addDebugLog('❌ Not authenticated, redirecting...');
-          window.location.href = "index.html";
-        }
-      });
-    }
-
-    waitForAuthAndInit();
-
-    // ---------------- QUIZ LOGIC ----------------
-    async function init() {
-      addDebugLog('🎯 Initializing quiz...');
-      addDebugLog('📋 URL Parameters', { eventId, participantId });
-      
-      if (!eventId || !participantId) {
-        addDebugLog('❌ Missing required parameters!');
-        showError(
-          'Missing required parameters',
-          'Both eventId and participantId are required in the URL'
-        );
-        return;
-      }
-
-      // Check if user already participated
-      if (currentUserEmail) {
-        try {
-          addDebugLog('🔍 Checking if user already participated...');
-          const participationCheck = await eventAPI.checkParticipation(eventId, currentUserEmail);
-          
-          addDebugLog('📊 Participation check result:', participationCheck);
-          
-          if (participationCheck.hasParticipated && participationCheck.hasCompleted) {
-            showAlreadyCompleted(participationCheck.participant);
-            return;
-          }
-        } catch (error) {
-          addDebugLog('⚠️ Could not check participation:', error.message);
-          // Continue anyway - don't block if check fails
-        }
-      }
-      
-      try {
-        addDebugLog('⏰ Starting polling (every 3 seconds)');
-        pollInterval = setInterval(checkForActiveSet, 3000);
-        await checkForActiveSet();
-      } catch (error) {
-        addDebugLog('❌ Initialization error', { error: error.message });
-        showError('Initialization failed', error.message);
-      }
-    }
-
-    async function checkForActiveSet() {
-      try {
-        pollAttempts++;
-        addDebugLog(`🔍 Poll attempt #${pollAttempts}`, { eventId });
-        
-        // Update waiting screen
-        const waitingInfo = document.getElementById('waitingInfo');
-        if (waitingInfo) {
-          waitingInfo.innerHTML = `
-            Checking for active quiz... (Attempt ${pollAttempts})<br>
-            <small style="display: block; margin-top: 10px; opacity: 0.7;">
-              Last checked: ${new Date().toLocaleTimeString()}
-            </small>
-          `;
-        }
-        
-        const response = await eventAPI.getActiveSet(eventId);
-        addDebugLog('📦 Response received', response);
-
-        // Check for parsing errors
-        if (response.success === false) {
-          addDebugLog('❌ API returned error', response);
-          showError(
-            response.message || 'Failed to load quiz',
-            response.details || 'Please contact the administrator'
-          );
-          return;
-        }
-
-        // Check multiple possible response formats
-        const activeSet = response.activeSet || response.set || response.data?.activeSet;
-        
-        if (activeSet) {
-          addDebugLog('✅ Active set found!', {
-            id: activeSet._id,
-            name: activeSet.setName,
-            isActive: activeSet.isActive,
-            timeLimit: activeSet.timeLimit,
-            questionCount: activeSet.questions?.length
-          });
-
-          // Validate questions exist
-          if (!activeSet.questions || activeSet.questions.length === 0) {
-            showError(
-              'No questions available',
-              'The quiz has no valid questions. Please check the file format and try uploading again.'
-            );
-            return;
-          }
-          
-          clearInterval(pollInterval);
-          await startQuiz(activeSet);
-        } else {
-          addDebugLog('⏳ No active set yet', { responseKeys: Object.keys(response) });
-        }
-      } catch (error) {
-        addDebugLog('❌ Poll error', { error: error.message, stack: error.stack });
-        
-        // Show error after multiple failed attempts
-        if (pollAttempts > 10) {
-          showError(
-            'Connection error',
-            `Failed to connect after ${pollAttempts} attempts. ${error.message}`
-          );
-        }
-      }
-    }
-
-    window.checkAgain = function() {
-      addDebugLog('🔄 Manual refresh requested');
-      
-      // Hide all screens and show waiting screen
-      document.getElementById('errorScreen').classList.remove('show');
-      document.getElementById('alreadyCompletedScreen').classList.remove('show');
-      document.getElementById('waitingScreen').style.display = 'block';
-      
-      // Reset poll counter
-      pollAttempts = 0;
-      
-      // Restart polling
-      if (!pollInterval) {
-        pollInterval = setInterval(checkForActiveSet, 3000);
-      }
-      
-      checkForActiveSet();
-    };
-
-    // ---------------- START QUIZ ----------------
-    async function startQuiz(activeSet) {
-      try {
-        addDebugLog('🚀 Starting quiz...', { 
-          eventId, 
-          participantId, 
-          setId: activeSet._id 
-        });
-        
-        const result = await eventAPI.startSet({
-          eventId,
-          participantId,
-          setId: activeSet._id
-        });
-
-        addDebugLog('📋 Start set result', result);
-
-        // Check for errors in start response
-        if (result.success === false) {
-          if (result.alreadyCompleted) {
-            showError(
-              'Quiz Already Completed',
-              'You have already completed this quiz set. Each participant can only take each quiz once.'
-            );
-          } else {
-            showError(
-              result.message || 'Failed to start quiz',
-              result.details || ''
-            );
-          }
-          return;
-        }
-        
-        currentSet = activeSet;
-        questions = result.questions || activeSet.questions || [];
-        
-        addDebugLog(`📝 Loaded ${questions.length} questions`);
-        
-        // Validate questions structure
-        if (questions.length === 0) {
-          showError(
-            'No questions available',
-            'The quiz set contains no valid questions. Please check the file format.'
-          );
-          return;
-        }
-
-        // Validate each question has required fields
-        const invalidQuestions = questions.filter(q => 
-          !q.question || 
-          !q.options || 
-          q.options.length !== 4 || 
-          !q.correctAnswer
-        );
-
-        if (invalidQuestions.length > 0) {
-          showError(
-            'Invalid question format',
-            `${invalidQuestions.length} question(s) are missing required fields (question text, 4 options, or correct answer)`
-          );
-          return;
-        }
-
-        answers = new Array(questions.length).fill(null);
-        timeRemaining = result.timeRemaining || (activeSet.timeLimit * 60);
-
-        // Record the actual start time
-        quizStartTime = Date.now();
-        addDebugLog(`⏱️ Quiz start time recorded: ${new Date(quizStartTime).toLocaleTimeString()}`);
-        addDebugLog(`⏱️ Time remaining: ${timeRemaining} seconds`);
-
-        // Show quiz, hide waiting
-        document.getElementById('waitingScreen').style.display = 'none';
-        document.getElementById('quizInterface').style.display = 'block';
-
-        // Update header
-        document.getElementById('quizTitle').textContent = activeSet.setName;
-        document.getElementById('quizInfo').textContent =
-          `${questions.length} Questions | ${activeSet.timeLimit} Minutes`;
-
-        // Render questions
-        renderQuestions();
-
-        // Mark quiz as active
-        quizActive = true;
-
-        // Start timer
-        startTimer();
-
-        // Enter fullscreen
-        await enterFullscreen();
-
-        // Setup monitoring
-        setupVisibilityMonitoring();
-        setupFullscreenMonitoring();
-
-        addDebugLog('✅ Quiz started successfully!');
-
-      } catch (error) {
-        addDebugLog('❌ Error starting quiz', { error: error.message, stack: error.stack });
-        showError('Failed to start quiz', error.message);
-      }
-    }
-
-    // ---------------- RENDER QUESTIONS ----------------
-    function renderQuestions() {
-      const optionLabels = ['A', 'B', 'C', 'D'];
-      
-      const questionsHTML = questions.map((q, index) => `
-        <div class="question-card">
-          <div class="question-number">
-            <i class="fas fa-question-circle"></i>
-            Question ${index + 1} of ${questions.length}
-          </div>
-          <div class="question-text">${escapeHtml(q.question)}</div>
-          <div class="options-container">
-            ${q.options.map((option, optIndex) => `
-              <div class="option" data-question="${index}" data-option="${escapeHtml(option)}">
-                <div class="option-label">${optionLabels[optIndex]}</div>
-                <div>${escapeHtml(option)}</div>
-              </div>
-            `).join('')}
-          </div>
+    // ⭐ Show error screen
+    function showError(message, showReturnButton = true) {
+      const questionCard = document.getElementById("questionCard");
+      questionCard.innerHTML = `
+        <div class="error-screen">
+          <i class="fas fa-exclamation-circle"></i>
+          <h2>Unable to Start Quiz</h2>
+          <p style="margin: 20px 0; color: var(--text-secondary);">${message}</p>
+          ${showReturnButton ? `
+            <button class="btn btn-primary" onclick="window.location.href='event-dashboard.html?eventId=${eventId}&participantId=${participantId}'">
+              <i class="fas fa-home"></i> Return to Dashboard
+            </button>
+          ` : ''}
         </div>
-      `).join('');
-
-      document.getElementById('questionsContainer').innerHTML = questionsHTML;
-
-      // Add click handlers
-      document.querySelectorAll('.option').forEach(el => {
-        el.addEventListener('click', function() {
-          const qIndex = parseInt(this.dataset.question);
-          const option = this.dataset.option;
-          selectOption(qIndex, option);
-        });
-      });
+      `;
+      
+      // Hide timer and navigation
+      document.getElementById("timer").style.display = "none";
+      document.querySelector(".progress-bar").style.display = "none";
+      document.getElementById("questionNav").style.display = "none";
+      document.querySelector(".navigation").style.display = "none";
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    // ⭐ Show already completed screen
+    function showAlreadyCompleted(result) {
+      const questionCard = document.getElementById("questionCard");
+      questionCard.innerHTML = `
+        <div class="already-completed-screen">
+          <i class="fas fa-check-circle"></i>
+          <h2>Quiz Already Completed!</h2>
+          <p style="margin: 20px 0; color: var(--text-secondary);">
+            You have already completed this quiz.
+          </p>
+          ${result ? `
+            <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 10px; margin: 20px 0;">
+              <h3 style="margin-bottom: 15px;">Your Score</h3>
+              <p style="font-size: 2rem; font-weight: bold; color: var(--accent-primary);">
+                ${result.score} / ${result.totalQuestions}
+              </p>
+              <p style="color: var(--text-secondary); margin-top: 10px;">
+                ${Math.round((result.score / result.totalQuestions) * 100)}% Correct
+              </p>
+            </div>
+          ` : ''}
+          <button class="btn btn-primary" onclick="window.location.href='event-dashboard.html?eventId=${eventId}&participantId=${participantId}'">
+            <i class="fas fa-home"></i> Return to Dashboard
+          </button>
+        </div>
+      `;
+      
+      // Hide timer and navigation
+      document.getElementById("timer").style.display = "none";
+      document.querySelector(".progress-bar").style.display = "none";
+      document.getElementById("questionNav").style.display = "none";
+      document.querySelector(".navigation").style.display = "none";
     }
 
-    // ---------------- SELECT OPTION ----------------
-    function selectOption(questionIndex, option) {
-      answers[questionIndex] = option;
+    // ⭐ Initialize quiz with completion check
+    async function init() {
+      try {
+        currentUser = await requireAuth();
+        console.log("✅ User authenticated:", currentUser.uid);
+        console.log("🎯 Quiz params:", { eventId, participantId, setId });
 
-      const questionCards = document.querySelectorAll('.question-card');
-      const optionElements = questionCards[questionIndex].querySelectorAll('.option');
-
-      optionElements.forEach(el => {
-        el.classList.remove('selected');
-        if (el.dataset.option === option) {
-          el.classList.add('selected');
+        if (!eventId || !participantId || !setId) {
+          showError("Missing required parameters. Please start from the dashboard.");
+          return;
         }
-      });
+
+        // ⭐ CHECK IF ALREADY COMPLETED FIRST
+        try {
+          console.log("🔍 Checking if quiz already completed...");
+          const participant = await eventAPI.getParticipant(participantId);
+          
+          if (participant && participant.setResults) {
+            const alreadyCompleted = participant.setResults.find(r => 
+              r.setId.toString() === setId
+            );
+            
+            if (alreadyCompleted) {
+              console.log("⚠️ Quiz already completed:", alreadyCompleted);
+              showAlreadyCompleted(alreadyCompleted);
+              return; // Stop initialization
+            }
+          }
+          
+          console.log("✅ Quiz not yet completed, proceeding...");
+        } catch (checkError) {
+          console.warn("⚠️ Could not check completion status:", checkError);
+          // Continue anyway - the startSet call will handle it
+        }
+
+        // Continue with normal quiz initialization
+        await startQuiz();
+        
+      } catch (error) {
+        console.error("❌ Initialization error:", error);
+        showError(error.message || "Failed to initialize quiz");
+      }
     }
 
-    // ---------------- TIMER ----------------
+    // ⭐ Start quiz with better error handling
+    async function startQuiz() {
+      try {
+        console.log("🚀 Starting quiz...");
+        
+        const startResult = await eventAPI.startSet({
+          participantId,
+          setId,
+          eventId
+        });
+
+        console.log("✅ Quiz started:", startResult);
+
+        if (!startResult || !startResult.questions || startResult.questions.length === 0) {
+          throw new Error("No questions found in this set");
+        }
+
+        questions = startResult.questions;
+        answers = new Array(questions.length).fill(null);
+        questionTimings = new Array(questions.length).fill(0);
+        
+        startTime = new Date();
+        quizStartTime = Date.now();
+        timeRemaining = (startResult.timeLimit || 10) * 60;
+
+        console.log("⏱️ Quiz start time:", new Date(quizStartTime).toISOString());
+        console.log("📝 Questions loaded:", questions.length);
+
+        // Get event details for title
+        const eventData = await eventAPI.getEvent(eventId);
+        const setData = eventData.event.sets.find(s => s._id.toString() === setId);
+
+        document.getElementById("quizTitle").textContent = 
+          eventData.event.eventName || "Event Quiz";
+        document.getElementById("quizInfo").textContent = 
+          `${setData?.setName || 'Quiz'} | ${questions.length} Questions`;
+
+        renderQuestionNav();
+        renderQuestion();
+        startTimer();
+        startQuestionTimer();
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+      } catch (error) {
+        console.error("❌ Error starting quiz:", error);
+        
+        // ⭐ Check if this is an "already completed" error
+        if (error.message && error.message.includes("already completed")) {
+          console.log("✅ Quiz already completed - fetching results...");
+          
+          try {
+            const participant = await eventAPI.getParticipant(participantId);
+            
+            if (participant && participant.setResults) {
+              const setResult = participant.setResults.find(r => 
+                r.setId.toString() === setId
+              );
+              
+              if (setResult) {
+                showAlreadyCompleted(setResult);
+                return;
+              }
+            }
+          } catch (fetchError) {
+            console.error("Failed to fetch results:", fetchError);
+          }
+          
+          // Fallback: just show message and redirect
+          showError(
+            "You have already completed this quiz. Redirecting to dashboard...",
+            true
+          );
+          setTimeout(() => {
+            window.location.href = `event-dashboard.html?eventId=${eventId}&participantId=${participantId}`;
+          }, 2000);
+          return;
+        }
+        
+        // Show other errors normally
+        showError(error.message || "Failed to start quiz");
+      }
+    }
+
     function startTimer() {
       updateTimerDisplay();
-
       timerInterval = setInterval(() => {
         timeRemaining--;
         updateTimerDisplay();
 
         if (timeRemaining <= 60) {
-          document.getElementById('timer').classList.add('warning');
+          document.getElementById("timer").classList.add("warning");
         }
 
         if (timeRemaining <= 0) {
           clearInterval(timerInterval);
-          autoSubmitQuiz("Time's up!");
+          alert("Time's up! Auto-submitting quiz...");
+          submitQuiz();
         }
       }, 1000);
     }
@@ -850,189 +589,205 @@ Answer: A
     function updateTimerDisplay() {
       const minutes = Math.floor(timeRemaining / 60);
       const seconds = timeRemaining % 60;
-      document.getElementById('timeDisplay').textContent =
-        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      document.getElementById("timeDisplay").textContent =
+        `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
     }
 
-    function getTimeSpentSeconds() {
-      if (!quizStartTime) {
-        addDebugLog('⚠️ Warning: Quiz start time not recorded');
-        return 0;
-      }
-      const timeSpent = Math.floor((Date.now() - quizStartTime) / 1000);
-      addDebugLog(`⏱️ Time spent calculated: ${timeSpent} seconds`);
-      return timeSpent;
+    function startQuestionTimer() {
+      questionStartTime = Date.now();
+      console.log(`⏱️ [Q${currentQuestion + 1}] Timer started`);
     }
 
-    // ---------------- FULLSCREEN ----------------
-    async function enterFullscreen() {
-      const elem = document.documentElement;
-      try {
-        if (elem.requestFullscreen) {
-          await elem.requestFullscreen();
-        } else if (elem.mozRequestFullScreen) {
-          await elem.mozRequestFullScreen();
-        } else if (elem.webkitRequestFullscreen) {
-          await elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) {
-          await elem.msRequestFullscreen();
-        }
-      } catch (error) {
-        console.error("Fullscreen error:", error);
+    function stopQuestionTimer() {
+      if (questionStartTime) {
+        const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
+        questionTimings[currentQuestion] += timeSpent;
+        console.log(`⏱️ [Q${currentQuestion + 1}] Time: ${timeSpent}s (Total: ${questionTimings[currentQuestion]}s)`);
+        questionStartTime = null;
       }
     }
 
-    function setupFullscreenMonitoring() {
-      document.addEventListener('fullscreenchange', handleFullscreenChange);
-      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-    }
+    window.selectOption = function(option) {
+      answers[currentQuestion] = option;
+      renderQuestion();
+    };
 
-    function handleFullscreenChange() {
-      const isFullscreen = !!(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement
-      );
-
-      if (!isFullscreen && quizActive && !autoSubmitted) {
-        autoSubmitQuiz("Exited fullscreen mode");
+    window.nextQuestion = function() {
+      if (currentQuestion < questions.length - 1) {
+        stopQuestionTimer();
+        currentQuestion++;
+        renderQuestion();
+        startQuestionTimer();
       }
-    }
+    };
 
-    // ---------------- VISIBILITY MONITORING ----------------
-    function setupVisibilityMonitoring() {
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      window.addEventListener('blur', handleWindowBlur);
-    }
-
-    function handleVisibilityChange() {
-      if (document.hidden && quizActive && !autoSubmitted) {
-        autoSubmitQuiz("Left quiz tab");
+    window.prevQuestion = function() {
+      if (currentQuestion > 0) {
+        stopQuestionTimer();
+        currentQuestion--;
+        renderQuestion();
+        startQuestionTimer();
       }
-    }
+    };
 
-    function handleWindowBlur() {
-      if (quizActive && !autoSubmitted) {
-        autoSubmitQuiz("Switched windows or applications");
-      }
-    }
-
-    // ---------------- AUTO SUBMIT ----------------
-    async function autoSubmitQuiz(reason) {
-      if (autoSubmitted) return;
+    window.goToQuestion = function(index) {
+      if (index === currentQuestion) return;
       
-      autoSubmitted = true;
-      quizActive = false;
-      clearInterval(timerInterval);
+      stopQuestionTimer();
+      currentQuestion = index;
+      renderQuestion();
+      startQuestionTimer();
+    };
 
-      addDebugLog("🚨 Auto-submitting quiz:", reason);
+    window.confirmSubmit = function() {
+      const unanswered = answers.filter(a => a === null).length;
+      const message = unanswered > 0 
+        ? `You have ${unanswered} unanswered question(s). Are you sure you want to submit?`
+        : "Are you sure you want to submit your quiz?";
+      
+      document.getElementById("submitWarning").textContent = message;
+      document.getElementById("submitModal").classList.add("active");
+    };
 
-      try {
-        const score = calculateScore();
-        const timeSpent = getTimeSpentSeconds();
+    window.closeSubmitModal = function() {
+      document.getElementById("submitModal").classList.remove("active");
+    };
 
-        addDebugLog("📊 Submitting with data:", { score, timeSpent, answers: answers.length });
-
-        await eventAPI.submitSet({
-          eventId,
-          participantId,
-          setId: currentSet._id,
-          score,
-          answers,
-          timeTaken: timeSpent
-        });
-
-        addDebugLog("✅ Auto-submit successful");
-        document.getElementById('warningModal').style.display = 'flex';
-        
-      } catch (error) {
-        addDebugLog("❌ Auto-submit error:", error.message);
-        console.error("Auto-submit error:", error);
-        alert("Quiz auto-submitted due to: " + reason);
-        window.location.href = 'challenge.html';
-      }
+    function renderQuestionNav() {
+      const navHTML = questions.map((_, i) => `
+        <button class="question-nav-btn ${i===0?'current':''}" onclick="goToQuestion(${i})">${i+1}</button>
+      `).join('');
+      document.getElementById("questionNav").innerHTML = navHTML;
     }
 
-    // ---------------- MANUAL SUBMIT ----------------
+    function renderQuestion() {
+      const q = questions[currentQuestion];
+      
+      const optionLabels = ['A','B','C','D'];
+      
+      const questionCard = document.getElementById("questionCard");
+      questionCard.innerHTML = '';
+      
+      const questionNumber = document.createElement('div');
+      questionNumber.className = 'question-number';
+      questionNumber.innerHTML = `
+        <i class="fas fa-question-circle"></i>
+        Question ${currentQuestion+1} of ${questions.length}
+      `;
+      
+      const questionText = document.createElement('div');
+      questionText.className = 'question-text';
+      const cleanQuestion = (q.question || '')
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/\n/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      questionText.textContent = cleanQuestion;
+      
+      const optionsContainer = document.createElement('div');
+      optionsContainer.className = 'options-container';
+      
+      q.options.forEach((opt, i) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = `option ${answers[currentQuestion]===opt?'selected':''}`;
+        optionDiv.onclick = () => selectOption(opt);
+        
+        const optionLabel = document.createElement('div');
+        optionLabel.className = 'option-label';
+        optionLabel.textContent = optionLabels[i];
+        
+        const optionText = document.createElement('div');
+        optionText.className = 'option-text';
+        optionText.textContent = opt;
+        
+        optionDiv.appendChild(optionLabel);
+        optionDiv.appendChild(optionText);
+        optionsContainer.appendChild(optionDiv);
+      });
+      
+      questionCard.appendChild(questionNumber);
+      questionCard.appendChild(questionText);
+      questionCard.appendChild(optionsContainer);
+
+      document.getElementById("prevBtn").disabled = currentQuestion === 0;
+      document.getElementById("nextBtn").style.display = 
+        currentQuestion === questions.length-1 ? "none" : "block";
+      document.getElementById("submitBtn").style.display = 
+        currentQuestion === questions.length-1 ? "block" : "none";
+
+      const progress = ((currentQuestion+1)/questions.length)*100;
+      document.getElementById("progressFill").style.width = progress + "%";
+
+      document.querySelectorAll(".question-nav-btn").forEach((btn,i)=>{
+        btn.classList.remove("current","answered");
+        if (i===currentQuestion) btn.classList.add("current");
+        if (answers[i]!==null) btn.classList.add("answered");
+      });
+    }
+
     window.submitQuiz = async function() {
-      if (autoSubmitted) return;
+      if (isSubmitting) return;
+      
+      isSubmitting = true;
+      stopQuestionTimer();
+      
+      document.getElementById("submitModal").classList.remove("active");
 
       try {
         clearInterval(timerInterval);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        localStorage.removeItem(TAB_KEY);
 
-        const unanswered = answers.filter(a => a === null).length;
-        
-        if (unanswered > 0) {
-          if (!confirm(`You have ${unanswered} unanswered questions. Submit anyway?`)) {
-            startTimer();
-            return;
-          }
-        }
+        console.log("📤 Submitting quiz...");
+        console.log("📋 Answers:", answers);
+        console.log("⏱️ Per-question timings:", questionTimings);
 
-        quizActive = false;
-        const score = calculateScore();
-        const timeSpent = getTimeSpentSeconds();
+        const currentTime = Date.now();
+        const timeSpentSeconds = Math.floor((currentTime - quizStartTime) / 1000);
 
-        addDebugLog("📊 Manual submit with data:", { score, timeSpent, answers: answers.length });
-
-        await eventAPI.submitSet({
-          eventId,
+        const result = await eventAPI.submitSet({
           participantId,
-          setId: currentSet._id,
-          score,
+          setId,
+          eventId,
           answers,
-          timeTaken: timeSpent
+          timeTaken: timeSpentSeconds
         });
 
-        addDebugLog("✅ Manual submit successful");
-        alert(`Quiz submitted successfully!`);
-        window.location.href = 'challenge.html';
-      } catch (error) {
-        addDebugLog("❌ Manual submit error:", error.message);
-        console.error("Error submitting quiz:", error);
-        alert("Error submitting: " + error.message);
+        console.log("✅ Quiz submitted successfully:", result);
+
+        // Store results for results page
+        const resultsToStore = {
+          score: result.score,
+          totalQuestions: result.totalQuestions,
+          results: result.results,
+          timeSpent: timeSpentSeconds,
+          completedAt: result.completedAt
+        };
+
+        sessionStorage.setItem('eventQuizResults', JSON.stringify(resultsToStore));
+        
+        // Redirect to results page
+        window.location.href = 
+          `event-results.html?eventId=${eventId}&participantId=${participantId}&setId=${setId}`;
+        
+      } catch (err) {
+        isSubmitting = false;
+        console.error("❌ Submit error:", err);
+        alert("Error submitting quiz: " + err.message);
       }
     };
 
-    function calculateScore() {
-      let score = 0;
-      answers.forEach((answer, index) => {
-        if (answer && questions[index] && answer === questions[index].correctAnswer) {
-          score++;
-        }
-      });
-      return score;
-    }
-
-    window.goToResults = function() {
-      window.location.href = 'challenge.html';
-    };
-
-    // ---------------- PREVENT NAVIGATION ----------------
-    window.addEventListener('beforeunload', (e) => {
-      if (quizActive) {
+    function handleBeforeUnload(e) {
+      if (!isSubmitting) {
         e.preventDefault();
         e.returnValue = '';
       }
-    });
+    }
 
-    document.addEventListener('contextmenu', (e) => {
-      if (quizActive) {
-        e.preventDefault();
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (quizActive) {
-        if (e.key === 'F11' || e.key === 'Escape') {
-          e.preventDefault();
-        }
-      }
-    });
+    // Start quiz
+    init();
   </script>
+
   <script src="js/theme.js" type="module"></script>
 </body>
 </html>
