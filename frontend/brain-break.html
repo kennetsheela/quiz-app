@@ -207,6 +207,10 @@
       font-weight: bold;
       color: var(--accent-primary);
       margin: 30px 0;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .answer-options {
@@ -266,10 +270,13 @@
       padding: 20px;
       background: var(--bg-tertiary);
       border-radius: 10px;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
     .stat-item {
       text-align: center;
+      min-width: 100px;
     }
 
     .stat-value {
@@ -290,6 +297,7 @@
       display: flex;
       gap: 15px;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .hint-text {
@@ -317,6 +325,92 @@
       color: var(--warning);
       text-align: center;
       margin: 10px 0;
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      border-radius: 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .level-up-animation {
+      animation: levelUp 0.6s ease-out;
+    }
+
+    @keyframes levelUp {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .progress-bar {
+      width: 100%;
+      max-width: 500px;
+      height: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      margin: 15px auto;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 10px;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .difficulty-selector {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .difficulty-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+
+    .difficulty-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    .difficulty-btn:hover {
+      transform: translateY(-2px);
     }
 
     .success-message {
@@ -347,7 +441,8 @@
     <div class="nav-links">
       <a href="explore.html">Explore</a>
       <a href="challenge.html">Challenge</a>
-      <a href="brain-break.html" class="active">Brain Break</a>    </div>
+      <a href="brain-break.html" class="active">Brain Break</a>
+    </div>
     
     <div class="right-icons">
       <i class="fa-solid fa-moon theme-toggle"></i>
@@ -396,7 +491,7 @@
       <div class="game-card" onclick="selectGame('math')">
         <i class="fas fa-calculator"></i>
         <h3>Math Speed</h3>
-        <p>Quick mental math challenge</p>
+        <p>Level up your math skills!</p>
       </div>
     </div>
 
@@ -492,12 +587,31 @@
       </div>
     </div>
 
-    <!-- Math Speed Game -->
+    <!-- Math Speed Game (Enhanced) -->
     <div id="mathGame" class="game-area">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div class="level-badge" id="mathLevelBadge">Level 1 - Beginner</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="mathProgress" style="width: 0%"></div>
+        </div>
+        <p class="hint-text" id="mathLevelHint">Solve 10 problems to level up!</p>
+      </div>
+
+      <div class="difficulty-selector" id="difficultySelector">
+        <button class="difficulty-btn active" onclick="setDifficulty('easy')">Easy</button>
+        <button class="difficulty-btn" onclick="setDifficulty('medium')">Medium</button>
+        <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
+        <button class="difficulty-btn" onclick="setDifficulty('expert')">Expert</button>
+      </div>
+
       <div class="game-stats">
         <div class="stat-item">
           <div class="stat-value" id="mathScore">0</div>
           <div class="stat-label">Score</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="mathLevel">1</div>
+          <div class="stat-label">Level</div>
         </div>
         <div class="stat-item">
           <div class="stat-value" id="mathStreak">0</div>
@@ -512,13 +626,13 @@
       <div class="timer-display" id="mathTimer">30</div>
 
       <div class="math-problem">
-        <div class="math-equation" id="mathEquation">5 + 3 = ?</div>
+        <div class="math-equation" id="mathEquation">Ready to start?</div>
         <div class="answer-options" id="mathOptions"></div>
       </div>
 
       <div class="game-controls">
         <button class="btn btn-primary" id="mathStart" onclick="startMath()">
-          <i class="fas fa-play"></i> Start (30s)
+          <i class="fas fa-play"></i> Start Game
         </button>
         <button class="btn btn-secondary" onclick="resetMath()">
           <i class="fas fa-redo"></i> Reset
@@ -862,47 +976,173 @@
       }
     };
 
-    // ==================== MATH SPEED GAME ====================
+    // ==================== ENHANCED MATH SPEED GAME ====================
     let mathScore = 0;
+    let mathLevel = 1;
     let mathStreak = 0;
     let mathTotal = 0;
     let mathCorrect = 0;
     let mathTimeLeft = 30;
     let mathTimer = null;
     let currentProblem = null;
+    let problemsThisLevel = 0;
+    let mathDifficulty = 'easy';
+    const PROBLEMS_PER_LEVEL = 10;
+
+    const levelNames = {
+      1: 'Beginner', 2: 'Novice', 3: 'Learner', 4: 'Intermediate',
+      5: 'Skilled', 6: 'Advanced', 7: 'Expert', 8: 'Master',
+      9: 'Grandmaster', 10: 'Legend'
+    };
+
+    window.setDifficulty = function(difficulty) {
+      if (mathTimer) return; // Can't change during game
+      
+      mathDifficulty = difficulty;
+      document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    };
 
     function generateMathProblem() {
-      const operations = ['+', '-', '×'];
+      const level = mathLevel;
+      const diff = mathDifficulty;
+      
+      // Determine which operations are available based on level and difficulty
+      const operations = [];
+      
+      // Basic operations (always available)
+      operations.push('add', 'subtract');
+      
+      // Multiplication (level 2+)
+      if (level >= 2) operations.push('multiply');
+      
+      // Division (level 3+)
+      if (level >= 3) operations.push('divide');
+      
+      // Square (level 4+)
+      if (level >= 4) operations.push('square');
+      
+      // Cube (level 5+)
+      if (level >= 5) operations.push('cube');
+      
+      // Square root (level 6+)
+      if (level >= 6) operations.push('sqrt');
+      
+      // Cube root (level 7+)
+      if (level >= 7) operations.push('cbrt');
+      
+      // Simplification (level 8+)
+      if (level >= 8) operations.push('simplify');
+      
       const op = operations[Math.floor(Math.random() * operations.length)];
       
-      let num1, num2, answer;
+      let num1, num2, answer, display;
       
-      if (op === '+') {
-        num1 = Math.floor(Math.random() * 50) + 1;
-        num2 = Math.floor(Math.random() * 50) + 1;
-        answer = num1 + num2;
-      } else if (op === '-') {
-        num1 = Math.floor(Math.random() * 50) + 20;
-        num2 = Math.floor(Math.random() * num1);
-        answer = num1 - num2;
-      } else {
-        num1 = Math.floor(Math.random() * 12) + 1;
-        num2 = Math.floor(Math.random() * 12) + 1;
-        answer = num1 * num2;
+      // Adjust ranges based on difficulty
+      const ranges = {
+        easy: { max: 20, mult: 10 },
+        medium: { max: 50, mult: 12 },
+        hard: { max: 100, mult: 15 },
+        expert: { max: 200, mult: 20 }
+      };
+      
+      const range = ranges[diff];
+      
+      switch(op) {
+        case 'add':
+          num1 = Math.floor(Math.random() * range.max) + 1;
+          num2 = Math.floor(Math.random() * range.max) + 1;
+          answer = num1 + num2;
+          display = `${num1} + ${num2}`;
+          break;
+          
+        case 'subtract':
+          num1 = Math.floor(Math.random() * range.max) + 20;
+          num2 = Math.floor(Math.random() * num1);
+          answer = num1 - num2;
+          display = `${num1} - ${num2}`;
+          break;
+          
+        case 'multiply':
+          num1 = Math.floor(Math.random() * range.mult) + 1;
+          num2 = Math.floor(Math.random() * range.mult) + 1;
+          answer = num1 * num2;
+          display = `${num1} × ${num2}`;
+          break;
+          
+        case 'divide':
+          num2 = Math.floor(Math.random() * 12) + 1;
+          answer = Math.floor(Math.random() * 15) + 1;
+          num1 = num2 * answer;
+          display = `${num1} ÷ ${num2}`;
+          break;
+          
+        case 'square':
+          num1 = Math.floor(Math.random() * (diff === 'easy' ? 10 : diff === 'medium' ? 15 : 20)) + 1;
+          answer = num1 * num1;
+          display = `${num1}²`;
+          break;
+          
+        case 'cube':
+          num1 = Math.floor(Math.random() * (diff === 'easy' ? 5 : diff === 'medium' ? 8 : 10)) + 1;
+          answer = num1 * num1 * num1;
+          display = `${num1}³`;
+          break;
+          
+        case 'sqrt':
+          const squares = diff === 'easy' ? [4,9,16,25,36,49,64,81,100] :
+                         diff === 'medium' ? [4,9,16,25,36,49,64,81,100,121,144,169,196,225] :
+                         [4,9,16,25,36,49,64,81,100,121,144,169,196,225,256,289,324,361,400];
+          num1 = squares[Math.floor(Math.random() * squares.length)];
+          answer = Math.sqrt(num1);
+          display = `√${num1}`;
+          break;
+          
+        case 'cbrt':
+          const cubes = diff === 'easy' ? [8,27,64,125] :
+                       diff === 'medium' ? [8,27,64,125,216,343] :
+                       [8,27,64,125,216,343,512,729,1000];
+          num1 = cubes[Math.floor(Math.random() * cubes.length)];
+          answer = Math.round(Math.cbrt(num1));
+          display = `∛${num1}`;
+          break;
+          
+        case 'simplify':
+          // Generate expressions like (2+3)×4 or 5×(6-2)
+          const a = Math.floor(Math.random() * 10) + 1;
+          const b = Math.floor(Math.random() * 10) + 1;
+          const c = Math.floor(Math.random() * 10) + 1;
+          const innerOp = Math.random() > 0.5 ? '+' : '-';
+          
+          if (innerOp === '+') {
+            answer = (a + b) * c;
+            display = `(${a} + ${b}) × ${c}`;
+          } else {
+            if (a > b) {
+              answer = (a - b) * c;
+              display = `(${a} - ${b}) × ${c}`;
+            } else {
+              answer = (b - a) * c;
+              display = `(${b} - ${a}) × ${c}`;
+            }
+          }
+          break;
       }
       
-      return { num1, num2, op, answer };
+      return { num1, num2, op, answer: Math.round(answer), display };
     }
 
     function showMathProblem() {
       currentProblem = generateMathProblem();
-      document.getElementById('mathEquation').textContent = 
-        `${currentProblem.num1} ${currentProblem.op} ${currentProblem.num2} = ?`;
+      document.getElementById('mathEquation').textContent = `${currentProblem.display} = ?`;
       
       // Generate options
       const options = [currentProblem.answer];
+      const variance = Math.max(5, Math.floor(currentProblem.answer * 0.3));
+      
       while (options.length < 4) {
-        const wrong = currentProblem.answer + Math.floor(Math.random() * 20) - 10;
+        const offset = Math.floor(Math.random() * variance * 2) - variance;
+        const wrong = currentProblem.answer + offset;
         if (wrong !== currentProblem.answer && !options.includes(wrong) && wrong > 0) {
           options.push(wrong);
         }
@@ -915,18 +1155,39 @@
       ).join('');
     }
 
+    function updateLevelDisplay() {
+      const levelName = levelNames[Math.min(mathLevel, 10)] || 'Ultimate';
+      const badge = document.getElementById('mathLevelBadge');
+      badge.textContent = `Level ${mathLevel} - ${levelName}`;
+      badge.classList.add('level-up-animation');
+      setTimeout(() => badge.classList.remove('level-up-animation'), 600);
+      
+      const progress = (problemsThisLevel / PROBLEMS_PER_LEVEL) * 100;
+      document.getElementById('mathProgress').style.width = progress + '%';
+      
+      const remaining = PROBLEMS_PER_LEVEL - problemsThisLevel;
+      document.getElementById('mathLevelHint').textContent = 
+        remaining > 0 ? `Solve ${remaining} more to level up!` : 'Level up! 🎉';
+    }
+
     window.startMath = function() {
       mathScore = 0;
+      mathLevel = 1;
       mathStreak = 0;
       mathTotal = 0;
       mathCorrect = 0;
       mathTimeLeft = 30;
+      problemsThisLevel = 0;
       
       document.getElementById('mathScore').textContent = '0';
+      document.getElementById('mathLevel').textContent = '1';
       document.getElementById('mathStreak').textContent = '0';
       document.getElementById('mathAccuracy').textContent = '100%';
       document.getElementById('mathStart').disabled = true;
+      document.getElementById('difficultySelector').style.opacity = '0.5';
+      document.getElementById('difficultySelector').style.pointerEvents = 'none';
       
+      updateLevelDisplay();
       showMathProblem();
       
       mathTimer = setInterval(() => {
@@ -942,17 +1203,38 @@
     window.checkMathAnswer = function(answer) {
       const buttons = document.querySelectorAll('.answer-btn');
       mathTotal++;
+      problemsThisLevel++;
       
       if (answer === currentProblem.answer) {
         mathCorrect++;
-        mathScore += (5 + mathStreak);
+        
+        // Score increases with level and streak
+        const basePoints = 5;
+        const levelBonus = mathLevel * 2;
+        const streakBonus = mathStreak;
+        mathScore += basePoints + levelBonus + streakBonus;
         mathStreak++;
+        
+        // Add time bonus for fast answers
+        if (mathStreak > 3) {
+          mathTimeLeft += 2;
+        }
         
         buttons.forEach(btn => {
           if (parseInt(btn.textContent) === answer) {
             btn.classList.add('correct');
           }
         });
+        
+        // Check for level up
+        if (problemsThisLevel >= PROBLEMS_PER_LEVEL) {
+          mathLevel++;
+          problemsThisLevel = 0;
+          document.getElementById('mathLevel').textContent = mathLevel;
+          updateLevelDisplay();
+        } else {
+          updateLevelDisplay();
+        }
         
         setTimeout(() => {
           showMathProblem();
@@ -983,33 +1265,45 @@
     function endMath() {
       clearInterval(mathTimer);
       document.getElementById('mathStart').disabled = false;
+      document.getElementById('difficultySelector').style.opacity = '1';
+      document.getElementById('difficultySelector').style.pointerEvents = 'auto';
       
       const accuracy = mathTotal > 0 ? Math.round((mathCorrect / mathTotal) * 100) : 0;
-      alert(`⏱️ Time's up!\n\nScore: ${mathScore}\nAnswered: ${mathTotal} questions\nCorrect: ${mathCorrect}\nAccuracy: ${accuracy}%`);
+      const levelName = levelNames[Math.min(mathLevel, 10)] || 'Ultimate';
+      
+      alert(`⏱️ Time's up!\n\n🏆 Final Score: ${mathScore}\n📊 Level Reached: ${mathLevel} (${levelName})\n✅ Answered: ${mathTotal} questions\n💯 Correct: ${mathCorrect}\n🎯 Accuracy: ${accuracy}%\n🔥 Best Streak: ${mathStreak}`);
     }
 
     window.resetMath = function() {
       if (mathTimer) clearInterval(mathTimer);
       
       mathScore = 0;
+      mathLevel = 1;
       mathStreak = 0;
       mathTotal = 0;
       mathCorrect = 0;
       mathTimeLeft = 30;
+      problemsThisLevel = 0;
       
       document.getElementById('mathScore').textContent = '0';
+      document.getElementById('mathLevel').textContent = '1';
       document.getElementById('mathStreak').textContent = '0';
       document.getElementById('mathAccuracy').textContent = '100%';
       document.getElementById('mathTimer').textContent = '30';
       document.getElementById('mathStart').disabled = false;
-      document.getElementById('mathEquation').textContent = '5 + 3 = ?';
+      document.getElementById('mathEquation').textContent = 'Ready to start?';
       document.getElementById('mathOptions').innerHTML = '';
+      document.getElementById('difficultySelector').style.opacity = '1';
+      document.getElementById('difficultySelector').style.pointerEvents = 'auto';
+      
+      updateLevelDisplay();
     };
 
     // Initialize games on load
     initMemoryGame();
     initPatternGrid();
     loadNewWord();
+    updateLevelDisplay();
   </script>
   <script src="js/theme.js" type="module"></script>
 </body>
