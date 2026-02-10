@@ -13,6 +13,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const practiceRoutes = require("./routes/practiceRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const { startCleanupScheduler } = require("./services/cleanupService");
 
 /* ================= APP ================= */
@@ -59,7 +60,7 @@ const authLimiter = rateLimit({
 app.use("/api", limiter);
 app.use("/api/auth/login", authLimiter);
 app.use("/api/events/student-login", authLimiter);
-
+app.use("/api/analytics", analyticsRoutes);
 /* ================= CORS ================= */
 app.use(cors({
   origin: [
