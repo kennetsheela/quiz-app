@@ -93,6 +93,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/institutions", institutionRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/super-admin", superAdminRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 /* ================= HEALTH ================= */
 app.get("/api/health", (req, res) => {
