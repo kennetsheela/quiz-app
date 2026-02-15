@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Management - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .batch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .batch-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .batch-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .batch-card.selected {
+            border-color: #3b82f6;
+            background: #f0f7ff;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .student-table th,
+        .student-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .student-table th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen - Batch Management</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+            <a href="institution-dashboard.html"><i class="fa-solid fa-arrow-left" title="Back"></i></a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="flex justify-between align-center mb-4">
+            <div>
+                <h1>Batch Management</h1>
+                <p>Manage students across departments and batches</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddStudentModal()">
+                <i class="fa-solid fa-user-plus"></i> Add Student
+            </button>
+        </div>
+
+        <!-- Batch Selection -->
+        <div class="card mb-4">
+            <h3>Select Batch</h3>
+            <div class="batch-grid" id="batchGrid"></div>
+        </div>
+
+        <!-- Student List -->
+        <div class="card">
+            <div class="flex justify-between align-center mb-3">
+                <h3>Students <span id="studentCount" class="badge badge-primary">0</span></h3>
+                <div class="flex gap-2">
+                    <input type="text" id="searchStudent" placeholder="Search students..." onkeyup="searchStudents()"
+                        style="width: 250px;">
+                    <button class="btn btn-secondary" onclick="downloadCSV()">
+                        <i class="fa-solid fa-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+            <table class="student-table" id="studentTable">
+                <thead>
+                    <tr>
+                        <th>Roll Number</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Year</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    <tr>
+                        <td colspan="6" class="text-center">Select a batch to view students</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal" id="addStudentModal">
+        <div class="modal-content">
+            <div class="flex justify-between align-center mb-4">
+                <h2>Add Student</h2>
+                <button onclick="closeModal()"
+                    style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+
+            <div class="mb-3">
+                <button class="btn btn-secondary" onclick="switchMode('single')" id="singleBtn">Single Student</button>
+                <button class="btn btn-secondary" onclick="switchMode('bulk')" id="bulkBtn">Bulk Import</button>
+            </div>
+
+            <!-- Single Student Form -->
+            <form id="singleStudentForm" style="display: block;">
+                <div class="form-group">
+                    <label>Roll Number *</label>
+                    <input type="text" id="rollNumber" placeholder="e.g., CS2024001" required>
+                </div>
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="studentName" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="studentEmail" placeholder="student@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Department *</label>
+                    <select id="studentDepartment" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Batch *</label>
+                    <select id="studentBatch" required></select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Add Student</button>
+            </form>
+
+            <!-- Bulk Import Form -->
+            <div id="bulkImportForm" style="display: none;">
+                <div class="info-box mb-3">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <div>
+                        <strong>CSV Format:</strong> rollNumber, name, email, department, batchId
+                        <br><small>Example: CS2024001, John Doe, john@example.com, CS, batch-id-here</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Upload CSV File</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <button class="btn btn-primary w-100" onclick="processBulkImport()">Import Students</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+        initTheme();
+
+        const API_BASE = 'http://localhost:5000/api';
+        const institutionId = sessionStorage.getItem('institutionId') || 'demo-institution-id';
+        let selectedBatchId = null;
+        let allStudents = [];
+        let batches = [];
+        let departments = [];
+
+        // Load batches
+        async function loadBatches() {
+            try {
+                const response = await fetch(`${API_BASE}/institutions/${institutionId}/batches`);
+                const data = await response.json();
+                batches = data.batches || [];
+                displayBatches();
+            } catch (error) {
+                console.error('Load batches error:', error);
+            }
+        }
+
+        function displayBatches() {
+            const grid = document.getElementById('batchGrid');
+            grid.innerHTML = batches.map(batch => `
+                <div class="batch-card" onclick="selectBatch('${batch._id}')">
+                    <h4>${batch.name}</h4>
+                    <p style="font-size: 14px; color: var(--text-secondary);">
+                        ${batch.departmentId?.name || 'N/A'} - Year ${batch.year}
+                    </p>
+                    <div class="flex justify-between mt-2">
+                        <span class="badge badge-primary">${batch.statistics?.totalStudents || 0} students</span>
+                        <span class="badge ${batch.status === 'active' ? 'badge-success' : 'badge-warning'}">${batch.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.selectBatch = async (batchId) => {
+            selectedBatchId = batchId;
+            document.querySelectorAll('.batch-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.batch-card').classList.add('selected');
+            await loadStudents();
+        };
+
+        async function loadStudents() {
+            if (!selectedBatchId) return;
+            try {
+                const response = await fetch(`${API_BASE}/institutions/${institutionId}/students?batch=${selectedBatchId}`);
+                const data = await response.json();
+                allStudents = data.students || [];
+                displayStudents(allStudents);
+            } catch (error) {
+                console.error('Load students error:', error);
+            }
+        }
+
+        function displayStudents(students) {
+            const tbody = document.getElementById('studentTableBody');
+            document.getElementById('studentCount').textContent = students.length;
+
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No students in this batch</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = students.map(student => `
+                <tr>
+                    <td>${student.rollNumber || 'N/A'}</td>
+                    <td>${student.username}</td>
+                    <td>${student.email}</td>
+                    <td>${student.department || 'N/A'}</td>
+                    <td>${student.batchId?.year || 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editStudent('${student._id}')" style="padding: 6px 12px; margin-right: 5px;">
+                            <i class="fa-solid fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteStudent('${student._id}')" style="padding: 6px 12px;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.searchStudents = () => {
+            const search = document.getElementById('searchStudent').value.toLowerCase();
+            const filtered = allStudents.filter(s =>
+                s.username.toLowerCase().includes(search) ||
+                s.email.toLowerCase().includes(search) ||
+                (s.rollNumber && s.rollNumber.toLowerCase().includes(search))
+            );
+            displayStudents(filtered);
+        };
+
+        window.openAddStudentModal = async () => {
+            // Load departments and batches for dropdowns
+            try {
+                const [deptRes, batchRes] = await Promise.all([
+                    fetch(`${API_BASE}/institutions/${institutionId}/departments`),
+                    fetch(`${API_BASE}/institutions/${institutionId}/batches`)
+                ]);
+                const deptData = await deptRes.json();
+                const batchData = await batchRes.json();
+
+                departments = deptData.departments || [];
+                batches = batchData.batches || [];
+
+                // Populate dropdowns
+                document.getElementById('studentDepartment').innerHTML =
+                    '<option value="">Select Department</option>' +
+                    departments.map(d => `<option value="${d.code}">${d.name}</option>`).join('');
+
+                document.getElementById('studentBatch').innerHTML =
+                    '<option value="">Select Batch</option>' +
+                    batches.map(b => `<option value="${b._id}">${b.name}</option>`).join('');
+
+                document.getElementById('addStudentModal').classList.add('active');
+            } catch (error) {
+                console.error('Load data error:', error);
+            }
+        };
+
+        window.closeModal = () => {
+            document.getElementById('addStudentModal').classList.remove('active');
+        };
+
+        window.switchMode = (mode) => {
+            if (mode === 'single') {
+                document.getElementById('singleStudentForm').style.display = 'block';
+                document.getElementById('bulkImportForm').style.display = 'none';
+                document.getElementById('singleBtn').classList.add('btn-primary');
+                document.getElementById('bulkBtn').classList.remove('btn-primary');
+            } else {
+                document.getElementById('singleStudentForm').style.display = 'none';
+                document.getElementById('bulkImportForm').style.display = 'block';
+                document.getElementById('bulkBtn').classList.add('btn-primary');
+                document.getElementById('singleBtn').classList.remove('btn-primary');
+            }
+        };
+
+        document.getElementById('singleStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentData = {
+                rollNumber: document.getElementById('rollNumber').value,
+                username: document.getElementById('studentName').value,
+                email: document.getElementById('studentEmail').value,
+                department: document.getElementById('studentDepartment').value,
+                batchId: document.getElementById('studentBatch').value,
+                role: 'student',
+                institutionId
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/institutions/${institutionId}/students`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentData)
+                });
+
+                if (response.ok) {
+                    alert('Student added successfully!');
+                    closeModal();
+                    if (selectedBatchId) loadStudents();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Add student error:', error);
+                alert('Failed to add student');
+            }
+        });
+
+        window.processBulkImport = async () => {
+            const fileInput = document.getElementById('csvFile');
+            if (!fileInput.files[0]) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const text = await file.text();
+            const lines = text.split('\n').slice(1); // Skip header
+            const students = lines.filter(line => line.trim()).map(line => {
+                const [rollNumber, username, email, department, batchId] = line.split(',').map(s => s.trim());
+                return { rollNumber, username, email, department, batchId, role: 'student', institutionId };
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/institutions/${institutionId}/students/bulk`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ students })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Successfully imported ${data.count} students!`);
+                    closeModal();
+                    if (selectedBatchId) loadStudents();
+                } else {
+                    alert('Bulk import failed');
+                }
+            } catch (error) {
+                console.error('Bulk import error:', error);
+                alert('Failed to import students');
+            }
+        };
+
+        window.deleteStudent = async (id) => {
+            if (!confirm('Are you sure you want to delete this student?')) return;
+            try {
+                const response = await fetch(`${API_BASE}/institutions/${institutionId}/students/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    alert('Student deleted');
+                    loadStudents();
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+            }
+        };
+
+        window.downloadCSV = () => {
+            const csv = ['Roll Number,Name,Email,Department,Year\n'];
+            allStudents.forEach(s => {
+                csv.push(`${s.rollNumber || ''},${s.username},${s.email},${s.department || ''},${s.batchId?.year || ''}\n`);
+            });
+            const blob = new Blob(csv, { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'students.csv';
+            a.click();
+        };
+
+        loadBatches();
+    </script>
+</body>
+
+</html>

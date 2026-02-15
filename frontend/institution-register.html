@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institution Registration - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .wizard-container {
+            max-width: 700px;
+            margin: 40px auto;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .wizard-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .wizard-step::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: -1;
+        }
+
+        .wizard-step:first-child::before {
+            display: none;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .wizard-step.active .step-circle {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .wizard-step.completed .step-circle {
+            background: #10b981;
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .plan-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .plan-card:hover {
+            border-color: #3b82f6;
+        }
+
+        .plan-card.selected {
+            border-color: #3b82f6;
+            background: #f0f7ff;
+        }
+
+        .plan-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin: 10px 0;
+        }
+
+        .wizard-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+            <a href="index.html"><i class="fa-solid fa-house" title="Home"></i></a>
+        </div>
+    </header>
+
+    <div class="container wizard-container">
+        <h1 class="text-center">Institution Registration</h1>
+        <p class="text-center mb-4">Join AptioGen to manage assessments for your institution</p>
+
+        <!-- Wizard Steps -->
+        <div class="wizard-steps">
+            <div class="wizard-step active" data-step="1">
+                <div class="step-circle">1</div>
+                <div>Basic Info</div>
+            </div>
+            <div class="wizard-step" data-step="2">
+                <div class="step-circle">2</div>
+                <div>Location</div>
+            </div>
+            <div class="wizard-step" data-step="3">
+                <div class="step-circle">3</div>
+                <div>Plan</div>
+            </div>
+            <div class="wizard-step" data-step="4">
+                <div class="step-circle">4</div>
+                <div>Payment</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <!-- Step 1: Basic Information -->
+            <div class="step-content active" data-step="1">
+                <h3>Basic Information</h3>
+                <div class="form-group">
+                    <label>Institution Name *</label>
+                    <input type="text" id="instName" placeholder="e.g., ABC College of Engineering" required>
+                </div>
+                <div class="form-group">
+                    <label>Institution Type *</label>
+                    <select id="instType" required>
+                        <option value="">Select Type</option>
+                        <option value="University">University</option>
+                        <option value="College">College</option>
+                        <option value="School">School</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Admin Email *</label>
+                    <input type="email" id="adminEmail" placeholder="admin@institution.edu" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="tel" id="phone" placeholder="+91 1234567890" required>
+                </div>
+            </div>
+
+            <!-- Step 2: Location -->
+            <div class="step-content" data-step="2">
+                <h3>Location Details</h3>
+                <div class="form-group">
+                    <label>Country *</label>
+                    <input type="text" id="country" value="India" required>
+                </div>
+                <div class="form-group">
+                    <label>State *</label>
+                    <input type="text" id="state" placeholder="e.g., Karnataka" required>
+                </div>
+                <div class="form-group">
+                    <label>District *</label>
+                    <input type="text" id="district" placeholder="e.g., Bangalore" required>
+                </div>
+                <div class="form-group">
+                    <label>Pincode</label>
+                    <input type="text" id="pincode" placeholder="560001">
+                </div>
+                <div class="form-group">
+                    <label>Full Address</label>
+                    <textarea id="fullAddress" rows="3" placeholder="Complete address"></textarea>
+                </div>
+            </div>
+
+            <!-- Step 3: Subscription Plan -->
+            <div class="step-content" data-step="3">
+                <h3>Choose Your Plan</h3>
+                <p>Select a plan based on your expected student count</p>
+
+                <div class="form-group">
+                    <label>Expected Students *</label>
+                    <select id="expectedStudents" onchange="updatePlanRecommendation()" required>
+                        <option value="">Select Range</option>
+                        <option value="0-100">0-100 Students</option>
+                        <option value="101-500">101-500 Students</option>
+                        <option value="501-1000">501-1000 Students</option>
+                        <option value="1000+">1000+ Students</option>
+                    </select>
+                </div>
+
+                <div class="plan-grid">
+                    <div class="plan-card" onclick="selectPlan('free')">
+                        <h4>Free</h4>
+                        <div class="plan-price">₹0</div>
+                        <p style="font-size: 12px;">Up to 50 students</p>
+                        <p style="font-size: 12px;">Basic features</p>
+                    </div>
+                    <div class="plan-card" onclick="selectPlan('basic')">
+                        <h4>Basic</h4>
+                        <div class="plan-price">₹5,000</div>
+                        <p style="font-size: 12px;">Up to 500 students</p>
+                        <p style="font-size: 12px;">Standard features</p>
+                    </div>
+                    <div class="plan-card" onclick="selectPlan('premium')">
+                        <h4>Premium</h4>
+                        <div class="plan-price">₹15,000</div>
+                        <p style="font-size: 12px;">Up to 2000 students</p>
+                        <p style="font-size: 12px;">Advanced analytics</p>
+                    </div>
+                    <div class="plan-card" onclick="selectPlan('enterprise')">
+                        <h4>Enterprise</h4>
+                        <div class="plan-price">Custom</div>
+                        <p style="font-size: 12px;">Unlimited students</p>
+                        <p style="font-size: 12px;">Full features</p>
+                    </div>
+                </div>
+                <input type="hidden" id="selectedPlan" value="">
+            </div>
+
+            <!-- Step 4: Payment -->
+            <div class="step-content" data-step="4">
+                <h3>Payment</h3>
+                <div id="paymentSummary"></div>
+
+                <div class="info-box mt-3">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <div>
+                        <strong>Note:</strong> This is a demo. In production, integrate with payment gateways like
+                        Razorpay or Stripe.
+                    </div>
+                </div>
+
+                <button class="btn btn-success w-100 mt-3" onclick="completeRegistration()">
+                    <i class="fa-solid fa-check"></i> Complete Registration
+                </button>
+            </div>
+
+            <!-- Wizard Actions -->
+            <div class="wizard-actions">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display:none;">
+                    <i class="fa-solid fa-arrow-left"></i> Previous
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                    Next <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { firebaseConfig } from './js/firebase-config.js';
+
+        initTheme();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        let currentStep = 1;
+        const totalSteps = 4;
+        let selectedPlan = '';
+
+        window.nextStep = () => {
+            if (validateStep(currentStep)) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateWizard();
+                }
+            }
+        };
+
+        window.previousStep = () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizard();
+            }
+        };
+
+        function updateWizard() {
+            // Update step indicators
+            document.querySelectorAll('.wizard-step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) step.classList.add('completed');
+                if (index + 1 === currentStep) step.classList.add('active');
+            });
+
+            // Update content
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active');
+
+            // Update buttons
+            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('nextBtn').style.display = currentStep < totalSteps ? 'block' : 'none';
+
+            // Update payment summary on step 4
+            if (currentStep === 4) {
+                updatePaymentSummary();
+            }
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const name = document.getElementById('instName').value;
+                const type = document.getElementById('instType').value;
+                const email = document.getElementById('adminEmail').value;
+                const phone = document.getElementById('phone').value;
+                if (!name || !type || !email || !phone) {
+                    alert('Please fill all required fields');
+                    return false;
+                }
+            } else if (step === 2) {
+                const state = document.getElementById('state').value;
+                const district = document.getElementById('district').value;
+                if (!state || !district) {
+                    alert('Please fill all required fields');
+                    return false;
+                }
+            } else if (step === 3) {
+                if (!selectedPlan) {
+                    alert('Please select a subscription plan');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        window.selectPlan = (plan) => {
+            selectedPlan = plan;
+            document.getElementById('selectedPlan').value = plan;
+            document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.plan-card').classList.add('selected');
+        };
+
+        function updatePaymentSummary() {
+            const planPrices = { free: 0, basic: 5000, premium: 15000, enterprise: 'Custom' };
+            const price = planPrices[selectedPlan];
+
+            document.getElementById('paymentSummary').innerHTML = `
+                <div class="detail-row">
+                    <span>Institution:</span>
+                    <strong>${document.getElementById('instName').value}</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Plan:</span>
+                    <strong>${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Amount:</span>
+                    <strong>₹${price}</strong>
+                </div>
+            `;
+        }
+
+        window.completeRegistration = async () => {
+            const email = document.getElementById('adminEmail').value;
+            const password = prompt('Create a password for your admin account:');
+
+            if (!password || password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+
+            try {
+                // Create Firebase user
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const adminUID = userCredential.user.uid;
+
+                // Prepare institution data
+                const institutionData = {
+                    name: document.getElementById('instName').value,
+                    type: document.getElementById('instType').value,
+                    adminUID,
+                    email,
+                    phone: document.getElementById('phone').value,
+                    location: {
+                        country: document.getElementById('country').value,
+                        state: document.getElementById('state').value,
+                        district: document.getElementById('district').value,
+                        pincode: document.getElementById('pincode').value,
+                        fullAddress: document.getElementById('fullAddress').value
+                    },
+                    subscription: {
+                        plan: selectedPlan,
+                        expectedStudents: document.getElementById('expectedStudents').value,
+                        status: 'active'
+                    }
+                };
+
+                // Save to backend
+                const response = await fetch('http://localhost:5000/api/institutions/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(institutionData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    sessionStorage.setItem('institutionId', data.institution._id);
+                    alert('Registration successful! Redirecting to setup wizard...');
+                    window.location.href = 'institution-setup-wizard.html';
+                } else {
+                    const error = await response.json();
+                    alert('Registration failed: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.updatePlanRecommendation = () => {
+            const range = document.getElementById('expectedStudents').value;
+            const recommendations = {
+                '0-100': 'free',
+                '101-500': 'basic',
+                '501-1000': 'premium',
+                '1000+': 'enterprise'
+            };
+            if (recommendations[range]) {
+                selectPlan(recommendations[range]);
+            }
+        };
+    </script>
+</body>
+
+</html>

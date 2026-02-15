@@ -10,77 +10,43 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/components.css">
     <style>
-        .login-page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 80px);
-            padding: 20px;
+        .login-container {
+            max-width: 480px;
+            margin: 60px auto;
         }
 
         .login-card {
-            max-width: 450px;
-            width: 100%;
+            padding: 40px;
         }
 
-        .login-type-toggle {
+        .login-tabs {
             display: flex;
-            background: var(--bg-tertiary);
-            padding: 5px;
-            border-radius: 12px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
         }
 
-        .type-btn {
+        .login-tab {
             flex: 1;
-            padding: 10px;
-            border: none;
-            background: transparent;
-            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
             cursor: pointer;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: #64748b;
             transition: all 0.3s ease;
         }
 
-        .type-btn.active {
-            background: var(--accent-primary);
-            color: white;
-            box-shadow: 0 4px 12px var(--shadow);
+        .login-tab.active {
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+            margin-bottom: -2px;
         }
 
-        .social-login {
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
-            margin-top: 20px;
-            text-align: center;
+        .form-section {
+            display: none;
         }
 
-        .social-btns {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
-        .social-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .social-btn:hover {
-            transform: scale(1.1);
-            border-color: var(--accent-primary);
-            background: var(--accent-primary);
-            color: white;
+        .form-section.active {
+            display: block;
         }
     </style>
 </head>
@@ -89,67 +55,223 @@
     <header class="appbar">
         <h2>AptioGen</h2>
         <div class="right-icons">
-            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
-            <a href="index.html"><i class="fa-solid fa-house" title="Home"></i></a>
+            <i class="fa-solid fa-moon theme-toggle"></i>
+            <a href="index.html"><i class="fa-solid fa-house"></i></a>
         </div>
     </header>
 
-    <div class="login-page">
+    <div class="container login-container">
         <div class="card login-card">
             <div class="text-center mb-4">
-                <h2>Student Entrance</h2>
-                <p>Welcome back! Please login to your account.</p>
+                <div class="avatar-circle">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <h2>Student Portal</h2>
+                <p>Access your quizzes and track your progress</p>
             </div>
 
-            <div class="login-type-toggle">
-                <button class="type-btn active" onclick="setLoginType('inst')">Institutional</button>
-                <button class="type-btn" onclick="setLoginType('indep')">Independent</button>
+            <div class="login-tabs">
+                <div class="login-tab active" id="tabInst" onclick="switchTab('inst')">Institutional</div>
+                <div class="login-tab" id="tabIndp" onclick="switchTab('indp')">Independent</div>
             </div>
 
-            <form id="studentLoginForm">
-                <div class="form-group mb-3">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group mb-4">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Sign In</button>
-
-                <div class="text-center mt-3">
-                    <a href="#" class="forgot-link">Forgot Password?</a>
-                </div>
-            </form>
-
-            <div class="social-login">
-                <p class="small text-secondary">Or login with social accounts</p>
-                <div class="social-btns">
-                    <button class="social-btn"><i class="fab fa-google"></i></button>
-                    <button class="social-btn"><i class="fab fa-github"></i></button>
-                </div>
+            <!-- Institutional Student Form -->
+            <div id="instForm" class="form-section active">
+                <form id="studentInstLoginForm">
+                    <div class="form-group">
+                        <label>Roll Number / Email</label>
+                        <input type="text" id="instId" placeholder="e.g., CS2024001 or email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="instPassword" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login as Student</button>
+                    <p class="text-center mt-3 small">
+                        Institutional accounts are managed by your institution.
+                    </p>
+                </form>
             </div>
 
-            <div class="text-center mt-4 pt-2">
-                <p class="small">Don't have an account? <a href="register.html" class="fw-bold">Register Now</a></p>
+            <!-- Independent Student Form -->
+            <div id="indpForm" class="form-section">
+                <div id="indpLoginView">
+                    <form id="studentIndpLoginForm">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="indpEmail" placeholder="you@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="indpPassword" placeholder="Enter your password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                        <p class="text-center mt-3">
+                            New here? <a href="#" onclick="toggleIndpMode('reg')">Create an independent account</a>
+                        </p>
+                    </form>
+                    <div class="social-login text-center mt-4">
+                        <p class="small text-secondary">Or login with social accounts</p>
+                        <div class="flex justify-center gap-3 mt-2">
+                            <button class="social-btn" onclick="socialLogin('google')"><i
+                                    class="fab fa-google"></i></button>
+                            <button class="social-btn" onclick="socialLogin('github')"><i
+                                    class="fab fa-github"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Independent Register Form -->
+                <div id="indpRegisterView" style="display: none;">
+                    <form id="studentRegisterForm">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="regName" placeholder="Full Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="regEmail" placeholder="you@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="regPassword" placeholder="Min 6 characters" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <input type="text" id="regCountry" value="India" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Register</button>
+                        <p class="text-center mt-3">
+                            Already have an account? <a href="#" onclick="toggleIndpMode('login')">Login</a>
+                        </p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initTheme } from './js/theme.js';
+        import { auth } from './js/firebase.js';
+        import {
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            GoogleAuthProvider,
+            GithubAuthProvider,
+            signInWithPopup
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-        window.setLoginType = function (type) {
-            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            localStorage.setItem('studentRole', type);
+        initTheme();
+
+        window.switchTab = (type) => {
+            document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+
+            if (type === 'inst') {
+                document.getElementById('tabInst').classList.add('active');
+                document.getElementById('instForm').classList.add('active');
+            } else {
+                document.getElementById('tabIndp').classList.add('active');
+                document.getElementById('indpForm').classList.add('active');
+            }
+        };
+
+        window.toggleIndpMode = (mode) => {
+            if (mode === 'reg') {
+                document.getElementById('indpLoginView').style.display = 'none';
+                document.getElementById('indpRegisterView').style.display = 'block';
+            } else {
+                document.getElementById('indpLoginView').style.display = 'block';
+                document.getElementById('indpRegisterView').style.display = 'none';
+            }
+        };
+
+        const API_BASE = 'http://localhost:5000/api';
+
+        async function handleBackendLogin(user, additionalData = {}) {
+            const idToken = await user.getIdToken();
+            const response = await fetch(`${API_BASE}/students/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify(additionalData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                sessionStorage.setItem('studentInfo', JSON.stringify(data.user));
+                window.location.href = 'student-dashboard.html';
+            } else {
+                const err = await response.json();
+                alert(err.error || 'Login failed');
+            }
         }
 
-        document.getElementById('studentLoginForm').addEventListener('submit', (e) => {
+        // Institutional Login
+        document.getElementById('studentInstLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Authentication will be handled by Firebase in js/auth.js
-            alert('Firebase login logic will be integrated here.');
+            const instId = document.getElementById('instId').value;
+            const password = document.getElementById('instPassword').value;
+
+            try {
+                // If it's a roll number, assume email is rollnumber@aptiogen.com for demo
+                // In production, you'd have a mapping service
+                const email = instId.includes('@') ? instId : `${instId.toLowerCase()}@aptiogen.com`;
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                await handleBackendLogin(userCredential.user, { rollNumber: instId });
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
         });
+
+        // Independent Login
+        document.getElementById('studentIndpLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('indpEmail').value;
+            const password = document.getElementById('indpPassword').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                await handleBackendLogin(userCredential.user);
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        });
+
+        // Independent Register
+        document.getElementById('studentRegisterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const name = document.getElementById('regName').value;
+            const country = document.getElementById('regCountry').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await handleBackendLogin(userCredential.user, { name, email, country });
+            } catch (error) {
+                alert('Registration failed: ' + error.message);
+            }
+        });
+
+        // Social Login
+        window.socialLogin = async (providerName) => {
+            let provider;
+            if (providerName === 'google') provider = new GoogleAuthProvider();
+            else if (providerName === 'github') provider = new GithubAuthProvider();
+
+            try {
+                const userCredential = await signInWithPopup(auth, provider);
+                await handleBackendLogin(userCredential.user, {
+                    name: userCredential.user.displayName,
+                    email: userCredential.user.email
+                });
+            } catch (error) {
+                alert(`${providerName} login failed: ${error.message}`);
+            }
+        };
     </script>
 </body>
 

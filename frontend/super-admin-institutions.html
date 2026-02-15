@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institutions - Super Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .institutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .institution-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .institution-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .institution-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .institution-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .institution-type {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .institution-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .institution-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen - Institutions</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+            <a href="super-admin-dashboard.html"><i class="fa-solid fa-arrow-left" title="Back to Dashboard"></i></a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1>Institution Management</h1>
+                <p>View and manage all registered institutions</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card">
+            <div class="filters">
+                <select id="statusFilter" onchange="loadInstitutions()">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="expired">Expired</option>
+                </select>
+                <select id="planFilter" onchange="loadInstitutions()">
+                    <option value="">All Plans</option>
+                    <option value="free">Free</option>
+                    <option value="basic">Basic</option>
+                    <option value="premium">Premium</option>
+                    <option value="enterprise">Enterprise</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Search institutions..." onkeyup="handleSearch()">
+            </div>
+        </div>
+
+        <!-- Institutions Grid -->
+        <div id="loading" class="loading">Loading institutions...</div>
+        <div class="institutions-grid" id="institutionsGrid" style="display:none;"></div>
+    </div>
+
+    <!-- Institution Details Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Institution Details</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="institutionDetails"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+        initTheme();
+
+        const API_BASE = 'http://localhost:5000/api';
+        let searchTimeout;
+
+        // Check authentication
+        const auth = sessionStorage.getItem('superAdminAuth');
+        if (!auth) {
+            window.location.href = 'super-admin-login.html';
+        }
+
+        window.loadInstitutions = async () => {
+            const status = document.getElementById('statusFilter').value;
+            const plan = document.getElementById('planFilter').value;
+            const search = document.getElementById('searchInput').value;
+
+            const params = new URLSearchParams({
+                page: 1,
+                limit: 50,
+                ...(status && { status }),
+                ...(plan && { plan }),
+                ...(search && { search })
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/super-admin/institutions?${params}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayInstitutions(data.institutions);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('institutionsGrid').style.display = 'grid';
+                } else {
+                    console.error('Failed to load institutions:', data);
+                }
+            } catch (error) {
+                console.error('Load institutions error:', error);
+            }
+        };
+
+        function displayInstitutions(institutions) {
+            const grid = document.getElementById('institutionsGrid');
+            grid.innerHTML = institutions.map(inst => `
+                <div class="institution-card">
+                    <div class="institution-header">
+                        <div>
+                            <div class="institution-name">${inst.name}</div>
+                            <div class="institution-type">${inst.type}</div>
+                        </div>
+                        <span class="badge ${inst.subscription.status === 'active' ? 'badge-success' : 'badge-error'}">
+                            ${inst.subscription.status}
+                        </span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Plan:</span>
+                        <span class="badge badge-primary">${inst.subscription.plan}</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Location:</span>
+                        <span>${inst.location.district}, ${inst.location.state}</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span>${inst.email}</span>
+                    </div>
+
+                    <div class="institution-actions">
+                        <button class="btn btn-primary" onclick="viewDetails('${inst._id}')" style="flex: 1;">
+                            <i class="fa-solid fa-eye"></i> View Details
+                        </button>
+                        ${inst.subscription.status === 'active'
+                    ? `<button class="btn btn-danger" onclick="suspendInstitution('${inst._id}')">
+                                <i class="fa-solid fa-ban"></i> Suspend
+                              </button>`
+                    : `<button class="btn btn-success" onclick="activateInstitution('${inst._id}')">
+                                <i class="fa-solid fa-check"></i> Activate
+                              </button>`
+                }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.handleSearch = () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => loadInstitutions(), 500);
+        };
+
+        window.viewDetails = async (id) => {
+            try {
+                const response = await fetch(`${API_BASE}/super-admin/institutions/${id}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const inst = data.institution;
+                    const stats = data.stats;
+
+                    document.getElementById('institutionDetails').innerHTML = `
+                        <div class="detail-row">
+                            <span class="detail-label">Name:</span>
+                            <span>${inst.name}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Type:</span>
+                            <span>${inst.type}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span>${inst.email}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Phone:</span>
+                            <span>${inst.phone}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Location:</span>
+                            <span>${inst.location.fullAddress || `${inst.location.district}, ${inst.location.state}, ${inst.location.country}`}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Subscription Plan:</span>
+                            <span class="badge badge-primary">${inst.subscription.plan}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="badge ${inst.subscription.status === 'active' ? 'badge-success' : 'badge-error'}">
+                                ${inst.subscription.status}
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Students:</span>
+                            <span>${stats.totalStudents}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Events:</span>
+                            <span>${stats.totalEvents}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Registered:</span>
+                            <span>${new Date(inst.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    `;
+
+                    document.getElementById('detailsModal').classList.add('active');
+                }
+            } catch (error) {
+                console.error('View details error:', error);
+            }
+        };
+
+        window.suspendInstitution = async (id) => {
+            if (!confirm('Are you sure you want to suspend this institution?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    alert('Institution suspended successfully');
+                    loadInstitutions();
+                } else {
+                    alert('Failed to suspend institution');
+                }
+            } catch (error) {
+                console.error('Suspend error:', error);
+            }
+        };
+
+        window.activateInstitution = async (id) => {
+            if (!confirm('Are you sure you want to activate this institution?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    alert('Institution activated successfully');
+                    loadInstitutions();
+                } else {
+                    alert('Failed to activate institution');
+                }
+            } catch (error) {
+                console.error('Activate error:', error);
+            }
+        };
+
+        window.closeModal = () => {
+            document.getElementById('detailsModal').classList.remove('active');
+        };
+
+        // Initial load
+        loadInstitutions();
+    </script>
+</body>
+
+</html>

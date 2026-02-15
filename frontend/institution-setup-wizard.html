@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Wizard - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .wizard-container {
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .wizard-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .wizard-step::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: -1;
+        }
+
+        .wizard-step:first-child::before {
+            display: none;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .wizard-step.active .step-circle {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .wizard-step.completed .step-circle {
+            background: #10b981;
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .department-item,
+        .batch-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen - Setup Wizard</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+        </div>
+    </header>
+
+    <div class="container wizard-container">
+        <h1 class="text-center">Institution Setup</h1>
+        <p class="text-center mb-4">Configure your institution structure</p>
+
+        <div class="wizard-steps">
+            <div class="wizard-step active" data-step="1">
+                <div class="step-circle">1</div>
+                <div>Academic Config</div>
+            </div>
+            <div class="wizard-step" data-step="2">
+                <div class="step-circle">2</div>
+                <div>Departments</div>
+            </div>
+            <div class="wizard-step" data-step="3">
+                <div class="step-circle">3</div>
+                <div>Batches</div>
+            </div>
+            <div class="wizard-step" data-step="4">
+                <div class="step-circle">4</div>
+                <div>Complete</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <!-- Step 1: Academic Configuration -->
+            <div class="step-content active" data-step="1">
+                <h3>Academic Configuration</h3>
+                <div class="form-group">
+                    <label>Program Duration (Years) *</label>
+                    <select id="programDuration">
+                        <option value="3">3 Years</option>
+                        <option value="4" selected>4 Years</option>
+                        <option value="5">5 Years</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Current Academic Year *</label>
+                    <input type="text" id="academicYear" placeholder="e.g., 2025-2026" value="2025-2026">
+                </div>
+                <div class="form-group">
+                    <label>Graduation Month *</label>
+                    <select id="graduationMonth">
+                        <option value="May" selected>May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Semesters Per Year *</label>
+                    <select id="semestersPerYear">
+                        <option value="2" selected>2 Semesters</option>
+                        <option value="3">3 Trimesters</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 2: Departments -->
+            <div class="step-content" data-step="2">
+                <h3>Add Departments</h3>
+                <p>Create departments and assign HODs</p>
+
+                <div class="form-group">
+                    <label>Department Name</label>
+                    <input type="text" id="deptName" placeholder="e.g., Computer Science">
+                </div>
+                <div class="form-group">
+                    <label>Department Code</label>
+                    <input type="text" id="deptCode" placeholder="e.g., CS">
+                </div>
+                <div class="form-group">
+                    <label>HOD Name</label>
+                    <input type="text" id="hodName" placeholder="Dr. John Doe">
+                </div>
+                <div class="form-group">
+                    <label>HOD Email</label>
+                    <input type="email" id="hodEmail" placeholder="hod@institution.edu">
+                </div>
+                <button class="btn btn-secondary" onclick="addDepartment()">
+                    <i class="fa-solid fa-plus"></i> Add Department
+                </button>
+
+                <div id="departmentsList" class="mt-3"></div>
+            </div>
+
+            <!-- Step 3: Batches -->
+            <div class="step-content" data-step="3">
+                <h3>Add Batches</h3>
+                <p>Create batches for different years and departments</p>
+
+                <div class="form-group">
+                    <label>Batch Name *</label>
+                    <input type="text" id="batchName" placeholder="e.g., CS 2024">
+                </div>
+                <div class="form-group">
+                    <label>Department *</label>
+                    <select id="batchDepartment"></select>
+                </div>
+                <div class="form-group">
+                    <label>Academic Year *</label>
+                    <select id="batchYear">
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Graduation Date *</label>
+                    <input type="date" id="graduationDate">
+                </div>
+                <button class="btn btn-secondary" onclick="addBatch()">
+                    <i class="fa-solid fa-plus"></i> Add Batch
+                </button>
+
+                <div id="batchesList" class="mt-3"></div>
+            </div>
+
+            <!-- Step 4: Complete -->
+            <div class="step-content" data-step="4">
+                <div class="text-center">
+                    <i class="fa-solid fa-check-circle" style="font-size: 64px; color: #10b981;"></i>
+                    <h3>Setup Complete!</h3>
+                    <p>Your institution is ready to use AptioGen</p>
+
+                    <div class="info-box mt-3">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <div>
+                            <strong>Next Steps:</strong>
+                            <ul style="text-align: left; margin-top: 10px;">
+                                <li>Add students to batches</li>
+                                <li>Create your first event</li>
+                                <li>Invite HODs to their dashboards</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary mt-3" onclick="goToDashboard()">
+                        Go to Dashboard <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Wizard Actions -->
+            <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 30px;">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display:none;">
+                    <i class="fa-solid fa-arrow-left"></i> Previous
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                    Next <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+        initTheme();
+
+        const API_BASE = 'http://localhost:5000/api';
+        let currentStep = 1;
+        const totalSteps = 4;
+        let departments = [];
+        let batches = [];
+        const institutionId = sessionStorage.getItem('institutionId');
+
+        if (!institutionId) {
+            alert('Please complete registration first');
+            window.location.href = 'institution-register.html';
+        }
+
+        window.nextStep = () => {
+            if (currentStep === 1) {
+                saveAcademicConfig();
+            }
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateWizard();
+            }
+        };
+
+        window.previousStep = () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizard();
+            }
+        };
+
+        function updateWizard() {
+            document.querySelectorAll('.wizard-step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) step.classList.add('completed');
+                if (index + 1 === currentStep) step.classList.add('active');
+            });
+
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active');
+
+            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('nextBtn').style.display = currentStep < totalSteps ? 'block' : 'none';
+
+            if (currentStep === 3) {
+                updateBatchDepartmentSelect();
+            }
+        }
+
+        async function saveAcademicConfig() {
+            const config = {
+                programDuration: parseInt(document.getElementById('programDuration').value),
+                currentAcademicYear: document.getElementById('academicYear').value,
+                graduationMonth: document.getElementById('graduationMonth').value,
+                semestersPerYear: parseInt(document.getElementById('semestersPerYear').value)
+            };
+
+            try {
+                await fetch(`${API_BASE}/institutions/${institutionId}/config`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ academicConfig: config })
+                });
+            } catch (error) {
+                console.error('Config save error:', error);
+            }
+        }
+
+        window.addDepartment = async () => {
+            const dept = {
+                institutionId,
+                name: document.getElementById('deptName').value,
+                code: document.getElementById('deptCode').value,
+                hodName: document.getElementById('hodName').value,
+                hodEmail: document.getElementById('hodEmail').value
+            };
+
+            if (!dept.name || !dept.code) {
+                alert('Please fill department name and code');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/institutions/${institutionId}/departments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dept)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    departments.push(data.department);
+                    renderDepartments();
+                    // Clear form
+                    document.getElementById('deptName').value = '';
+                    document.getElementById('deptCode').value = '';
+                    document.getElementById('hodName').value = '';
+                    document.getElementById('hodEmail').value = '';
+                }
+            } catch (error) {
+                console.error('Add department error:', error);
+            }
+        };
+
+        function renderDepartments() {
+            const list = document.getElementById('departmentsList');
+            list.innerHTML = departments.map((dept, index) => `
+                <div class="department-item">
+                    <div>
+                        <strong>${dept.name}</strong> (${dept.code})
+                        ${dept.hodName ? `<br><small>HOD: ${dept.hodName}</small>` : ''}
+                    </div>
+                    <button class="btn btn-danger" onclick="removeDepartment(${index})" style="padding: 6px 12px;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        window.removeDepartment = (index) => {
+            departments.splice(index, 1);
+            renderDepartments();
+        };
+
+        function updateBatchDepartmentSelect() {
+            const select = document.getElementById('batchDepartment');
+            select.innerHTML = '<option value="">Select Department</option>' +
+                departments.map(dept => `<option value="${dept._id}">${dept.name}</option>`).join('');
+        }
+
+        window.addBatch = async () => {
+            const batch = {
+                institutionId,
+                departmentId: document.getElementById('batchDepartment').value,
+                name: document.getElementById('batchName').value,
+                year: parseInt(document.getElementById('batchYear').value),
+                graduationDate: document.getElementById('graduationDate').value
+            };
+
+            if (!batch.name || !batch.departmentId) {
+                alert('Please fill batch name and select department');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/institutions/${institutionId}/batches`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(batch)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    batches.push(data.batch);
+                    renderBatches();
+                    // Clear form
+                    document.getElementById('batchName').value = '';
+                    document.getElementById('graduationDate').value = '';
+                }
+            } catch (error) {
+                console.error('Add batch error:', error);
+            }
+        };
+
+        function renderBatches() {
+            const list = document.getElementById('batchesList');
+            list.innerHTML = batches.map((batch, index) => `
+                <div class="batch-item">
+                    <div>
+                        <strong>${batch.name}</strong> - Year ${batch.year}
+                        <br><small>Graduation: ${new Date(batch.graduationDate).toLocaleDateString()}</small>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeBatch(${index})" style="padding: 6px 12px;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        window.removeBatch = (index) => {
+            batches.splice(index, 1);
+            renderBatches();
+        };
+
+        window.goToDashboard = () => {
+            window.location.href = 'institution-dashboard.html';
+        };
+    </script>
+</body>
+
+</html>

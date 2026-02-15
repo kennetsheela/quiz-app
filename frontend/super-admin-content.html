@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Management - Super Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .content-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .content-tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .content-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        textarea {
+            min-height: 400px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .preview-box {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            min-height: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen - Content Management</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+            <a href="super-admin-dashboard.html"><i class="fa-solid fa-arrow-left" title="Back"></i></a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Content Management</h1>
+        <p>Manage Terms & Conditions, Privacy Policy, and FAQs</p>
+
+        <div class="card">
+            <div class="content-tabs">
+                <button class="content-tab active" onclick="switchTab('terms')">Terms & Conditions</button>
+                <button class="content-tab" onclick="switchTab('privacy')">Privacy Policy</button>
+                <button class="content-tab" onclick="switchTab('faqs')">FAQs</button>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div id="terms" class="tab-content active">
+                <h3>Terms & Conditions</h3>
+                <textarea id="termsContent" placeholder="Enter terms and conditions...">
+# Terms and Conditions
+
+Last updated: February 15, 2026
+
+## 1. Acceptance of Terms
+By accessing and using AptioGen, you accept and agree to be bound by these terms.
+
+## 2. Use License
+Permission is granted to temporarily access the platform for educational purposes.
+
+## 3. User Accounts
+- Institutions must provide accurate information during registration
+- Students must use valid credentials provided by their institution
+- Account sharing is prohibited
+
+## 4. Intellectual Property
+All content, questions, and materials are property of AptioGen.
+
+## 5. Prohibited Activities
+- Cheating or academic dishonesty
+- Sharing quiz content
+- Attempting to breach security measures
+
+## 6. Termination
+We reserve the right to terminate accounts that violate these terms.
+
+## 7. Contact
+For questions, contact: support@aptiogen.com
+                </textarea>
+                <button class="btn btn-primary mt-3" onclick="saveContent('terms')">Save Terms</button>
+            </div>
+
+            <!-- Privacy Policy -->
+            <div id="privacy" class="tab-content">
+                <h3>Privacy Policy</h3>
+                <textarea id="privacyContent" placeholder="Enter privacy policy...">
+# Privacy Policy
+
+Last updated: February 15, 2026
+
+## Information We Collect
+- Account information (name, email, institution)
+- Performance data (quiz scores, progress)
+- Usage analytics
+
+## How We Use Information
+- Provide educational services
+- Track student progress
+- Improve platform features
+- Generate analytics for institutions
+
+## Data Sharing
+We do not sell personal data. Information is shared only with:
+- Your institution (for enrolled students)
+- Service providers (hosting, analytics)
+
+## Data Security
+We implement industry-standard security measures to protect your data.
+
+## Your Rights
+- Access your data
+- Request data deletion
+- Opt-out of analytics
+
+## Contact
+privacy@aptiogen.com
+                </textarea>
+                <button class="btn btn-primary mt-3" onclick="saveContent('privacy')">Save Privacy Policy</button>
+            </div>
+
+            <!-- FAQs -->
+            <div id="faqs" class="tab-content">
+                <h3>Frequently Asked Questions</h3>
+                <textarea id="faqsContent" placeholder="Enter FAQs...">
+# Frequently Asked Questions
+
+## For Students
+
+**Q: How do I join my institution?**
+A: Use the credentials provided by your institution admin during registration.
+
+**Q: Can I practice without joining an institution?**
+A: Yes! Select "Independent Student" during login to access public practice quizzes.
+
+**Q: How is my rank calculated?**
+A: Rankings are based on your average score across all completed events.
+
+## For Institutions
+
+**Q: How do I add students?**
+A: Use the batch management system to create batches and add students via CSV import or manual entry.
+
+**Q: Can I create custom questions?**
+A: Currently, questions are managed by the platform admin. You can select from the question bank when creating events.
+
+**Q: What subscription plans are available?**
+A: Free, Basic, Premium, and Enterprise plans with varying student limits and features.
+
+## Technical
+
+**Q: Which browsers are supported?**
+A: Chrome, Firefox, Safari, and Edge (latest versions).
+
+**Q: Is there a mobile app?**
+A: Currently web-only, but the platform is mobile-responsive.
+
+**Q: How do I report a bug?**
+A: Contact support@aptiogen.com with details.
+                </textarea>
+                <button class="btn btn-primary mt-3" onclick="saveContent('faqs')">Save FAQs</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+        initTheme();
+
+        const auth = sessionStorage.getItem('superAdminAuth');
+        if (!auth) window.location.href = 'super-admin-login.html';
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        };
+
+        window.saveContent = (type) => {
+            const content = document.getElementById(`${type}Content`).value;
+            localStorage.setItem(`aptiogen_${type}`, content);
+            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} saved successfully!`);
+        };
+
+        // Load saved content
+        ['terms', 'privacy', 'faqs'].forEach(type => {
+            const saved = localStorage.getItem(`aptiogen_${type}`);
+            if (saved) {
+                document.getElementById(`${type}Content`).value = saved;
+            }
+        });
+    </script>
+</body>
+
+</html>

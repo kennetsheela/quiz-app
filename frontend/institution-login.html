@@ -124,7 +124,11 @@
     </div>
 
     <script type="module">
-        import { initTheme } from './js/theme.js';
+        import { auth } from './js/firebase.js';
+        import {
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
         window.showAuth = function (type) {
             document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
@@ -139,10 +143,77 @@
             }
         }
 
-        document.getElementById('instRegisterForm').addEventListener('submit', (e) => {
+        // Institution Login
+        document.getElementById('instLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Redirect to payment and onboarding flow
-            window.location.href = 'payment.html';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Sign in with Firebase
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const token = await userCredential.user.getIdToken();
+
+                // Check if institution exists for this user
+                const response = await fetch('http://localhost:5000/api/institutions/my', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Institution found:', data);
+                    // Redirect to institution dashboard
+                    window.location.href = 'institution-dashboard.html';
+                } else if (response.status === 404) {
+                    // Institution not found, redirect to setup
+                    alert('No institution found. Please complete registration.');
+                    showAuth('register');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            }
+        });
+
+        // Institution Registration
+        document.getElementById('instRegisterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const instName = document.getElementById('instName').value;
+            const instType = document.getElementById('instType').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPass').value;
+
+            try {
+                // Create Firebase user
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const token = await userCredential.user.getIdToken();
+
+                // Store basic institution data
+                sessionStorage.setItem('pendingInstitution', JSON.stringify({
+                    name: instName,
+                    type: instType,
+                    email: email
+                }));
+
+                // Redirect to payment/onboarding
+                window.location.href = 'payment.html';
+            } catch (error) {
+                console.error('Registration error:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    alert('This email is already registered. Please login instead.');
+                    showAuth('login');
+                } else {
+                    alert('Registration failed: ' + error.message);
+                }
+            }
         });
     </script>
 </body>

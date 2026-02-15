@@ -1,91 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AptioGen - Educational Assessment Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/landing.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AptioGen - Educational Assessment Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/landing.css">
 </head>
+
 <body>
-    <header class="appbar">
-        <h2>AptioGen</h2>
-        <div class="right-icons">
-            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
-            <a href="about.html"><i class="fa-solid fa-circle-info" title="About"></i></a>
+  <header class="appbar">
+    <h2>AptioGen</h2>
+    <div class="right-icons">
+      <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+      <a href="about.html"><i class="fa-solid fa-circle-info" title="About"></i></a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Elevate Your Learning Journey</h1>
+      <p>The comprehensive educational assessment platform for students, academic institutions, and platform
+        administrators.</p>
+    </section>
+
+    <section class="tier-grid">
+      <!-- Super Admin Tier -->
+      <div class="tier-card">
+        <div>
+          <div class="tier-icon">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <h2>Super Admin</h2>
+          <p>Directly manage the platform, oversee global questions, and monitor institutional growth.</p>
+          <ul class="tier-features">
+            <li><i class="fa-solid fa-check"></i> Manage Question Bank</li>
+            <li><i class="fa-solid fa-check"></i> Oversee Institutions</li>
+            <li><i class="fa-solid fa-check"></i> Platform Analytics</li>
+            <li><i class="fa-solid fa-check"></i> Content Management</li>
+          </ul>
         </div>
-    </header>
+        <a href="super-admin-login.html" class="tier-btn tier-btn-outline">Access Platform →</a>
+      </div>
 
-    <main class="container">
-        <section class="hero">
-            <h1>Elevate Your Learning Journey</h1>
-            <p>The comprehensive educational assessment platform for students, academic institutions, and platform administrators.</p>
-        </section>
+      <!-- Institution Tier -->
+      <div class="tier-card">
+        <div>
+          <div class="tier-icon">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <h2>Institution</h2>
+          <p>Perfect for colleges and schools. Create events, manage batches, and track performance.</p>
+          <ul class="tier-features">
+            <li><i class="fa-solid fa-check"></i> Create Custom Events</li>
+            <li><i class="fa-solid fa-check"></i> Batch Management</li>
+            <li><i class="fa-solid fa-check"></i> Detailed Reports</li>
+            <li><i class="fa-solid fa-check"></i> Real-time Monitoring</li>
+          </ul>
+        </div>
+        <a href="institution-login.html" class="tier-btn tier-btn-primary">Login or Register</a>
+      </div>
 
-        <section class="tier-grid">
-            <!-- Super Admin Tier -->
-            <div class="tier-card">
-                <div>
-                    <div class="tier-icon">
-                        <i class="fa-solid fa-user-shield"></i>
-                    </div>
-                    <h2>Super Admin</h2>
-                    <p>Directly manage the platform, oversee global questions, and monitor institutional growth.</p>
-                    <ul class="tier-features">
-                        <li><i class="fa-solid fa-check"></i> Manage Question Bank</li>
-                        <li><i class="fa-solid fa-check"></i> Oversee Institutions</li>
-                        <li><i class="fa-solid fa-check"></i> Platform Analytics</li>
-                        <li><i class="fa-solid fa-check"></i> Content Management</li>
-                    </ul>
-                </div>
-                <a href="super-admin-login.html" class="tier-btn tier-btn-outline">Access Platform →</a>
-            </div>
+      <!-- Student Tier -->
+      <div class="tier-card">
+        <div>
+          <div class="tier-icon">
+            <i class="fa-solid fa-user-graduate"></i>
+          </div>
+          <h2>Student</h2>
+          <p>Access challenges, practice quizzes, and track your individual rank and progress.</p>
+          <ul class="tier-features">
+            <li><i class="fa-solid fa-check"></i> Join Active Events</li>
+            <li><i class="fa-solid fa-check"></i> Practice Mode Quizzes</li>
+            <li><i class="fa-solid fa-check"></i> Global Rankings</li>
+            <li><i class="fa-solid fa-check"></i> Performance Insights</li>
+          </ul>
+        </div>
+        <a href="student-login.html" class="tier-btn tier-btn-primary">Start Learning →</a>
+      </div>
+    </section>
+  </main>
 
-            <!-- Institution Tier -->
-            <div class="tier-card">
-                <div>
-                    <div class="tier-icon">
-                        <i class="fa-solid fa-building-columns"></i>
-                    </div>
-                    <h2>Institution</h2>
-                    <p>Perfect for colleges and schools. Create events, manage batches, and track performance.</p>
-                    <ul class="tier-features">
-                        <li><i class="fa-solid fa-check"></i> Create Custom Events</li>
-                        <li><i class="fa-solid fa-check"></i> Batch Management</li>
-                        <li><i class="fa-solid fa-check"></i> Detailed Reports</li>
-                        <li><i class="fa-solid fa-check"></i> Real-time Monitoring</li>
-                    </ul>
-                </div>
-                <a href="institution-login.html" class="tier-btn tier-btn-primary">Login or Register</a>
-            </div>
+  <footer class="container text-center mb-4">
+    <p>&copy; 2026 AptioGen Platform. All rights reserved.</p>
+  </footer>
 
-            <!-- Student Tier -->
-            <div class="tier-card">
-                <div>
-                    <div class="tier-icon">
-                        <i class="fa-solid fa-user-graduate"></i>
-                    </div>
-                    <h2>Student</h2>
-                    <p>Access challenges, practice quizzes, and track your individual rank and progress.</p>
-                    <ul class="tier-features">
-                        <li><i class="fa-solid fa-check"></i> Join Active Events</li>
-                        <li><i class="fa-solid fa-check"></i> Practice Mode Quizzes</li>
-                        <li><i class="fa-solid fa-check"></i> Global Rankings</li>
-                        <li><i class="fa-solid fa-check"></i> Performance Insights</li>
-                    </ul>
-                </div>
-                <a href="student-login.html" class="tier-btn tier-btn-primary">Start Learning →</a>
-            </div>
-        </section>
-    </main>
-
-    <footer class="container text-center mb-4">
-        <p>&copy; 2026 AptioGen Platform. All rights reserved.</p>
-    </footer>
-
-    <script type="module" src="js/theme.js"></script>
+  <script type="module" src="js/theme.js"></script>
 </body>
+
 </html>

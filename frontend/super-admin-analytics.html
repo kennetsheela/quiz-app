@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Super Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen - Analytics</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+            <a href="super-admin-dashboard.html"><i class="fa-solid fa-arrow-left" title="Back"></i></a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Platform Analytics</h1>
+        <p>Growth trends and insights across the platform</p>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Institution Growth</h3>
+                <canvas id="institutionChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Student Growth</h3>
+                <canvas id="studentChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Questions by Category</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Questions by Difficulty</h3>
+                <canvas id="difficultyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+        initTheme();
+
+        const API_BASE = 'http://localhost:5000/api';
+        const auth = sessionStorage.getItem('superAdminAuth');
+        if (!auth) window.location.href = 'super-admin-login.html';
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch(`${API_BASE}/super-admin/analytics`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    renderCharts(data);
+                }
+            } catch (error) {
+                console.error('Analytics error:', error);
+            }
+        }
+
+        function renderCharts(data) {
+            // Institution Growth
+            new Chart(document.getElementById('institutionChart'), {
+                type: 'line',
+                data: {
+                    labels: data.growth.institutions.map(d => d._id),
+                    datasets: [{
+                        label: 'Institutions',
+                        data: data.growth.institutions.map(d => d.count),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                }
+            });
+
+            // Student Growth
+            new Chart(document.getElementById('studentChart'), {
+                type: 'line',
+                data: {
+                    labels: data.growth.students.map(d => d._id),
+                    datasets: [{
+                        label: 'Students',
+                        data: data.growth.students.map(d => d.count),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                }
+            });
+
+            // Category Distribution
+            new Chart(document.getElementById('categoryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.questionBank.byCategory.map(d => d._id),
+                    datasets: [{
+                        data: data.questionBank.byCategory.map(d => d.count),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+                    }]
+                }
+            });
+
+            // Difficulty Distribution
+            new Chart(document.getElementById('difficultyChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.questionBank.byDifficulty.map(d => d._id),
+                    datasets: [{
+                        label: 'Questions',
+                        data: data.questionBank.byDifficulty.map(d => d.count),
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                    }]
+                }
+            });
+        }
+
+        loadAnalytics();
+    </script>
+</body>
+
+</html>
