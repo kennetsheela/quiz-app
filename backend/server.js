@@ -13,13 +13,10 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const practiceRoutes = require("./routes/practiceRoutes");
 const eventRoutes = require("./routes/eventRoutes");
-<<<<<<< HEAD
 const institutionRoutes = require("./routes/institutionRoutes");
 const batchRoutes = require("./routes/batchRoutes");
 const superAdminRoutes = require("./routes/superAdminRoutes");
-=======
 const analyticsRoutes = require("./routes/analyticsRoutes");
->>>>>>> 34ac94f46eaab833062398555294a211f6adb2bc
 const { startCleanupScheduler } = require("./services/cleanupService");
 
 /* ================= APP ================= */
