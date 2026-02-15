@@ -39,6 +39,40 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false // Made optional for Super Admins and Independent students
   },
+
+  // Institution student specific fields
+  rollNumber: {
+    type: String,
+    index: true
+  },
+
+  // HOD specific fields
+  hodDepartmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Department"
+  },
+  hodPermissions: {
+    viewDepartmentStudents: { type: Boolean, default: true },
+    viewDepartmentAnalytics: { type: Boolean, default: true },
+    createDepartmentEvents: { type: Boolean, default: true },
+    createCrossDepartmentEvents: { type: Boolean, default: false },
+    addStudents: { type: Boolean, default: true },
+    editStudents: { type: Boolean, default: true },
+    deleteStudents: { type: Boolean, default: false },
+    generateReports: { type: Boolean, default: true },
+    sendNotifications: { type: Boolean, default: true }
+  },
+
+  // Independent student specific fields
+  country: {
+    type: String
+  },
+  ageRange: {
+    type: String,
+    enum: ["under-18", "18-24", "25-34", "35+"]
+  },
+
+  // Legacy fields (keeping for backward compatibility)
   college: {
     type: String,
     required: false // For institution students, we use institutionId reference

@@ -22,6 +22,12 @@ const EventSetSchema = new mongoose.Schema({
 
 const EventSchema = new mongoose.Schema({
   eventName: { type: String, required: true, unique: true },
+  eventCode: {
+    type: String,
+    unique: true,
+    index: true
+    // Format: EVT-2025-MAR-15 - auto-generated
+  },
   adminPassword: { type: String, required: true },
   studentPassword: { type: String, required: true },
   startTime: { type: Date, required: true },
@@ -47,10 +53,31 @@ const EventSchema = new mongoose.Schema({
   targetDepartments: [{
     type: String // Department names or IDs
   }],
+
+  // Visibility settings
+  visibility: {
+    type: String,
+    enum: ["public", "institution", "department"],
+    default: "institution"
+  },
   isPublic: {
     type: Boolean,
     default: false
   },
+
+  // Creator information
+  createdBy: { type: String, required: true }, // Firebase UID
+  createdByRole: {
+    type: String,
+    enum: ["super-admin", "inst-admin", "hod"],
+    required: true
+  },
+
+  // QR Code for easy sharing
+  qrCodeUrl: {
+    type: String
+  },
+
   proctoringConfig: {
     fullscreen: { type: Boolean, default: true },
     tabSwitch: { type: Boolean, default: true },
@@ -58,8 +85,20 @@ const EventSchema = new mongoose.Schema({
     randomizeQuestions: { type: Boolean, default: true },
     randomizeOptions: { type: Boolean, default: true }
   },
-  createdBy: { type: String, required: true }, // Firebase UID
+
   createdAt: { type: Date, default: Date.now }
+});
+
+// Auto-generate eventCode before saving
+EventSchema.pre('save', function (next) {
+  if (!this.eventCode) {
+    const date = new Date(this.startTime);
+    const year = date.getFullYear();
+    const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const day = String(date.getDate()).padStart(2, '0');
+    this.eventCode = `EVT-${year}-${month}-${day}`;
+  }
+  next();
 });
 
 module.exports = mongoose.model("Event", EventSchema);

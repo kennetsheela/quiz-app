@@ -2,6 +2,12 @@
 const mongoose = require("mongoose");
 
 const QuestionSchema = new mongoose.Schema({
+  questionID: {
+    type: String,
+    unique: true,
+    index: true
+    // Format: Q001, Q002, etc. - auto-generated
+  },
   category: {
     type: String,
     required: true,
@@ -24,7 +30,7 @@ const QuestionSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxlength:2000
+    maxlength: 2000
   },
   options: {
     type: [String],
@@ -42,10 +48,36 @@ const QuestionSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  tags: {
+    type: [String],
+    default: []
+  },
+  createdBy: {
+    type: String, // Super Admin UID
+    required: true
+  },
+  usageCount: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
+});
+
+// Auto-generate questionID before saving
+QuestionSchema.pre('save', async function (next) {
+  if (!this.questionID) {
+    const count = await mongoose.model('QuestionBank').countDocuments();
+    this.questionID = `Q${String(count + 1).padStart(3, '0')}`;
+  }
+  this.updatedAt = Date.now();
+  next();
 });
 
 // Compound index for efficient querying

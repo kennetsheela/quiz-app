@@ -29,6 +29,19 @@ const BatchSchema = new mongoose.Schema({
         enum: ["active", "graduated", "alumni"],
         default: "active"
     },
+    graduationDate: {
+        type: Date
+    },
+    statistics: {
+        totalStudents: { type: Number, default: 0 },
+        averageScore: { type: Number, default: 0 },
+        topPerformer: {
+            name: String,
+            rollNumber: String,
+            score: Number
+        },
+        eventsCompleted: { type: Number, default: 0 }
+    },
     createdAt: {
         type: Date,
         default: Date.now

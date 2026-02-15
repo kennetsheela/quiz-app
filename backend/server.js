@@ -16,6 +16,8 @@ const eventRoutes = require("./routes/eventRoutes");
 const institutionRoutes = require("./routes/institutionRoutes");
 const batchRoutes = require("./routes/batchRoutes");
 const superAdminRoutes = require("./routes/superAdminRoutes");
+const hodRoutes = require("./routes/hodRoutes");
+const studentRoutes = require("./routes/studentRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const { startCleanupScheduler } = require("./services/cleanupService");
 
@@ -93,6 +95,8 @@ app.use("/api/events", eventRoutes);
 app.use("/api/institutions", institutionRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/super-admin", superAdminRoutes);
+app.use("/api/hod", hodRoutes);
+app.use("/api/students", studentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 /* ================= HEALTH ================= */
