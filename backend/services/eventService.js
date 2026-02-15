@@ -150,7 +150,26 @@ async function createEvent(data, files, userId) {
   return event;
 }
 
+<<<<<<< HEAD
 async function studentLogin({ eventId, userId, rollNo, department, email, batchId, password }) {
+=======
+// services/eventService.js - UPDATED studentLogin function
+
+// Replace the existing studentLogin function with this:
+
+async function studentLogin({ 
+  eventId, 
+  userId, 
+  firstName,
+  lastName,
+  email,
+  college,
+  department,
+  departmentCode,
+  rollNo, 
+  password 
+}) {
+>>>>>>> 34ac94f46eaab833062398555294a211f6adb2bc
   const event = await Event.findById(eventId);
 
   if (!event) {
@@ -163,11 +182,15 @@ async function studentLogin({ eventId, userId, rollNo, department, email, batchI
   console.log("Current time:", now);
   console.log("Event Start:", event.startTime);
   console.log("Event End:", event.endTime);
+<<<<<<< HEAD
   console.log("Is before start?", now < event.startTime);
   console.log("Is after end?", now > event.endTime);
 
+=======
+  
+>>>>>>> 34ac94f46eaab833062398555294a211f6adb2bc
   if (now < event.startTime) {
-    const waitTime = Math.ceil((event.startTime - now) / 60000); // minutes
+    const waitTime = Math.ceil((event.startTime - now) / 60000);
     const startTimeStr = new Date(event.startTime).toLocaleString('en-IN', {
       year: 'numeric',
       month: 'short',
@@ -191,11 +214,13 @@ async function studentLogin({ eventId, userId, rollNo, department, email, batchI
     throw new Error(`Event has ended. Ended at ${endTimeStr}.`);
   }
 
+  // Verify password
   const match = await bcrypt.compare(password, event.studentPassword);
   if (!match) {
     throw new Error("Invalid password");
   }
 
+<<<<<<< HEAD
   // ✅ Targeting Check
   if (!event.isPublic) {
     // Check Department
@@ -213,23 +238,145 @@ async function studentLogin({ eventId, userId, rollNo, department, email, batchI
     }
   }
 
+=======
+  // Check if participant already exists
+>>>>>>> 34ac94f46eaab833062398555294a211f6adb2bc
   let participant = await EventParticipant.findOne({
     eventId: event._id,
     userId
   });
 
   if (!participant) {
+    // Create new participant with all fields
     participant = await EventParticipant.create({
       eventId: event._id,
       userId,
+      firstName,
+      lastName,
+      email,
+      college, // MongoDB ObjectId
+      department, // Department name (string)
+      departmentCode, // Department code (e.g., "CSE")
       rollNo,
-      department,
       setResults: []
     });
+    
+    console.log(`✅ New participant created: ${firstName} ${lastName}`);
+  } else {
+    console.log(`✅ Existing participant found: ${participant.firstName} ${participant.lastName}`);
   }
 
   return participant;
 }
+
+// ⭐ Also update the submitSet function to store percentage
+
+async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
+  console.log('📊 Submit received:', { participantId, setId, timeTaken, answersLength: answers?.length });
+  
+  const participant = await EventParticipant.findById(participantId);
+  
+  if (!participant || participant.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const resultIndex = participant.setResults.findIndex(
+    r => r.setId.toString() === setId && !r.completedAt
+  );
+
+  if (resultIndex < 0) {
+    throw new Error("Set not started or already completed");
+  }
+
+  const event = await Event.findById(participant.eventId);
+  const set = event.sets.id(setId);
+
+  const now = new Date();
+  const startTime = participant.setResults[resultIndex].startedAt;
+  
+  const actualTimeTaken = timeTaken || Math.floor((now - startTime) / 1000);
+  
+  const autoSubmitTime = participant.setResults[resultIndex].autoSubmitAt;
+  
+  if (now > autoSubmitTime) {
+    console.log("⏰ Auto-submitting quiz - time expired");
+  }
+
+  const questions = await getSetQuestions(setId, participant.eventId);
+  
+  let score = 0;
+  let correctAnswers = 0;
+  let wrongAnswers = 0;
+  let skipped = 0;
+  const results = [];
+  
+  questions.forEach((question, index) => {
+    const userAnswer = answers[index] || null;
+    const isCorrect = userAnswer === question.correctAnswer;
+    
+    if (userAnswer === null) {
+      skipped++;
+    } else if (isCorrect) {
+      correctAnswers++;
+      score++;
+    } else {
+      wrongAnswers++;
+    }
+    
+    results.push({
+      question: question.question,
+      selectedAnswer: userAnswer,
+      correctAnswer: question.correctAnswer,
+      isCorrect
+    });
+  });
+
+  const percentage = Math.round((score / questions.length) * 100);
+
+  // ✅ Store ALL data including percentage and set name
+  participant.setResults[resultIndex].setName = set.setName;
+  participant.setResults[resultIndex].score = score;
+  participant.setResults[resultIndex].completedAt = now;
+  participant.setResults[resultIndex].totalQuestions = questions.length;
+  participant.setResults[resultIndex].answers = answers;
+  participant.setResults[resultIndex].timeTaken = actualTimeTaken;
+  participant.setResults[resultIndex].correctAnswers = correctAnswers;
+  participant.setResults[resultIndex].wrongAnswers = wrongAnswers;
+  participant.setResults[resultIndex].skipped = skipped;
+  participant.setResults[resultIndex].percentage = percentage; // ✅ ADD THIS
+
+  await participant.save();
+
+  const timeInMinutes = Math.floor(actualTimeTaken / 60);
+  const timeInSeconds = actualTimeTaken % 60;
+
+  console.log(`✅ Quiz submitted: ${score}/${questions.length} (${percentage}%) in ${timeInMinutes}m ${timeInSeconds}s by ${participant.firstName} ${participant.lastName}`);
+
+  return { 
+    score, 
+    totalQuestions: questions.length, 
+    correctAnswers,
+    wrongAnswers,
+    skipped,
+    results,
+    percentage,
+    timeTaken: actualTimeTaken,
+    completedAt: now
+  };
+}
+
+// Export the updated functions
+module.exports = {
+  createEvent,
+  studentLogin, // ✅ Updated
+  startSet,
+  submitSet, // ✅ Updated
+  toggleSet,
+  deleteEvent,
+  getEventStats,
+  getSetQuestions,
+  checkRemainingTime
+};
 
 // ✅ Get questions directly from MongoDB (no file reading)
 async function getSetQuestions(setId, eventId) {

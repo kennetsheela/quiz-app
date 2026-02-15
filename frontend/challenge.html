@@ -1,4 +1,3 @@
-//challenge.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,6 +167,36 @@
       gap: 10px;
       justify-content: flex-end;
     }
+
+    /* Form Group Styles */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
   </style>
 </head>
 <body>
@@ -242,9 +271,45 @@
         <strong>Selected Set:</strong> <span id="selectedSetName">-</span>
       </p>
       <form id="loginForm">
-        <input type="text" id="rollNo" placeholder="Roll Number" required>
-        <input type="text" id="department" placeholder="Department" required>
-        <input type="password" id="password" placeholder="Event Password" required>
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="firstName" placeholder="Enter first name" required>
+        </div>
+
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="lastName" placeholder="Enter last name" required>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="emailInput" placeholder="Enter email" required>
+        </div>
+
+        <div class="form-group">
+          <label>College</label>
+          <select id="collegeSelect" required>
+            <option value="">Select College</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Department</label>
+          <select id="departmentSelect" required disabled>
+            <option value="">Select Department</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Roll Number</label>
+          <input type="text" id="rollNo" placeholder="Enter roll number" required>
+        </div>
+
+        <div class="form-group">
+          <label>Event Password</label>
+          <input type="password" id="password" placeholder="Event password" required>
+        </div>
+
         <button type="submit" class="btn btn-primary">Start Quiz</button>
         <button type="button" class="btn btn-secondary" onclick="backToSetSelection()">Back to Set Selection</button>
       </form>
@@ -254,15 +319,33 @@
   <script type="module">
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
     import { eventAPI } from "./js/api.js";
+    import { auth } from "./js/firebase.js";
 
     let currentEventId = null;
     let currentParticipantId = null;
     let selectedSetId = null;
     let selectedSetName = null;
     let currentEventData = null;
+    let colleges = [];
+    let selectedCollege = null;
 
     requireAuth();
     setupLogoutButton();
+
+    // Load colleges on page load
+    async function loadColleges() {
+      try {
+        const response = await fetch('/api/analytics/colleges');
+        const data = await response.json();
+        
+        if (data.success) {
+          colleges = data.colleges;
+          console.log('Colleges loaded:', colleges.length);
+        }
+      } catch (error) {
+        console.error('Error loading colleges:', error);
+      }
+    }
 
     function formatDateTime(dateString) {
       const date = new Date(dateString);
@@ -342,60 +425,58 @@
       }
     }
 
-    // STEP 1: User clicks "Join Event" - Show set selection
- // STEP 1: User clicks "Join Event" - Check participation first, then show set selection
-  window.joinEvent = async function(eventId) {
-  currentEventId = eventId;
-  console.log('Join event clicked, eventId:', currentEventId);
-  
-  try {
-    // ⭐ STEP 1A: Check if user already participated
-    const currentUser = auth.currentUser;
-    if (currentUser && currentUser.email) {
-      console.log('🔍 Checking participation for:', currentUser.email);
+    // STEP 1: User clicks "Join Event" - Check participation first, then show set selection
+    window.joinEvent = async function(eventId) {
+      currentEventId = eventId;
+      console.log('Join event clicked, eventId:', currentEventId);
       
       try {
-        const participationCheck = await eventAPI.checkParticipation(eventId, currentUser.email);
-        
-        console.log('📊 Participation check result:', participationCheck);
-        
-        if (participationCheck.hasParticipated && participationCheck.hasCompleted) {
-          // ⭐ User already participated - show message and block
-          alert(`❌ You Have Already Attended This Quiz!\n\nName: ${participationCheck.participant.name}\nEmail: ${participationCheck.participant.email}\nScore: ${participationCheck.participant.totalScore}\nCompleted Sets: ${participationCheck.participant.completedSets}\n\nYou can only participate once per event.`);
-          return; // Stop here
+        // Check if user already participated
+        const currentUser = auth.currentUser;
+        if (currentUser && currentUser.email) {
+          console.log('🔍 Checking participation for:', currentUser.email);
+          
+          try {
+            const participationCheck = await eventAPI.checkParticipation(eventId, currentUser.email);
+            
+            console.log('📊 Participation check result:', participationCheck);
+            
+            if (participationCheck.hasParticipated && participationCheck.hasCompleted) {
+              alert(`❌ You Have Already Attended This Quiz!\n\nName: ${participationCheck.participant.name}\nEmail: ${participationCheck.participant.email}\nScore: ${participationCheck.participant.totalScore}\nCompleted Sets: ${participationCheck.participant.completedSets}\n\nYou can only participate once per event.`);
+              return;
+            }
+          } catch (checkError) {
+            console.warn('⚠️ Could not check participation:', checkError);
+          }
         }
-      } catch (checkError) {
-        console.warn('⚠️ Could not check participation:', checkError);
-        // Continue anyway if check fails
+        
+        // Fetch event details to show available sets
+        const { event } = await eventAPI.getEvent(eventId);
+        currentEventData = event;
+        
+        // Filter only active sets
+        const activeSets = event.sets.filter(set => set.isActive);
+        
+        if (activeSets.length === 0) {
+          alert('No quiz sets are currently active for this event. Please try again later or contact the admin.');
+          return;
+        } else if (activeSets.length === 1) {
+          // Only one set - auto-select it and go directly to login
+          selectedSetId = activeSets[0]._id;
+          selectedSetName = activeSets[0].setName;
+          console.log('Auto-selected single set:', selectedSetName);
+          showLoginModal();
+        } else {
+          // Multiple sets - show selection modal
+          renderSetOptions(activeSets);
+          document.getElementById('setSelectionModal').classList.add('active');
+        }
+      } catch (error) {
+        console.error("Error loading event:", error);
+        alert("Error loading event details: " + error.message);
       }
-    }
-    
-    // ⭐ STEP 1B: Fetch event details to show available sets
-    const { event } = await eventAPI.getEvent(eventId);
-    currentEventData = event;
-    
-    // Filter only active sets
-    const activeSets = event.sets.filter(set => set.isActive);
-    
-    if (activeSets.length === 0) {
-      alert('No quiz sets are currently active for this event. Please try again later or contact the admin.');
-      return;
-    } else if (activeSets.length === 1) {
-      // Only one set - auto-select it and go directly to login
-      selectedSetId = activeSets[0]._id;
-      selectedSetName = activeSets[0].setName;
-      console.log('Auto-selected single set:', selectedSetName);
-      showLoginModal();
-    } else {
-      // Multiple sets - show selection modal
-      renderSetOptions(activeSets);
-      document.getElementById('setSelectionModal').classList.add('active');
-    }
-  } catch (error) {
-    console.error("Error loading event:", error);
-    alert("Error loading event details: " + error.message);
-  }
-};
+    };
+
     window.manageEvent = function(eventId) {
       window.location.href = `admin-panel.html?eventId=${eventId}`;
     };
@@ -431,12 +512,10 @@
 
     // STEP 2: User selects a set
     window.selectSet = function(setId, setName) {
-      // Remove previous selection
       document.querySelectorAll('.set-option').forEach(option => {
         option.classList.remove('selected');
       });
       
-      // Add selection to clicked set
       const selectedOption = document.querySelector(`[data-set-id="${setId}"]`);
       if (selectedOption) {
         selectedOption.classList.add('selected');
@@ -454,14 +533,48 @@
         return;
       }
       
-      // Close set selection modal
       document.getElementById('setSelectionModal').classList.remove('active');
-      
-      // Show login modal
       showLoginModal();
     };
 
+    // Show login modal with college/department selection
     function showLoginModal() {
+      // Populate college dropdown
+      const collegeSelect = document.getElementById('collegeSelect');
+      collegeSelect.innerHTML = '<option value="">Select College</option>';
+      
+      colleges.forEach(college => {
+        const option = document.createElement('option');
+        option.value = college._id;
+        option.textContent = college.name;
+        collegeSelect.appendChild(option);
+      });
+
+      // Handle college selection to populate departments
+      const existingListener = collegeSelect.onchange;
+      collegeSelect.onchange = function() {
+        const collegeId = this.value;
+        selectedCollege = colleges.find(c => c._id === collegeId);
+        
+        const deptSelect = document.getElementById('departmentSelect');
+        deptSelect.innerHTML = '<option value="">Select Department</option>';
+        
+        if (selectedCollege && selectedCollege.departments) {
+          deptSelect.disabled = false;
+          selectedCollege.departments.forEach(dept => {
+            if (dept.isActive) {
+              const option = document.createElement('option');
+              option.value = dept.name;
+              option.setAttribute('data-code', dept.code);
+              option.textContent = `${dept.name} (${dept.code})`;
+              deptSelect.appendChild(option);
+            }
+          });
+        } else {
+          deptSelect.disabled = true;
+        }
+      };
+
       document.getElementById('selectedSetName').textContent = selectedSetName;
       document.getElementById('loginModal').classList.add('active');
     }
@@ -470,13 +583,11 @@
     window.backToSetSelection = function() {
       document.getElementById('loginModal').classList.remove('active');
       
-      // Show set selection again
       const activeSets = currentEventData.sets.filter(set => set.isActive);
       if (activeSets.length > 1) {
         renderSetOptions(activeSets);
         document.getElementById('setSelectionModal').classList.add('active');
       } else {
-        // If only one set, going back means canceling completely
         closeSetSelectionModal();
       }
     };
@@ -495,30 +606,55 @@
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       
-      const rollNo = document.getElementById("rollNo").value;
-      const department = document.getElementById("department").value;
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+      const email = document.getElementById("emailInput").value.trim();
+      const collegeId = document.getElementById("collegeSelect").value;
+      const departmentSelect = document.getElementById("departmentSelect");
+      const department = departmentSelect.value;
+      const departmentCode = departmentSelect.options[departmentSelect.selectedIndex]?.getAttribute('data-code') || '';
+      const rollNo = document.getElementById("rollNo").value.trim();
       const password = document.getElementById("password").value;
 
-      // Validate that we have all required data
-      if (!currentEventId) {
-        alert("Error: Event ID is missing. Please try again.");
+      // Validate all fields
+      if (!firstName || !lastName || !email) {
+        alert("Please fill in all name and email fields");
+        return;
+      }
+
+      if (!collegeId || !department) {
+        alert("Please select both college and department");
+        return;
+      }
+
+      if (!currentEventId || !selectedSetId) {
+        alert("Error: Missing event or set information. Please try again.");
         closeSetSelectionModal();
         return;
       }
 
-      if (!selectedSetId) {
-        alert("Error: No quiz set selected. Please try again.");
-        closeSetSelectionModal();
-        return;
-      }
-
-      console.log('Logging in with:', { eventId: currentEventId, setId: selectedSetId });
+      console.log('Logging in with:', { 
+        eventId: currentEventId, 
+        setId: selectedSetId,
+        firstName,
+        lastName,
+        email,
+        college: collegeId,
+        department,
+        departmentCode,
+        rollNo
+      });
 
       try {
         const result = await eventAPI.studentLogin({
           eventId: currentEventId,
-          rollNo,
+          firstName,
+          lastName,
+          email,
+          college: collegeId,
           department,
+          departmentCode,
+          rollNo,
           password
         });
 
@@ -526,7 +662,7 @@
         
         console.log('Login successful, starting quiz with participantId:', currentParticipantId);
         
-        // Redirect directly to quiz
+        // Redirect to quiz
         window.location.href = `event-quiz.html?eventId=${currentEventId}&participantId=${currentParticipantId}&setId=${selectedSetId}`;
         
       } catch (error) {
@@ -537,6 +673,8 @@
     // Refresh event statuses every 30 seconds
     setInterval(loadEvents, 30000);
     
+    // Initialize
+    loadColleges();
     loadEvents();
   </script>
   <script src="js/theme.js" type="module"></script>
