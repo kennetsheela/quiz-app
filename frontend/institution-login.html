@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institution Portal - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+            padding: 20px;
+        }
+
+        .login-card {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .auth-toggle {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            color: var(--accent-primary);
+            border-bottom: 3px solid var(--accent-primary);
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+            <a href="index.html"><i class="fa-solid fa-house" title="Home"></i></a>
+        </div>
+    </header>
+
+    <div class="login-page">
+        <div class="card login-card">
+            <div class="text-center mb-4">
+                <div class="avatar-circle">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <h2>Institution Portal</h2>
+                <p>Register or login to manage your institution</p>
+            </div>
+
+            <div class="auth-toggle">
+                <button class="auth-tab active" onclick="showAuth('login')">Login</button>
+                <button class="auth-tab" onclick="showAuth('register')">Register</button>
+            </div>
+
+            <!-- Login Section -->
+            <div id="loginSection" class="form-section active">
+                <form id="instLoginForm">
+                    <div class="form-group mb-3">
+                        <label for="email">Admin Email</label>
+                        <input type="email" id="email" placeholder="Enter institution admin email" required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Institutional Login</button>
+                </form>
+            </div>
+
+            <!-- Register Section -->
+            <div id="registerSection" class="form-section">
+                <form id="instRegisterForm">
+                    <div class="form-group mb-3">
+                        <label for="instName">Institution Name</label>
+                        <input type="text" id="instName" placeholder="Full name of College/School" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="instType">Institution Type</label>
+                        <select id="instType">
+                            <option value="University">University</option>
+                            <option value="College">College</option>
+                            <option value="School">School</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="regEmail">Admin Email</label>
+                        <input type="email" id="regEmail" placeholder="Primary contact email" required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="regPass">Create Password</label>
+                        <input type="password" id="regPass" placeholder="Strong password" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Continue to Onboarding →</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+
+        window.showAuth = function (type) {
+            document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+
+            if (type === 'login') {
+                document.querySelector('.auth-tab:first-child').classList.add('active');
+                document.getElementById('loginSection').classList.add('active');
+            } else {
+                document.querySelector('.auth-tab:last-child').classList.add('active');
+                document.getElementById('registerSection').classList.add('active');
+            }
+        }
+
+        document.getElementById('instRegisterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Redirect to payment and onboarding flow
+            window.location.href = 'payment.html';
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institution Dashboard - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .dashboard-container {
+            padding: 100px 30px 40px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .action-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .action-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 30px var(--shadow);
+            transform: translateY(-5px);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--accent-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen <span class="badge badge-success ml-2"
+                style="font-size: 10px; vertical-align: middle;">INSTITUTION</span></h2>
+        <nav class="nav-links">
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">Events</a>
+            <a href="#">Batches</a>
+            <a href="#">Analytics</a>
+        </nav>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle"></i>
+            <div class="dropdown">
+                <button class="dropbtn"><i class="fa-solid fa-user-circle"></i></button>
+                <div class="dropdown-content">
+                    <a href="#"><i class="fas fa-building"></i> Profile</a>
+                    <a href="#"><i class="fas fa-credit-card"></i> Billing</a>
+                    <hr>
+                    <a href="index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container container">
+        <div class="flex justify-between align-center mb-4">
+            <h2>Institution Overview</h2>
+            <p class="badge badge-primary">Plan: Premium</p>
+        </div>
+
+        <div class="action-grid">
+            <a href="create-event-wizard.html" style="text-decoration: none; color: inherit;">
+                <div class="action-card">
+                    <div class="action-icon"><i class="fas fa-calendar-plus"></i></div>
+                    <div>
+                        <h3>Create Event</h3>
+                        <p>Launch a new quiz or assessment</p>
+                    </div>
+                </div>
+            </a>
+            <div class="action-card">
+                <div class="action-icon"><i class="fas fa-users"></i></div>
+                <div>
+                    <h3>Manage Batches</h3>
+                    <p>Organize students and departments</p>
+                </div>
+            </div>
+            <div class="action-card">
+                <div class="action-icon"><i class="fas fa-file-invoice"></i></div>
+                <div>
+                    <h3>Results & Reports</h3>
+                    <p>Analyze student performance</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <section class="card" style="grid-column: span 2;">
+                <h3>Recent Events</h3>
+                <div class="event-grid">
+                    <div class="event-card">
+                        <h3>Python Mid-Term Quizz</h3>
+                        <div class="event-date"><i class="fas fa-clock"></i> Ends in 2 hours</div>
+                        <div class="flex justify-between mt-2">
+                            <span>Participants: 124</span>
+                            <span class="text-success">Live</span>
+                        </div>
+                        <div class="event-actions">
+                            <button class="btn btn-primary">Monitor</button>
+                            <button class="btn btn-secondary">Stop</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h3>Quick Stats</h3>
+                <div class="mb-3">
+                    <p class="mb-1 small">Active Students</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 75%;"></div>
+                    </div>
+                    <span class="small">750 / 1000</span>
+                </div>
+                <div class="mb-3">
+                    <p class="mb-1 small">Success Rate</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 84%; background: #10b981;"></div>
+                    </div>
+                    <span class="small">84% Average Score</span>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script type="module" src="js/theme.js"></script>
+</body>
+
+</html>

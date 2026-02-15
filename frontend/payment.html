@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Plans - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 40px 0;
+        }
+
+        .plan-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .plan-card.featured {
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px var(--shadow);
+            position: relative;
+        }
+
+        .plan-card.featured::after {
+            content: "Recommended";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-primary);
+            color: white;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .plan-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-5px);
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 20px 0;
+            color: var(--text-primary);
+        }
+
+        .plan-price span {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .plan-features li {
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-features i {
+            color: var(--success);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="text-center mt-4">
+            <h1>Choose Your Plan</h1>
+            <p>Select the best plan for your institution's growth.</p>
+        </div>
+
+        <div class="plans-grid">
+            <!-- Free Plan -->
+            <div class="plan-card">
+                <h3>Free</h3>
+                <div class="plan-price">₹0<span>/month</span></div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Up to 100 Students</li>
+                    <li><i class="fas fa-check"></i> 5 Public Events</li>
+                    <li><i class="fas fa-check"></i> Basic Proctoring</li>
+                    <li><i class="fas fa-check"></i> Email Support</li>
+                </ul>
+                <button class="btn btn-secondary" onclick="selectPlan('free')">Get Started</button>
+            </div>
+
+            <!-- Basic Plan -->
+            <div class="plan-card">
+                <h3>Basic</h3>
+                <div class="plan-price">₹4,999<span>/month</span></div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Up to 500 Students</li>
+                    <li><i class="fas fa-check"></i> 20 Events / Month</li>
+                    <li><i class="fas fa-check"></i> Advanced Proctoring</li>
+                    <li><i class="fas fa-check"></i> CSV Reports</li>
+                </ul>
+                <button class="btn btn-primary" onclick="selectPlan('basic')">Subscribe</button>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="plan-card featured">
+                <h3>Premium</h3>
+                <div class="plan-price">₹12,999<span>/month</span></div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Up to 2,000 Students</li>
+                    <li><i class="fas fa-check"></i> Unlimited Events</li>
+                    <li><i class="fas fa-check"></i> AI Proctoring</li>
+                    <li><i class="fas fa-check"></i> Detailed Analytics</li>
+                    <li><i class="fas fa-check"></i> Custom Branding</li>
+                </ul>
+                <button class="btn btn-primary" onclick="selectPlan('premium')">Subscribe Now</button>
+            </div>
+
+            <!-- Enterprise Plan -->
+            <div class="plan-card">
+                <h3>Enterprise</h3>
+                <div class="plan-price">Custom</div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Unlimited Students</li>
+                    <li><i class="fas fa-check"></i> Dedicate Support</li>
+                    <li><i class="fas fa-check"></i> On-Premise Support</li>
+                    <li><i class="fas fa-check"></i> Custom API Access</li>
+                </ul>
+                <button class="btn btn-secondary" onclick="selectPlan('enterprise')">Contact Sales</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+
+        window.selectPlan = function (plan) {
+            localStorage.setItem('selectedPlan', plan);
+            // In a real app, this would trigger Razorpay/Stripe
+            alert(`Plan ${plan} selected! Redirecting to setup wizard...`);
+            window.location.href = 'setup-wizard.html';
+        }
+    </script>
+</body>
+
+</html>

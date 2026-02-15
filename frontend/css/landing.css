@@ -1,0 +1,165 @@
+/* landing.css */
+.hero {
+    padding: 100px 20px 60px;
+    text-align: center;
+    background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent),
+        radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.05), transparent);
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin: 0 auto 40px;
+    color: var(--text-secondary);
+}
+
+.tier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    padding: 60px 0;
+}
+
+.tier-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: left;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 480px;
+    position: relative;
+    overflow: hidden;
+}
+
+.tier-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tier-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 30px 60px rgba(59, 130, 246, 0.15);
+    border-color: var(--accent-primary);
+}
+
+.tier-card:hover::before {
+    opacity: 1;
+}
+
+.tier-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: rgba(59, 130, 246, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.tier-icon i {
+    font-size: 28px;
+    color: var(--accent-primary);
+}
+
+.tier-card h2 {
+    font-size: 1.75rem;
+    margin-bottom: 12px;
+}
+
+.tier-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.tier-features {
+    list-style: none;
+    margin-bottom: 30px;
+    flex-grow: 1;
+}
+
+.tier-features li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.tier-features li i {
+    color: var(--success);
+    font-size: 14px;
+}
+
+.tier-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.tier-btn-primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.tier-btn-outline {
+    background: transparent;
+    border: 2px solid var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.tier-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 992px) {
+    .tier-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+    }
+
+    .tier-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tier-card {
+        min-height: auto;
+    }
+}

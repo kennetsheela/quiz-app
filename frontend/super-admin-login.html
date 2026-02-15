@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Login - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+            padding: 20px;
+        }
+
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+            <a href="index.html"><i class="fa-solid fa-house" title="Home"></i></a>
+        </div>
+    </header>
+
+    <div class="login-page">
+        <div class="card login-card">
+            <div class="text-center mb-4">
+                <div class="avatar-circle">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h2>Super Admin</h2>
+                <p>Authorized personnel only</p>
+            </div>
+
+            <form id="adminLoginForm">
+                <div class="form-group mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter admin username" required>
+                </div>
+                <div class="form-group mb-4">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter admin password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Login to Dashboard</button>
+                <div id="message" class="text-center" style="display:none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+
+        const loginForm = document.getElementById('adminLoginForm');
+        const message = document.getElementById('message');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // Direct login for Super Admin (Simulated logic for now, should hit backend)
+            if (user === 'superadmin' && pass === 'kennetsheela310110@') {
+                message.style.display = 'block';
+                message.style.color = 'var(--success)';
+                message.textContent = 'Login successful! Redirecting...';
+                setTimeout(() => {
+                    window.location.href = 'admin-panel.html';
+                }, 1500);
+            } else {
+                message.style.display = 'block';
+                message.style.color = 'var(--error)';
+                message.textContent = 'Invalid credentials';
+            }
+        });
+    </script>
+</body>
+
+</html>

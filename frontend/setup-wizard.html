@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Wizard - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .wizard-container {
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--border-color);
+            z-index: -1;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+        }
+
+        .step.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            box-shadow: 0 0 0 4px var(--shadow);
+        }
+
+        .step.completed {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .list-items {
+            margin-top: 20px;
+        }
+
+        .list-item {
+            background: var(--bg-tertiary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="wizard-container">
+            <div class="step-indicator">
+                <div class="step active" id="step1-marker">1</div>
+                <div class="step" id="step2-marker">2</div>
+                <div class="step" id="step3-marker">3</div>
+            </div>
+
+            <div class="card">
+                <!-- Step 1: Departments -->
+                <div id="step1" class="wizard-step active">
+                    <h3>Step 1: Define Departments</h3>
+                    <p>Add the departments present in your institution.</p>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="deptInput" placeholder="e.g. Computer Science">
+                        <button class="btn btn-primary" onclick="addItem('dept')">Add</button>
+                    </div>
+                    <div id="deptList" class="list-items"></div>
+                    <div class="mt-4 text-right">
+                        <button class="btn btn-primary" onclick="nextStep(2)">Next: Configure Batches</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Batches -->
+                <div id="step2" class="wizard-step">
+                    <h3>Step 2: Configure Batches</h3>
+                    <p>Define active student batches (cohorts).</p>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="batchInput" placeholder="e.g. 2021-2025">
+                        <button class="btn btn-primary" onclick="addItem('batch')">Add</button>
+                    </div>
+                    <div id="batchList" class="list-items"></div>
+                    <div class="mt-4 flex justify-between">
+                        <button class="btn btn-secondary" onclick="nextStep(1)">Back</button>
+                        <button class="btn btn-primary" onclick="nextStep(3)">Next: Admin Access</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Admin Access -->
+                <div id="step3" class="wizard-step">
+                    <h3>Step 3: Setup Admin/HOD Access</h3>
+                    <p>Assign administrative roles to your staff.</p>
+                    <div class="form-group mb-3">
+                        <label>Platform HOD Email</label>
+                        <input type="email" placeholder="email@institution.edu">
+                    </div>
+                    <div class="form-group mb-4">
+                        <label>Role</label>
+                        <select>
+                            <option>Head of Department (HOD)</option>
+                            <option>Exam Coordinator</option>
+                            <option>Faculty Admin</option>
+                        </select>
+                    </div>
+                    <div class="mt-4 flex justify-between">
+                        <button class="btn btn-secondary" onclick="nextStep(2)">Back</button>
+                        <button class="btn btn-success" onclick="finishSetup()">Complete Setup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+
+        const state = {
+            depts: [],
+            batches: []
+        };
+
+        window.addItem = function (type) {
+            const input = document.getElementById(type + 'Input');
+            const list = document.getElementById(type + 'List');
+            const val = input.value.trim();
+
+            if (val) {
+                state[type + 's'].push(val);
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `<span>${val}</span><button onclick="this.parentElement.remove()" class="text-error"><i class="fas fa-trash"></i></button>`;
+                list.appendChild(item);
+                input.value = '';
+            }
+        }
+
+        window.nextStep = function (step) {
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.step').forEach((s, idx) => {
+                if (idx + 1 < step) s.classList.add('completed');
+                else s.classList.remove('completed');
+
+                if (idx + 1 === step) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+            document.getElementById('step' + step).classList.add('active');
+        }
+
+        window.finishSetup = function () {
+            alert('Setup completed! Your institution profile is now active.');
+            window.location.href = 'index.html'; // Or dashboard once implemented
+        }
+    </script>
+</body>
+
+</html>

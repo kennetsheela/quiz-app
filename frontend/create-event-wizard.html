@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .wizard-container {
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .wizard-step {
+            display: none;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        .step-pill {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--bg-tertiary);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .step-pill.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle"></i>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="wizard-container">
+            <div class="flex gap-2 mb-4 justify-center">
+                <div class="step-pill active" id="pill1">1. Details</div>
+                <div class="step-pill" id="pill2">2. Access</div>
+                <div class="step-pill" id="pill3">3. Logic</div>
+                <div class="step-pill" id="pill4">4. Proctoring</div>
+            </div>
+
+            <div class="card">
+                <form id="eventWizard">
+                    <!-- Step 1 -->
+                    <div id="estop1" class="wizard-step active">
+                        <h3>Event Details</h3>
+                        <div class="form-group mb-3">
+                            <label>Event Name</label>
+                            <input type="text" placeholder="e.g. Monthly Coding Sprint" required>
+                        </div>
+                        <div class="flex gap-2 mb-3">
+                            <div class="flex-grow">
+                                <label>Start Date</label>
+                                <input type="datetime-local" required>
+                            </div>
+                            <div class="flex-grow">
+                                <label>End Date</label>
+                                <input type="datetime-local" required>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <button type="button" class="btn btn-primary" onclick="eStep(2)">Next: Target
+                                Audience</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div id="estop2" class="wizard-step">
+                        <h3>Access & Targeting</h3>
+                        <div class="form-group mb-3">
+                            <label>Target Department</label>
+                            <select multiple>
+                                <option>Computer Science</option>
+                                <option>Information Technology</option>
+                                <option>AI & DS</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Target Batches</label>
+                            <select multiple>
+                                <option>2021-25</option>
+                                <option>2022-26</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="button" class="btn btn-secondary" onclick="eStep(1)">Back</button>
+                            <button type="button" class="btn btn-primary" onclick="eStep(3)">Next: Quiz Logic</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div id="estop3" class="wizard-step">
+                        <h3>Quiz Logic</h3>
+                        <div class="form-group mb-3">
+                            <label>Selection Method</label>
+                            <select>
+                                <option>Random from Bank</option>
+                                <option>Specific Quiz Set</option>
+                                <option>Manual Upload</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Number of Questions</label>
+                            <input type="number" value="30">
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="button" class="btn btn-secondary" onclick="eStep(2)">Back</button>
+                            <button type="button" class="btn btn-primary" onclick="eStep(4)">Next: Proctoring</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div id="estop4" class="wizard-step">
+                        <h3>Proctoring Settings</h3>
+                        <div class="mb-2">
+                            <label><input type="checkbox" checked> Fullscreen Lock</label>
+                        </div>
+                        <div class="mb-2">
+                            <label><input type="checkbox" checked> Disable Tab Switching</label>
+                        </div>
+                        <div class="mb-2">
+                            <label><input type="checkbox"> Face Recognition (Webcam)</label>
+                        </div>
+                        <div class="mb-4">
+                            <label><input type="checkbox" checked> Randomize Question Sequence</label>
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="button" class="btn btn-secondary" onclick="eStep(3)">Back</button>
+                            <button type="submit" class="btn btn-success">Launch Event 🚀</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initTheme } from './js/theme.js';
+
+        window.eStep = function (n) {
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.step-pill').forEach((p, idx) => {
+                if (idx + 1 === n) p.classList.add('active');
+                else p.classList.remove('active');
+            });
+            document.getElementById('estop' + n).classList.add('active');
+        }
+
+        document.getElementById('eventWizard').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Event creation logic triggered! The assessment will be live as per start time.');
+            window.location.href = 'institution-dashboard.html';
+        });
+    </script>
+</body>
+
+</html>

@@ -13,6 +13,9 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const practiceRoutes = require("./routes/practiceRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const institutionRoutes = require("./routes/institutionRoutes");
+const batchRoutes = require("./routes/batchRoutes");
+const superAdminRoutes = require("./routes/superAdminRoutes");
 const { startCleanupScheduler } = require("./services/cleanupService");
 
 /* ================= APP ================= */
@@ -86,6 +89,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/practice", practiceRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/institutions", institutionRoutes);
+app.use("/api/batches", batchRoutes);
+app.use("/api/super-admin", superAdminRoutes);
 
 /* ================= HEALTH ================= */
 app.get("/api/health", (req, res) => {

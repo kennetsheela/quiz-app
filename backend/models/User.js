@@ -20,18 +20,32 @@ const UserSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  role: {
+    type: String,
+    enum: ["super-admin", "inst-admin", "hod", "student", "independent"],
+    default: "student"
+  },
+  institutionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Institution",
+    index: true
+  },
+  batchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Batch",
+    index: true
+  },
   department: {
     type: String,
-    enum: ["aids", "cs", "it", "mechanical", "civil", "ece", "eee"],
-    required: true
+    required: false // Made optional for Super Admins and Independent students
   },
   college: {
     type: String,
-    required: true
+    required: false // For institution students, we use institutionId reference
   },
   city: {
     type: String,
-    required: true
+    required: false
   },
   photoURL: {
     type: String,
@@ -39,7 +53,7 @@ const UserSchema = new mongoose.Schema({
   },
   provider: {
     type: String,
-    enum: ["email", "google", "github"],
+    enum: ["email", "google", "github", "anonymous"],
     default: "email"
   },
   createdAt: {

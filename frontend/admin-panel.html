@@ -1,1405 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AptioGen - Admin Panel</title>
+  <title>Super Admin Dashboard - AptioGen</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/components.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <style>
-    body {
-      padding-top: 80px;
-      min-height: 100vh;
-    }
-    
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 20px;
-      margin-top: 20px;
-    }
-    
-    .sets-panel {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 25px;
-      max-height: 600px;
-      overflow-y: auto;
-    }
-    
-    .set-item {
-      background: var(--bg-tertiary);
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      cursor: pointer;
-      transition: all 0.3s;
-      border: 2px solid transparent;
-    }
-    
-    .set-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .set-item.active-set {
-      border: 2px solid var(--success);
-      background: rgba(72, 187, 120, 0.1);
-    }
-    
-    .set-item.selected {
-      border: 2px solid var(--accent-primary);
-      background: rgba(99, 102, 241, 0.1);
-    }
-    
-    .set-item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    
-    .toggle-btn {
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    
-    .toggle-btn.activate {
-      background: var(--success);
-      color: white;
-    }
-    
-    .toggle-btn.deactivate {
-      background: var(--error);
-      color: white;
+    .dashboard-container {
+      padding: 100px 30px 40px;
     }
 
-    .bulk-actions {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      padding: 15px;
-      background: var(--bg-tertiary);
-      border-radius: 10px;
-    }
-
-    .bulk-actions button {
-      flex: 1;
-    }
-    
-    .stats-panel {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 25px;
-    }
-    
-    .filter-bar {
-      background: var(--bg-tertiary);
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .filter-controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
-    
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    
-    .filter-group label {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-    
-    .filter-group select {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      background: var(--card-bg);
-      color: var(--text-primary);
-      cursor: pointer;
-    }
-    
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-    
-    .stat-box {
-      background: var(--bg-tertiary);
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-    }
-    
-    .stat-box h3 {
-      font-size: 2rem;
-      margin: 10px 0 5px 0;
-      color: var(--accent-primary);
-    }
-    
-    .stat-box p {
-      margin: 0;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-    
-    .charts-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 40px;
     }
-    
-    .chart-box {
-      background: var(--bg-tertiary);
-      padding: 20px;
-      border-radius: 10px;
-    }
-    
-    .chart-box h4 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      color: var(--text-primary);
-    }
-    
-    .participants-table {
-      width: 100%;
-      margin-top: 20px;
-    }
-    
-    .participants-table th {
-      text-align: left;
-      padding: 12px;
-      cursor: pointer;
-      user-select: none;
-      position: relative;
-    }
-    
-    .participants-table th:hover {
-      background: var(--bg-tertiary);
-    }
-    
-    .participants-table th i {
-      margin-left: 5px;
-      font-size: 0.8rem;
-      opacity: 0.5;
-    }
-    
-    .participants-table td {
-      text-align: left;
-      padding: 12px;
-    }
-    
-    .password-modal, .export-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--overlay);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    
-    .password-modal.active, .export-modal.active {
-      display: flex;
-    }
-    
-    .export-modal-content {
+
+    .stat-card {
       background: var(--card-bg);
-      padding: 30px;
-      border-radius: 15px;
-      max-width: 500px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
+      padding: 24px;
+      border-radius: 16px;
+      text-align: center;
+      border: 1px solid var(--border-color);
     }
-    
-    .export-option {
-      padding: 15px;
-      margin: 10px 0;
-      border: 2px solid var(--border-color);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      background: var(--bg-tertiary);
-    }
-    
-    .export-option:hover {
-      border-color: var(--accent-primary);
-      background: rgba(99, 102, 241, 0.1);
-      transform: translateY(-2px);
-    }
-    
-    .export-option i {
-      font-size: 2rem;
-      color: var(--accent-primary);
-    }
-    
-    .export-info h4 {
-      margin: 0 0 5px 0;
-      color: var(--text-primary);
-    }
-    
-    .export-info p {
-      margin: 0;
-      font-size: 0.85rem;
+
+    .stat-card h4 {
       color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 10px;
     }
-    
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    
-    .btn-export {
-      background: var(--success);
-      color: white;
-    }
-    
-    .btn-reset {
-      background: var(--warning);
-      color: white;
-    }
-    
-    .score-badge {
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-    
-    .score-high { background: rgba(72, 187, 120, 0.2); color: var(--success); }
-    .score-medium { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
-    .score-low { background: rgba(239, 68, 68, 0.2); color: var(--error); }
-    
-    .time-badge {
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      background: rgba(99, 102, 241, 0.2);
+
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 800;
       color: var(--accent-primary);
-    }
-    
-    .connection-status {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      margin-left: 10px;
-    }
-    
-    .status-connected {
-      background: rgba(72, 187, 120, 0.2);
-      color: var(--success);
-    }
-    
-    .status-error {
-      background: rgba(239, 68, 68, 0.2);
-      color: var(--error);
-    }
-
-    .debug-panel {
-      background: #1a1a2e;
-      color: #00ff00;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-family: monospace;
-      font-size: 0.85rem;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .debug-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #1a1a2e;
-      color: #00ff00;
-      border: 2px solid #00ff00;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      z-index: 1000;
-      font-family: monospace;
-      font-weight: bold;
-    }
-
-    .debug-button:hover {
-      background: #00ff00;
-      color: #1a1a2e;
-    }
-
-    .sets-count-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      background: rgba(99, 102, 241, 0.2);
-      color: var(--accent-primary);
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-left: 10px;
     }
   </style>
 </head>
+
 <body>
-  <div class="appbar">
-    <h2>AptioGen - Admin Panel</h2>
-    <div class="nav-links">
-      <a href="explore.html">Explore</a>
-      <a href="challenge.html">Challenge</a>
-    </div>
+  <header class="appbar">
+    <h2>AptioGen <span class="badge badge-error ml-2" style="font-size: 10px; vertical-align: middle;">ADMIN</span></h2>
     <div class="right-icons">
       <i class="fa-solid fa-moon theme-toggle"></i>
-      <button class="btn btn-danger" onclick="deleteEventConfirm()">
-        <i class="fas fa-trash"></i> Delete Event
-      </button>
-    </div>
-  </div>
-
-  <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <div>
-        <h1 id="eventTitle">Loading Event...</h1>
-        <span id="connectionStatus" class="connection-status status-connected">
-          <i class="fas fa-circle"></i> Connected
-        </span>
-      </div>
-      <button class="btn btn-secondary" onclick="window.location.href='challenge.html'">
-        <i class="fas fa-arrow-left"></i> Back to Events
-      </button>
-    </div>
-
-    <!-- Debug Panel -->
-    <div id="debugPanel" class="debug-panel" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <strong>🔍 DEBUG MODE</strong>
-        <button onclick="toggleDebug()" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Hide</button>
-      </div>
-      <div id="debugContent">Waiting for data...</div>
-    </div>
-
-    <div class="dashboard-grid">
-      <!-- Sets Control Panel -->
-      <div class="sets-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h2>
-            Quiz Sets Control
-            <span id="activeSetsCount" class="sets-count-badge">0 Active</span>
-          </h2>
-        </div>
-        <p style="color: var(--text-secondary); margin-bottom: 20px;">
-          Click to analyze • Toggle individual sets or use bulk actions
-        </p>
-        
-        <!-- Bulk Actions -->
-        <div class="bulk-actions">
-          <button class="btn btn-success" onclick="activateAllSets()">
-            <i class="fas fa-check-double"></i> Activate All
-          </button>
-          <button class="btn btn-danger" onclick="deactivateAllSets()">
-            <i class="fas fa-times"></i> Deactivate All
-          </button>
-        </div>
-
-        <div id="setsContainer">
-          <div class="loading">
-            <div class="spinner"></div>
-            <p>Loading sets...</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Statistics Panel -->
-      <div class="stats-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 id="statsTitle">Overall Statistics</h2>
-          <div class="action-buttons">
-            <button class="btn btn-reset" onclick="resetFilters()">
-              <i class="fas fa-redo"></i> Reset Filters
-            </button>
-            <button class="btn btn-export" onclick="exportData()">
-              <i class="fas fa-download"></i> Export Report
-            </button>
-          </div>
-        </div>
-        
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-          <h4 style="margin-top: 0;"><i class="fas fa-filter"></i> Filters & Sorting</h4>
-          <div class="filter-controls">
-            <div class="filter-group">
-              <label>Sort By</label>
-              <select id="sortBy" onchange="handleFilterChange('sort')">
-                <option value="score-desc">Score (High to Low)</option>
-                <option value="score-asc">Score (Low to High)</option>
-                <option value="time-asc">Time Spent (Low to High)</option>
-                <option value="time-desc">Time Spent (High to Low)</option>
-                <option value="roll-asc">Roll Number (A-Z)</option>
-                <option value="roll-desc">Roll Number (Z-A)</option>
-              </select>
-            </div>
-            
-            <div class="filter-group">
-              <label>Department</label>
-              <select id="filterDepartment" onchange="handleFilterChange('department')">
-                <option value="all">All Departments</option>
-              </select>
-            </div>
-            
-            <div class="filter-group">
-              <label>Score Range</label>
-              <select id="filterScore" onchange="handleFilterChange('score')">
-                <option value="all">All Scores</option>
-                <option value="above80">Above 80%</option>
-                <option value="50to80">50% - 80%</option>
-                <option value="below50">Below 50%</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-          <div class="stat-box">
-            <i class="fas fa-users" style="font-size: 2rem; color: var(--accent-primary);"></i>
-            <h3 id="totalParticipants">0</h3>
-            <p>Total Participants</p>
-          </div>
-          
-          <div class="stat-box">
-            <i class="fas fa-check" style="font-size: 2rem; color: var(--success);"></i>
-            <h3 id="totalSubmissions">0</h3>
-            <p>Submissions</p>
-          </div>
-          
-          <div class="stat-box">
-            <i class="fas fa-clock" style="font-size: 2rem; color: var(--accent-primary);"></i>
-            <h3 id="avgTime">0m</h3>
-            <p>Avg. Time Spent</p>
-          </div>
-          
-          <div class="stat-box">
-            <i class="fas fa-trophy" style="font-size: 2rem; color: #FFD700;"></i>
-            <h3 id="above80">0</h3>
-            <p>Scored >80%</p>
-          </div>
-          
-          <div class="stat-box">
-            <i class="fas fa-medal" style="font-size: 2rem; color: #C0C0C0;"></i>
-            <h3 id="above50">0</h3>
-            <p>Scored 50-80%</p>
-          </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="charts-container">
-          <div class="chart-box">
-            <h4>Score Distribution</h4>
-            <canvas id="scoreChart"></canvas>
-          </div>
-          <div class="chart-box">
-            <h4>Department Performance</h4>
-            <canvas id="departmentChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Participants Table -->
-        <h3>Participants (<span id="participantCount">0</span>)</h3>
-        <div style="max-height: 400px; overflow-y: auto;">
-          <table class="participants-table">
-            <thead>
-              <tr>
-                <th onclick="sortTable('rollNo')">
-                  Roll No <i class="fas fa-sort"></i>
-                </th>
-                <th onclick="sortTable('department')">
-                  Department <i class="fas fa-sort"></i>
-                </th>
-                <th onclick="sortTable('score')">
-                  Score <i class="fas fa-sort"></i>
-                </th>
-                <th>Percentage</th>
-                <th onclick="sortTable('time')">
-                  Time Spent <i class="fas fa-sort"></i>
-                </th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="participantsBody">
-              <tr>
-                <td colspan="6" class="text-center">Loading participants...</td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="dropdown">
+        <button class="dropbtn"><i class="fa-solid fa-user-circle"></i></button>
+        <div class="dropdown-content">
+          <a href="#"><i class="fas fa-cog"></i> Settings</a>
+          <hr>
+          <a href="index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </div>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- Debug Button -->
-  <button class="debug-button" onclick="toggleDebug()">🔍 Debug</button>
+  <main class="dashboard-container container">
+    <h2 class="mb-4">Platform Overview</h2>
 
-  <!-- Admin Password Modal -->
-  <div class="password-modal" id="passwordModal">
-    <div class="modal-content">
-      <h3>Admin Authentication</h3>
-      <p style="margin: 20px 0;" id="passwordModalMessage">Enter admin password to continue</p>
-      <input type="password" id="adminPassword" placeholder="Admin Password" style="margin-bottom: 20px;">
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
-        <button class="btn btn-primary" id="confirmBtn" onclick="confirmAction()">Confirm</button>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h4>Total Institutions</h4>
+        <div class="value">24</div>
+      </div>
+      <div class="stat-card">
+        <h4>Active Students</h4>
+        <div class="value">1,248</div>
+      </div>
+      <div class="stat-card">
+        <h4>Registered HODs</h4>
+        <div class="value">86</div>
+      </div>
+      <div class="stat-card">
+        <h4>Question Reservoir</h4>
+        <div class="value">5,600</div>
       </div>
     </div>
-  </div>
 
-  <!-- Export Options Modal -->
-  <div class="export-modal" id="exportModal">
-    <div class="export-modal-content">
-      <h3>Export Report</h3>
-      <p style="color: var(--text-secondary); margin-bottom: 20px;">Choose export format</p>
-      
-      <div class="export-option" onclick="exportAsCSV()">
-        <i class="fas fa-file-csv"></i>
-        <div class="export-info">
-          <h4>CSV (Simple)</h4>
-          <p>Basic spreadsheet format, opens in Excel</p>
-        </div>
+    <section class="card mb-4">
+      <div class="flex justify-between align-center mb-3">
+        <h3>Global Question Bank</h3>
+        <button class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add Question</button>
       </div>
-      
-      <div class="export-option" onclick="exportAsExcel()">
-        <i class="fas fa-file-excel"></i>
-        <div class="export-info">
-          <h4>Excel (Detailed)</h4>
-          <p>Formatted report with charts and summary</p>
-        </div>
-      </div>
-      
-      <div class="export-option" onclick="exportAsPDF()">
-        <i class="fas fa-file-pdf"></i>
-        <div class="export-info">
-          <h4>PDF Report</h4>
-          <p>Professional printable report</p>
-        </div>
-      </div>
-      
-      <button class="btn btn-secondary" onclick="closeExportModal()" style="margin-top: 20px; width: 100%;">
-        Cancel
-      </button>
-    </div>
-  </div>
-
-  <script type="module">
-    import { requireAuth } from "./js/auth.js";
-    import { eventAPI } from "./js/api.js";
-
-    requireAuth();
-
-    const params = new URLSearchParams(window.location.search);
-    const eventId = params.get('eventId');
-    
-    let currentEvent = null;
-    let pendingAction = null;
-    let selectedSetId = null;
-    let allParticipants = [];
-    let filteredParticipants = [];
-    let scoreChart = null;
-    let departmentChart = null;
-    let refreshInterval = null;
-    let connectionError = false;
-
-    // Debug logging function
-    function debugLog(message, data = null) {
-      const debugContent = document.getElementById('debugContent');
-      const timestamp = new Date().toLocaleTimeString();
-      const logLine = `[${timestamp}] ${message}`;
-      
-      console.log(logLine, data || '');
-      
-      if (debugContent) {
-        const logDiv = document.createElement('div');
-        logDiv.innerHTML = logLine;
-        if (data) {
-          logDiv.innerHTML += '<br><span style="color: #00ffff; margin-left: 20px;">' + 
-            JSON.stringify(data, null, 2).replace(/\n/g, '<br>').replace(/ /g, '&nbsp;') + 
-            '</span>';
-        }
-        debugContent.appendChild(logDiv);
-        debugContent.scrollTop = debugContent.scrollHeight;
-      }
-    }
-
-    // Toggle debug panel
-    window.toggleDebug = function() {
-      const panel = document.getElementById('debugPanel');
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    };
-
-    // Make variables globally accessible
-    window.currentEvent = null;
-    window.selectedSetId = null;
-    window.filteredParticipants = [];
-
-    // Helper function to get total questions for a set
-    function getTotalQuestions(setId) {
-      if (!currentEvent) return 0;
-      const set = currentEvent.sets.find(s => s._id === setId);
-      return set?.questions?.length || 0;
-    }
-
-    // Helper function to calculate percentage from score
-    function calculatePercentage(score, setId) {
-      const totalQuestions = getTotalQuestions(setId);
-      if (totalQuestions === 0) return 0;
-      return (score / totalQuestions) * 100;
-    }
-
-    // Helper function to format time spent
-    function formatTimeSpent(seconds) {
-      if (!seconds || seconds === 0 || seconds === null || seconds === undefined) return 'N/A';
-      
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-      
-      if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-      } else if (minutes > 0) {
-        return `${minutes}m ${secs}s`;
-      } else {
-        return `${secs}s`;
-      }
-    }
-
-    // Helper function to get score and percentage for a participant
-    function getParticipantScoreData(participant, setId) {
-      const result = setId 
-        ? participant.setResults.find(r => r.setId === setId)
-        : participant.setResults[0];
-      
-      if (!result || result.score === undefined || result.score === null) {
-        return { score: null, percentage: null, totalQuestions: 0, timeSpent: null };
-      }
-      
-      const resultSetId = result.setId;
-      const totalQuestions = getTotalQuestions(resultSetId);
-      const score = result.score;
-      const percentage = calculatePercentage(score, resultSetId);
-      
-      let timeSpent = null;
-      
-      if (result.timeTaken !== undefined && result.timeTaken !== null) {
-        timeSpent = result.timeTaken;
-      } else if (result.timeSpent !== undefined && result.timeSpent !== null) {
-        timeSpent = result.timeSpent;
-      } else if (result.duration !== undefined && result.duration !== null) {
-        timeSpent = result.duration;
-      } else if (result.time !== undefined && result.time !== null) {
-        timeSpent = result.time;
-      }
-      
-      return { score, percentage, totalQuestions, timeSpent };
-    }
-
-    // Update connection status indicator
-    function updateConnectionStatus(isConnected) {
-      const statusEl = document.getElementById('connectionStatus');
-      if (isConnected) {
-        statusEl.className = 'connection-status status-connected';
-        statusEl.innerHTML = '<i class="fas fa-circle"></i> Connected';
-        connectionError = false;
-      } else {
-        statusEl.className = 'connection-status status-error';
-        statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Connection Error';
-        connectionError = true;
-      }
-    }
-
-    // Update active sets count
-    function updateActiveSetsCount() {
-      if (!currentEvent) return;
-      const activeCount = currentEvent.sets.filter(s => s.isActive).length;
-      document.getElementById('activeSetsCount').textContent = `${activeCount} Active`;
-    }
-
-    async function loadEvent() {
-      try {
-        debugLog('Loading event...', { eventId });
-        const { event } = await eventAPI.getEvent(eventId);
-        currentEvent = event;
-        window.currentEvent = event;
-        
-        debugLog('Event loaded successfully', {
-          name: event.eventName,
-          sets: event.sets.length
-        });
-        
-        document.getElementById('eventTitle').textContent = event.eventName;
-        renderSets(event.sets);
-        updateActiveSetsCount();
-        await loadStats();
-        await loadParticipants();
-        
-        updateConnectionStatus(true);
-        
-        if (refreshInterval) clearInterval(refreshInterval);
-        refreshInterval = setInterval(async () => {
-          try {
-            await loadStats();
-            await loadParticipants();
-            updateConnectionStatus(true);
-          } catch (error) {
-            console.error("Auto-refresh error:", error);
-            updateConnectionStatus(false);
-          }
-        }, 10000);
-      } catch (error) {
-        debugLog('ERROR loading event', error.message);
-        console.error("Error loading event:", error);
-        updateConnectionStatus(false);
-        
-        if (error.message.includes('Failed to fetch')) {
-          alert("Connection error: Unable to reach the server. Please check:\n1. Backend server is running\n2. CORS is properly configured\n3. Network connection is stable");
-        } else {
-          alert("Error loading event: " + error.message);
-        }
-      }
-    }
-
-    function renderSets(sets) {
-      const setsHTML = sets.map(set => `
-        <div class="set-item ${set.isActive ? 'active-set' : ''} ${selectedSetId === set._id ? 'selected' : ''}" 
-             onclick="selectSet('${set._id}', event)">
-          <div class="set-item-header">
-            <div>
-              <h4>${set.setName}</h4>
-              <p style="margin: 5px 0; color: var(--text-secondary);">
-                <i class="fas fa-question-circle"></i> ${set.questions?.length || 0} questions
-              </p>
-              <p style="margin: 5px 0; color: var(--text-secondary);">
-                <i class="fas fa-clock"></i> ${set.timeLimit} minutes
-              </p>
-            </div>
-            ${set.isActive ? '<span class="badge badge-available"><i class="fas fa-broadcast-tower"></i> LIVE</span>' : ''}
-          </div>
-          <button class="toggle-btn ${set.isActive ? 'deactivate' : 'activate'}" 
-                  onclick="toggleSet('${set._id}', ${!set.isActive}, event)">
-            ${set.isActive ? 'Deactivate' : 'Activate'}
-          </button>
-        </div>
-      `).join('');
-      
-      document.getElementById('setsContainer').innerHTML = setsHTML;
-    }
-
-    window.selectSet = function(setId, event) {
-      if (event.target.classList.contains('toggle-btn')) return;
-      
-      selectedSetId = selectedSetId === setId ? null : setId;
-      window.selectedSetId = selectedSetId;
-      debugLog('Set selected', { setId, isDeselect: selectedSetId === null });
-      renderSets(currentEvent.sets);
-      applyFilters();
-      
-      const setName = currentEvent.sets.find(s => s._id === setId)?.setName || 'Overall';
-      document.getElementById('statsTitle').textContent = 
-        selectedSetId ? `${setName} Statistics` : 'Overall Statistics';
-    };
-
-    window.toggleSet = function(setId, enable, event) {
-      event.stopPropagation();
-      pendingAction = { setId, enable };
-      document.getElementById('passwordModalMessage').textContent = 
-        `Enter admin password to ${enable ? 'activate' : 'deactivate'} this set`;
-      document.getElementById('passwordModal').classList.add('active');
-    };
-
-    // Bulk activate all sets
-    window.activateAllSets = function() {
-      pendingAction = { bulkActivate: true };
-      document.getElementById('passwordModalMessage').textContent = 
-        'Enter admin password to activate all sets';
-      document.getElementById('passwordModal').classList.add('active');
-    };
-
-    // Bulk deactivate all sets
-    window.deactivateAllSets = function() {
-      pendingAction = { bulkDeactivate: true };
-      document.getElementById('passwordModalMessage').textContent = 
-        'Enter admin password to deactivate all sets';
-      document.getElementById('passwordModal').classList.add('active');
-    };
-
-    window.closePasswordModal = function() {
-      document.getElementById('passwordModal').classList.remove('active');
-      document.getElementById('adminPassword').value = '';
-      
-      // Reset button state
-      const confirmBtn = document.getElementById('confirmBtn');
-      if (confirmBtn) {
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = 'Confirm';
-      }
-      
-      pendingAction = null;
-    };
-
-    window.confirmAction = async function() {
-      const password = document.getElementById('adminPassword').value;
-      
-      if (!password) {
-        alert('Please enter admin password');
-        return;
-      }
-
-      const confirmBtn = document.getElementById('confirmBtn');
-      const originalText = confirmBtn.textContent;
-
-      try {
-        if (pendingAction.delete) {
-          // Delete event
-          confirmBtn.disabled = true;
-          confirmBtn.textContent = 'Deleting...';
-          
-          await eventAPI.deleteEvent(eventId, password);
-          alert('Event deleted successfully!');
-          window.location.href = 'challenge.html';
-          
-        } else if (pendingAction.bulkActivate || pendingAction.bulkDeactivate) {
-          // Bulk operation
-          const enable = pendingAction.bulkActivate;
-          const setIds = currentEvent.sets.map(s => s._id);
-          
-          // Disable the confirm button and show progress
-          confirmBtn.disabled = true;
-          confirmBtn.textContent = `Processing ${setIds.length} sets...`;
-          
-          debugLog(`Bulk ${enable ? 'activating' : 'deactivating'} sets`, { count: setIds.length });
-          
-          // Process all sets with Promise.allSettled for parallel execution
-          const results = await Promise.allSettled(
-            setIds.map(setId => 
-              eventAPI.toggleSet({
-                eventId,
-                setId,
-                adminPassword: password,
-                enable
-              })
-            )
-          );
-          
-          // Check results
-          const successful = results.filter(r => r.status === 'fulfilled').length;
-          const failed = results.filter(r => r.status === 'rejected').length;
-          
-          debugLog('Bulk operation completed', { successful, failed });
-          
-          if (failed > 0) {
-            console.error('Some sets failed:', results.filter(r => r.status === 'rejected'));
-            alert(`Bulk operation completed with errors:\n${successful} succeeded, ${failed} failed`);
-          } else {
-            alert(`All ${successful} sets ${enable ? 'activated' : 'deactivated'} successfully!`);
-          }
-          
-          closePasswordModal();
-          await loadEvent();
-          
-        } else {
-          // Single set toggle
-          confirmBtn.disabled = true;
-          confirmBtn.textContent = pendingAction.enable ? 'Activating...' : 'Deactivating...';
-          
-          await eventAPI.toggleSet({
-            eventId,
-            setId: pendingAction.setId,
-            adminPassword: password,
-            enable: pendingAction.enable
-          });
-          
-          alert(pendingAction.enable ? 'Set activated!' : 'Set deactivated!');
-          closePasswordModal();
-          await loadEvent();
-        }
-      } catch (error) {
-        console.error('Action error:', error);
-        
-        if (error.message.includes('network') || error.message.includes('Failed to fetch')) {
-          alert('Network error. Please check your connection and try again.');
-        } else if (error.message.includes('password')) {
-          alert('Incorrect admin password.');
-        } else {
-          alert('Error: ' + error.message);
-        }
-        
-        // Re-enable button
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = originalText;
-      }
-    };
-
-    async function loadStats() {
-      try {
-        const { stats } = await eventAPI.getStats(eventId);
-        
-        if (selectedSetId && allParticipants.length > 0) {
-          calculateSetSpecificStats();
-        } else {
-          document.getElementById('totalParticipants').textContent = stats.totalParticipants;
-          document.getElementById('totalSubmissions').textContent = stats.totalSubmissions;
-          document.getElementById('above80').textContent = stats.above80;
-          document.getElementById('above50').textContent = stats.above50;
-          
-          if (allParticipants.length > 0) {
-            calculateAverageTime();
-          }
-        }
-      } catch (error) {
-        console.error("Error loading stats:", error);
-        throw error;
-      }
-    }
-
-    function calculateAverageTime() {
-      const completed = allParticipants.filter(p => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        return result?.completedAt;
-      });
-      
-      if (completed.length === 0) {
-        document.getElementById('avgTime').textContent = 'N/A';
-        return;
-      }
-      
-      const timesWithValues = [];
-      completed.forEach(p => {
-        const { timeSpent } = getParticipantScoreData(p, selectedSetId);
-        if (timeSpent && timeSpent > 0) {
-          timesWithValues.push(timeSpent);
-        }
-      });
-      
-      if (timesWithValues.length === 0) {
-        document.getElementById('avgTime').textContent = 'N/A';
-        return;
-      }
-      
-      const totalTime = timesWithValues.reduce((sum, time) => sum + time, 0);
-      const avgSeconds = Math.round(totalTime / timesWithValues.length);
-      const avgMinutes = Math.floor(avgSeconds / 60);
-      
-      document.getElementById('avgTime').textContent = `${avgMinutes}m`;
-    }
-
-    function calculateSetSpecificStats() {
-      const setParticipants = allParticipants.filter(p => 
-        p.setResults.some(r => r.setId === selectedSetId)
-      );
-      
-      const submissions = setParticipants.filter(p => {
-        const result = p.setResults.find(r => r.setId === selectedSetId);
-        return result?.completedAt;
-      });
-      
-      const above80Count = submissions.filter(p => {
-        const { percentage } = getParticipantScoreData(p, selectedSetId);
-        return percentage !== null && percentage > 80;
-      }).length;
-      
-      const above50Count = submissions.filter(p => {
-        const { percentage } = getParticipantScoreData(p, selectedSetId);
-        return percentage !== null && percentage >= 50 && percentage <= 80;
-      }).length;
-      
-      document.getElementById('totalParticipants').textContent = setParticipants.length;
-      document.getElementById('totalSubmissions').textContent = submissions.length;
-      document.getElementById('above80').textContent = above80Count;
-      document.getElementById('above50').textContent = above50Count;
-      
-      calculateAverageTime();
-    }
-
-    async function loadParticipants() {
-      try {
-        debugLog('Loading participants...');
-        const { participants } = await eventAPI.getParticipants(eventId);
-        allParticipants = participants;
-        
-        debugLog('Participants loaded', { count: participants.length });
-        
-        const departments = [...new Set(participants.map(p => p.department))].sort();
-        const deptSelect = document.getElementById('filterDepartment');
-        const currentDept = deptSelect.value;
-        deptSelect.innerHTML = '<option value="all">All Departments</option>' +
-          departments.map(d => `<option value="${d}">${d}</option>`).join('');
-        deptSelect.value = currentDept;
-        
-        applyFilters();
-      } catch (error) {
-        debugLog('ERROR loading participants', error.message);
-        console.error("Error loading participants:", error);
-        throw error;
-      }
-    }
-
-    window.handleFilterChange = function(filterType) {
-      applyFilters();
-    };
-
-    function applyFilters() {
-      let filtered = [...allParticipants];
-      
-      if (selectedSetId) {
-        filtered = filtered.filter(p => 
-          p.setResults.some(r => r.setId === selectedSetId)
-        );
-      }
-      
-      const deptFilter = document.getElementById('filterDepartment').value;
-      if (deptFilter !== 'all') {
-        filtered = filtered.filter(p => p.department === deptFilter);
-      }
-      
-      const scoreFilter = document.getElementById('filterScore').value;
-      if (scoreFilter !== 'all') {
-        filtered = filtered.filter(p => {
-          const { percentage } = getParticipantScoreData(p, selectedSetId);
-          
-          if (percentage === null) return false;
-          
-          if (scoreFilter === 'above80') return percentage > 80;
-          if (scoreFilter === '50to80') return percentage >= 50 && percentage <= 80;
-          if (scoreFilter === 'below50') return percentage < 50;
-          return true;
-        });
-      }
-      
-      const sortBy = document.getElementById('sortBy').value;
-      filtered.sort((a, b) => {
-        const aData = getParticipantScoreData(a, selectedSetId);
-        const bData = getParticipantScoreData(b, selectedSetId);
-        
-        if (sortBy === 'score-desc') return (bData.percentage || 0) - (aData.percentage || 0);
-        if (sortBy === 'score-asc') return (aData.percentage || 0) - (bData.percentage || 0);
-        if (sortBy === 'time-asc') return (aData.timeSpent || 0) - (bData.timeSpent || 0);
-        if (sortBy === 'time-desc') return (bData.timeSpent || 0) - (aData.timeSpent || 0);
-        if (sortBy === 'roll-asc') return a.rollNo.localeCompare(b.rollNo);
-        if (sortBy === 'roll-desc') return b.rollNo.localeCompare(a.rollNo);
-        return 0;
-      });
-      
-      filteredParticipants = filtered;
-      window.filteredParticipants = filtered;
-      renderParticipants();
-      updateCharts();
-      
-      if (selectedSetId) {
-        calculateSetSpecificStats();
-      }
-    }
-
-    function renderParticipants() {
-      document.getElementById('participantCount').textContent = filteredParticipants.length;
-      
-      if (filteredParticipants.length === 0) {
-        document.getElementById('participantsBody').innerHTML = 
-          '<tr><td colspan="6" class="text-center">No participants match the filters</td></tr>';
-        return;
-      }
-
-      const participantsHTML = filteredParticipants.map((p, index) => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        
-        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
-        
-        const scoreDisplay = score !== null ? `${score}/${totalQuestions}` : '-';
-        const percentageDisplay = percentage !== null ? percentage.toFixed(2) + '%' : '-';
-        const timeDisplay = formatTimeSpent(timeSpent);
-        const status = result?.completedAt ? '✅ Completed' : '⏳ In Progress';
-        
-        let scoreClass = '';
-        if (percentage !== null) {
-          if (percentage > 80) scoreClass = 'score-high';
-          else if (percentage >= 50) scoreClass = 'score-medium';
-          else scoreClass = 'score-low';
-        }
-        
-        return `
+      <table>
+        <thead>
           <tr>
-            <td>${p.rollNo}</td>
-            <td>${p.department}</td>
-            <td><span class="score-badge ${scoreClass}">${scoreDisplay}</span></td>
-            <td>${percentageDisplay}</td>
-            <td><span class="time-badge">${timeDisplay}</span></td>
-            <td>${status}</td>
+            <th>Question</th>
+            <th>Category</th>
+            <th>Level</th>
+            <th>Inst. Usage</th>
+            <th>Actions</th>
           </tr>
-        `;
-      }).join('');
+        </thead>
+        <tbody>
+          <tr>
+            <td>What is the time complexity of QuickSort?</td>
+            <td>Algorithms</td>
+            <td><span class="badge badge-warning">Medium</span></td>
+            <td>12</td>
+            <td><button class="btn btn-secondary btn-sm">Edit</button></td>
+          </tr>
+          <tr>
+            <td>Explain ACID properties in DBMS.</td>
+            <td>Database</td>
+            <td><span class="badge badge-success">Easy</span></td>
+            <td>8</td>
+            <td><button class="btn btn-secondary btn-sm">Edit</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
-      document.getElementById('participantsBody').innerHTML = participantsHTML;
-    }
+    <section class="card">
+      <div class="flex justify-between align-center mb-3">
+        <h3>Registered Institutions</h3>
+        <button class="btn btn-secondary btn-sm">View All</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Plan</th>
+            <th>Students</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>St. Xavier's Engineering College</td>
+            <td>Mumbai, MH</td>
+            <td><span class="badge badge-primary">Premium</span></td>
+            <td>850</td>
+            <td><span class="badge badge-success">Active</span></td>
+          </tr>
+          <tr>
+            <td>Loyola Institute of Tech</td>
+            <td>Chennai, TN</td>
+            <td><span class="badge">Basic</span></td>
+            <td>420</td>
+            <td><span class="badge badge-success">Active</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
 
-    window.sortTable = function(field) {
-      const sortBy = document.getElementById('sortBy');
-      
-      if (field === 'score') {
-        sortBy.value = sortBy.value === 'score-desc' ? 'score-asc' : 'score-desc';
-      } else if (field === 'rollNo') {
-        sortBy.value = sortBy.value === 'roll-asc' ? 'roll-desc' : 'roll-asc';
-      } else if (field === 'time') {
-        sortBy.value = sortBy.value === 'time-asc' ? 'time-desc' : 'time-asc';
-      }
-      
-      applyFilters();
-    };
-
-    function updateCharts() {
-      const completed = filteredParticipants.filter(p => {
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        return result?.completedAt;
-      });
-      
-      const above80 = completed.filter(p => {
-        const { percentage } = getParticipantScoreData(p, selectedSetId);
-        return percentage !== null && percentage > 80;
-      }).length;
-      
-      const between50and80 = completed.filter(p => {
-        const { percentage } = getParticipantScoreData(p, selectedSetId);
-        return percentage !== null && percentage >= 50 && percentage <= 80;
-      }).length;
-      
-      const below50 = completed.filter(p => {
-        const { percentage } = getParticipantScoreData(p, selectedSetId);
-        return percentage !== null && percentage < 50;
-      }).length;
-
-      if (scoreChart) scoreChart.destroy();
-      scoreChart = new Chart(document.getElementById('scoreChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Above 80%', '50-80%', 'Below 50%'],
-          datasets: [{
-            data: [above80, between50and80, below50],
-            backgroundColor: ['#48bb78', '#fbbf24', '#ef4444']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { position: 'bottom' }
-          }
-        }
-      });
-
-      const deptStats = {};
-      filteredParticipants.forEach(p => {
-        const { percentage } = getParticipantScoreData(p, selectedSetId);
-        
-        if (percentage !== null) {
-          if (!deptStats[p.department]) {
-            deptStats[p.department] = { total: 0, count: 0 };
-          }
-          deptStats[p.department].total += percentage;
-          deptStats[p.department].count += 1;
-        }
-      });
-
-      const deptLabels = Object.keys(deptStats);
-      const deptAvgs = deptLabels.map(d => 
-        deptStats[d].count > 0 ? (deptStats[d].total / deptStats[d].count).toFixed(1) : 0
-      );
-
-      if (departmentChart) departmentChart.destroy();
-      departmentChart = new Chart(document.getElementById('departmentChart'), {
-        type: 'bar',
-        data: {
-          labels: deptLabels,
-          datasets: [{
-            label: 'Average Score %',
-            data: deptAvgs,
-            backgroundColor: '#6366f1'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          scales: {
-            y: { beginAtZero: true, max: 100 }
-          },
-          plugins: {
-            legend: { display: false }
-          }
-        }
-      });
-    }
-
-    window.resetFilters = function() {
-      selectedSetId = null;
-      window.selectedSetId = null;
-      document.getElementById('sortBy').value = 'score-desc';
-      document.getElementById('filterDepartment').value = 'all';
-      document.getElementById('filterScore').value = 'all';
-      document.getElementById('statsTitle').textContent = 'Overall Statistics';
-      renderSets(currentEvent.sets);
-      applyFilters();
-    };
-
-    window.exportData = function() {
-      document.getElementById('exportModal').classList.add('active');
-    };
-
-    window.closeExportModal = function() {
-      document.getElementById('exportModal').classList.remove('active');
-    };
-
-    window.exportAsCSV = function() {
-      const csvData = [
-        ['Roll No', 'Department', 'Score', 'Percentage', 'Time Spent', 'Status']
-      ];
-      
-      filteredParticipants.forEach(p => {
-        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        
-        csvData.push([
-          p.rollNo,
-          p.department,
-          score !== null ? `${score}/${totalQuestions}` : '-',
-          percentage !== null ? percentage.toFixed(2) + '%' : '-',
-          formatTimeSpent(timeSpent),
-          result?.completedAt ? 'Completed' : 'In Progress'
-        ]);
-      });
-      
-      const csv = csvData.map(row => row.join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${currentEvent.eventName}_report.csv`;
-      a.click();
-      
-      closeExportModal();
-    };
-
-    window.exportAsExcel = function() {
-      const ws_data = [
-        ['Roll No', 'Department', 'Score', 'Percentage', 'Time Spent', 'Status']
-      ];
-      
-      filteredParticipants.forEach(p => {
-        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        
-        ws_data.push([
-          p.rollNo,
-          p.department,
-          score !== null ? `${score}/${totalQuestions}` : '-',
-          percentage !== null ? percentage.toFixed(2) : '-',
-          formatTimeSpent(timeSpent),
-          result?.completedAt ? 'Completed' : 'In Progress'
-        ]);
-      });
-      
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(ws_data);
-      XLSX.utils.book_append_sheet(wb, ws, "Participants");
-      XLSX.writeFile(wb, `${currentEvent.eventName}_report.xlsx`);
-      
-      closeExportModal();
-    };
-
-    window.exportAsPDF = function() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      doc.setFontSize(18);
-      doc.text(currentEvent.eventName, 14, 20);
-      
-      doc.setFontSize(12);
-      doc.text(`Total Participants: ${filteredParticipants.length}`, 14, 30);
-      
-      const tableData = filteredParticipants.map(p => {
-        const { score, percentage, totalQuestions, timeSpent } = getParticipantScoreData(p, selectedSetId);
-        const result = selectedSetId 
-          ? p.setResults.find(r => r.setId === selectedSetId)
-          : p.setResults[0];
-        
-        return [
-          p.rollNo,
-          p.department,
-          score !== null ? `${score}/${totalQuestions}` : '-',
-          percentage !== null ? percentage.toFixed(2) + '%' : '-',
-          formatTimeSpent(timeSpent),
-          result?.completedAt ? 'Completed' : 'In Progress'
-        ];
-      });
-      
-      doc.autoTable({
-        head: [['Roll No', 'Department', 'Score', 'Percentage', 'Time', 'Status']],
-        body: tableData,
-        startY: 40
-      });
-      
-      doc.save(`${currentEvent.eventName}_report.pdf`);
-      closeExportModal();
-    };
-
-    window.deleteEventConfirm = function() {
-      if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
-        document.getElementById('passwordModal').classList.add('active');
-        document.getElementById('passwordModalMessage').textContent = 
-          'Enter admin password to delete this event';
-        pendingAction = { delete: true };
-      }
-    };
-
-    window.addEventListener('beforeunload', () => {
-      if (refreshInterval) clearInterval(refreshInterval);
-    });
-
-    loadEvent();
-  </script>
-  <script src="js/theme.js" type="module"></script>
+  <script type="module" src="js/theme.js"></script>
 </body>
+
 </html>

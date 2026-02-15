@@ -8,7 +8,7 @@ const User = require("../models/User");
 const verifyToken = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split("Bearer ")[1];
-    
+
     if (!token) {
       return res.status(401).json({ error: "No token provided" });
     }
@@ -26,7 +26,7 @@ const verifyToken = async (req, res, next) => {
 router.get("/profile", verifyToken, async (req, res) => {
   try {
     const user = await User.findOne({ firebaseUid: req.user.uid });
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -34,10 +34,13 @@ router.get("/profile", verifyToken, async (req, res) => {
     // Return user profile with all fields
     res.json({
       id: user._id,
-      uid: user.firebaseUid,  // Add uid field for frontend compatibility
+      uid: user.firebaseUid,
       firebaseUid: user.firebaseUid,
       username: user.username,
       email: user.email,
+      role: user.role,
+      institutionId: user.institutionId,
+      batchId: user.batchId,
       department: user.department,
       college: user.college,
       city: user.city,
@@ -55,12 +58,22 @@ router.get("/profile", verifyToken, async (req, res) => {
 // Create or update user profile
 router.post("/profile", verifyToken, async (req, res) => {
   try {
-    const { username, department, college, city, photoURL, provider } = req.body;
+    const {
+      username,
+      department,
+      college,
+      city,
+      photoURL,
+      provider,
+      role,
+      institutionId,
+      batchId
+    } = req.body;
     const { uid, email, picture, firebase } = req.user;
 
-    // Validate required fields
-    if (!username || !department || !college || !city) {
-      return res.status(400).json({ error: "All fields are required" });
+    // Validate minimum required fields
+    if (!username) {
+      return res.status(400).json({ error: "Username is required" });
     }
 
     // Determine provider from token or request body
@@ -81,14 +94,17 @@ router.post("/profile", verifyToken, async (req, res) => {
         firebaseUid: uid,
         email,
         username,
-        department,
-        college,
-        city,
+        role: role || "student",
+        institutionId: institutionId || null,
+        batchId: batchId || null,
+        department: department || "",
+        college: college || "",
+        city: city || "",
         photoURL: userPhotoURL,
         provider: userProvider,
         lastLogin: new Date()
       },
-      { 
+      {
         upsert: true,  // Create if doesn't exist
         new: true,     // Return updated document
         runValidators: true,
@@ -98,14 +114,17 @@ router.post("/profile", verifyToken, async (req, res) => {
 
     console.log("Profile saved/updated for user:", uid);
 
-    res.json({ 
-      message: "Profile saved successfully", 
+    res.json({
+      message: "Profile saved successfully",
       user: {
         id: user._id,
         uid: user.firebaseUid,
         firebaseUid: user.firebaseUid,
         username: user.username,
         email: user.email,
+        role: user.role,
+        institutionId: user.institutionId,
+        batchId: user.batchId,
         department: user.department,
         college: user.college,
         city: user.city,
@@ -124,15 +143,18 @@ router.post("/profile", verifyToken, async (req, res) => {
 router.patch("/profile", verifyToken, async (req, res) => {
   try {
     const { username, department, college, city, photoURL } = req.body;
-    
+
     const user = await User.findOne({ firebaseUid: req.user.uid });
-    
+
     if (!user) {
       return res.status(404).json({ error: "User not found. Please create profile first." });
     }
 
     // Update only provided fields
     if (username !== undefined) user.username = username;
+    if (role !== undefined) user.role = role;
+    if (institutionId !== undefined) user.institutionId = institutionId;
+    if (batchId !== undefined) user.batchId = batchId;
     if (department !== undefined) user.department = department;
     if (college !== undefined) user.college = college;
     if (city !== undefined) user.city = city;
@@ -166,15 +188,15 @@ router.patch("/profile", verifyToken, async (req, res) => {
 router.post("/login", verifyToken, async (req, res) => {
   try {
     const { uid, email, picture, name, firebase } = req.user;
-    
+
     // Find or create user with minimal info
     let user = await User.findOne({ firebaseUid: uid });
-    
+
     if (!user) {
       // Create basic user record on first login
-      const provider = firebase?.sign_in_provider === "google.com" ? "google" : 
-                      firebase?.sign_in_provider === "github.com" ? "github" : "email";
-      
+      const provider = firebase?.sign_in_provider === "google.com" ? "google" :
+        firebase?.sign_in_provider === "github.com" ? "github" : "email";
+
       user = await User.create({
         firebaseUid: uid,
         email,
@@ -187,17 +209,17 @@ router.post("/login", verifyToken, async (req, res) => {
         college: "",
         city: ""
       });
-      
+
       console.log("New user created on login:", uid);
     } else {
       // Update last login
       user.lastLogin = new Date();
       await user.save();
-      
+
       console.log("Login recorded for existing user:", uid);
     }
-    
-    res.json({ 
+
+    res.json({
       message: "Login recorded",
       hasProfile: !!(user.department && user.college && user.city)
     });

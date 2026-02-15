@@ -24,7 +24,7 @@ async function parseQuestionsFromFile(file) {
 
     // Parse questions using your existing parser
     const questions = parseStrict(textContent);
-    
+
     if (questions.length === 0) {
       console.error("❌ No questions parsed from text:", textContent.substring(0, 500));
       throw new Error("No valid questions found in file");
@@ -32,16 +32,28 @@ async function parseQuestionsFromFile(file) {
 
     console.log(`✅ Successfully parsed ${questions.length} questions`);
     return questions;
-    
+
   } catch (error) {
     console.error("❌ Question parsing error:", error);
     throw new Error(`Failed to parse questions: ${error.message}`);
   }
 }
 
-// ✅ Create event with proper timezone handling
+// ✅ Create event with proper targeting and proctoring
 async function createEvent(data, files, userId) {
-  const { eventName, adminPassword, studentPassword, startTime, endTime, sets } = data;
+  const {
+    eventName,
+    adminPassword,
+    studentPassword,
+    startTime,
+    endTime,
+    sets,
+    institutionId,
+    targetBatches,
+    targetDepartments,
+    isPublic,
+    proctoringConfig
+  } = data;
 
   if (!eventName || !adminPassword || !studentPassword || !startTime || !endTime || !sets) {
     throw new Error("All fields are required");
@@ -53,9 +65,9 @@ async function createEvent(data, files, userId) {
   const eventSets = await Promise.all(
     parsedSets.map(async (set, index) => {
       const file = files[index];
-      
+
       let questions = [];
-      
+
       if (file) {
         try {
           questions = await parseQuestionsFromFile(file);
@@ -84,24 +96,24 @@ async function createEvent(data, files, userId) {
   // ✅ FIXED FOR RENDER: Parse ISO string with timezone offset
   // Frontend sends: "2026-01-29T21:52:00.000+05:30" (with timezone offset)
   // Render server is in UTC, but Date constructor handles the offset automatically
-  
+
   const timezone = data.timezone || 'UTC';
-  
+
   console.log("📅 Received datetime strings:");
   console.log("Start Time Input:", startTime);
   console.log("End Time Input:", endTime);
   console.log("User Timezone:", timezone);
   console.log("Server Timezone:", process.env.TZ || 'UTC');
-  
+
   // Parse the ISO strings - they contain timezone offset, so Date will handle it correctly
   const startDate = new Date(startTime);
   const endDate = new Date(endTime);
-  
+
   // Validate dates
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     throw new Error("Invalid date format received");
   }
-  
+
   console.log("📅 Parsed dates (stored as UTC in MongoDB):");
   console.log("Start Date UTC:", startDate.toISOString());
   console.log("End Date UTC:", endDate.toISOString());
@@ -114,6 +126,17 @@ async function createEvent(data, files, userId) {
     endTime: endDate,
     timezone: timezone,
     sets: eventSets,
+    institutionId: institutionId || null,
+    targetBatches: targetBatches || [],
+    targetDepartments: targetDepartments || [],
+    isPublic: isPublic === 'true' || isPublic === true,
+    proctoringConfig: proctoringConfig ? (typeof proctoringConfig === 'string' ? JSON.parse(proctoringConfig) : proctoringConfig) : {
+      fullscreen: true,
+      tabSwitch: true,
+      webcam: false,
+      randomizeQuestions: true,
+      randomizeOptions: true
+    },
     createdBy: userId
   });
 
@@ -123,26 +146,26 @@ async function createEvent(data, files, userId) {
   console.log(`   Start (UTC): ${startDate.toISOString()}`);
   console.log(`   End (UTC): ${endDate.toISOString()}`);
   console.log(`   Sets: ${eventSets.length}`);
-  
+
   return event;
 }
 
-async function studentLogin({ eventId, userId, rollNo, department, password }) {
+async function studentLogin({ eventId, userId, rollNo, department, email, batchId, password }) {
   const event = await Event.findById(eventId);
-  
+
   if (!event) {
     throw new Error("Event not found");
   }
 
   const now = new Date();
-  
+
   console.log("🕐 Time Check:");
   console.log("Current time:", now);
   console.log("Event Start:", event.startTime);
   console.log("Event End:", event.endTime);
   console.log("Is before start?", now < event.startTime);
   console.log("Is after end?", now > event.endTime);
-  
+
   if (now < event.startTime) {
     const waitTime = Math.ceil((event.startTime - now) / 60000); // minutes
     const startTimeStr = new Date(event.startTime).toLocaleString('en-IN', {
@@ -155,7 +178,7 @@ async function studentLogin({ eventId, userId, rollNo, department, password }) {
     });
     throw new Error(`Event hasn't started yet. Starts at ${startTimeStr}. Please wait ${waitTime} minutes.`);
   }
-  
+
   if (now > event.endTime) {
     const endTimeStr = new Date(event.endTime).toLocaleString('en-IN', {
       year: 'numeric',
@@ -171,6 +194,23 @@ async function studentLogin({ eventId, userId, rollNo, department, password }) {
   const match = await bcrypt.compare(password, event.studentPassword);
   if (!match) {
     throw new Error("Invalid password");
+  }
+
+  // ✅ Targeting Check
+  if (!event.isPublic) {
+    // Check Department
+    if (event.targetDepartments && event.targetDepartments.length > 0) {
+      if (!event.targetDepartments.includes(department)) {
+        throw new Error(`This event is restricted to specific departments. Your department is: ${department}`);
+      }
+    }
+
+    // Check Batch
+    if (event.targetBatches && event.targetBatches.length > 0) {
+      if (!batchId || !event.targetBatches.some(b => b.toString() === batchId.toString())) {
+        throw new Error("This event is restricted to specific student batches.");
+      }
+    }
   }
 
   let participant = await EventParticipant.findOne({
@@ -209,7 +249,7 @@ async function getSetQuestions(setId, eventId) {
 
 async function startSet(participantId, setId, userId) {
   const participant = await EventParticipant.findById(participantId);
-  
+
   if (!participant) {
     throw new Error("Participant not found");
   }
@@ -219,13 +259,13 @@ async function startSet(participantId, setId, userId) {
   }
 
   const event = await Event.findById(participant.eventId);
-  
+
   if (!event) {
     throw new Error("Event not found");
   }
 
   const set = event.sets.id(setId);
-  
+
   if (!set) {
     throw new Error("Set not found");
   }
@@ -290,9 +330,9 @@ async function startSet(participantId, setId, userId) {
 // ✅ FIXED: Accept timeTaken parameter from frontend
 async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
   console.log('📊 Submit received:', { participantId, setId, timeTaken, answersLength: answers?.length });
-  
+
   const participant = await EventParticipant.findById(participantId);
-  
+
   if (!participant || participant.userId !== userId) {
     throw new Error("Unauthorized");
   }
@@ -310,28 +350,28 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
 
   const now = new Date();
   const startTime = participant.setResults[resultIndex].startedAt;
-  
+
   // ✅ Use frontend timeTaken if provided, otherwise calculate from timestamps
   const actualTimeTaken = timeTaken || Math.floor((now - startTime) / 1000);
-  
+
   const autoSubmitTime = participant.setResults[resultIndex].autoSubmitAt;
-  
+
   if (now > autoSubmitTime) {
     console.log("⏰ Auto-submitting quiz - time expired");
   }
 
   const questions = await getSetQuestions(setId, participant.eventId);
-  
+
   let score = 0;
   let correctAnswers = 0;
   let wrongAnswers = 0;
   let skipped = 0;
   const results = [];
-  
+
   questions.forEach((question, index) => {
     const userAnswer = answers[index] || null;
     const isCorrect = userAnswer === question.correctAnswer;
-    
+
     if (userAnswer === null) {
       skipped++;
     } else if (isCorrect) {
@@ -340,7 +380,7 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
     } else {
       wrongAnswers++;
     }
-    
+
     results.push({
       question: question.question,
       selectedAnswer: userAnswer,
@@ -367,9 +407,9 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
 
   console.log(`✅ Quiz submitted: ${score}/${questions.length} (${percentage}%) in ${timeInMinutes}m ${timeInSeconds}s by user ${userId}`);
 
-  return { 
-    score, 
-    totalQuestions: questions.length, 
+  return {
+    score,
+    totalQuestions: questions.length,
     correctAnswers,
     wrongAnswers,
     skipped,
@@ -381,7 +421,7 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
 
 async function toggleSet({ eventId, setId, adminPassword, enable, userId }) {
   const event = await Event.findById(eventId);
-  
+
   if (!event) {
     throw new Error("Event not found");
   }
@@ -417,7 +457,7 @@ async function toggleSet({ eventId, setId, adminPassword, enable, userId }) {
 
 async function deleteEvent(eventId, adminPassword, userId) {
   const event = await Event.findById(eventId);
-  
+
   if (!event) {
     throw new Error("Event not found");
   }
@@ -462,7 +502,7 @@ async function getEventStats(eventId) {
       if (r.completedAt && r.score !== null && r.totalQuestions) {
         totalSubmissions++;
         const percentage = (r.score / r.totalQuestions) * 100;
-        
+
         if (percentage > 80) above80++;
         else if (percentage >= 50 && percentage <= 80) above50++;
 
@@ -474,8 +514,8 @@ async function getEventStats(eventId) {
 
   Object.keys(departmentStats).forEach(dept => {
     const stats = departmentStats[dept];
-    stats.avgScore = stats.submissions > 0 
-      ? Math.round(stats.totalScore / stats.submissions) 
+    stats.avgScore = stats.submissions > 0
+      ? Math.round(stats.totalScore / stats.submissions)
       : 0;
   });
 
@@ -498,7 +538,7 @@ async function getEventStats(eventId) {
 
 async function checkRemainingTime(participantId, setId, userId) {
   const participant = await EventParticipant.findById(participantId);
-  
+
   if (!participant || participant.userId !== userId) {
     throw new Error("Unauthorized");
   }
