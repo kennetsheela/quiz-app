@@ -12,6 +12,10 @@ const BatchSchema = new mongoose.Schema({
         ref: "Institution",
         required: true
     },
+    departmentId: {
+        type: String, // Store department code or ObjectId string
+        required: false
+    },
     startYear: {
         type: Number,
         required: true

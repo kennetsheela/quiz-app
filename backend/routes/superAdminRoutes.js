@@ -6,6 +6,17 @@ const Institution = require("../models/Institution");
 const User = require("../models/User");
 const Event = require("../models/Event");
 const Analytics = require("../models/Analytics");
+const PlatformSettings = require("../models/PlatformSettings");
+const multer = require("multer");
+const questionPipelineService = require("../services/questionPipelineService");
+const pipelineService = require("../services/pipelineService");
+
+
+// Multer configuration for memory storage (file buffers)
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // Middleware to verify Super Admin (hardcoded credentials)
 const verifySuperAdmin = (req, res, next) => {
@@ -175,6 +186,66 @@ router.delete("/questions/:id", async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// POST /api/super-admin/questions/upload - Bulk upload questions via file (PDF/DOCX)
+router.post("/questions/upload", upload.single("file"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        let questions = [];
+        const buffer = req.file.buffer;
+        const mimetype = req.file.mimetype;
+
+        if (mimetype === "application/pdf") {
+            questions = await questionPipelineService.parsePdf(buffer);
+        } else if (
+            mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+            mimetype === "application/msword"
+        ) {
+            questions = await questionPipelineService.parseDocx(buffer);
+        } else {
+            return res.status(400).json({ error: "Unsupported file format. Please upload PDF or DOCX." });
+        }
+
+        res.json({
+            success: true,
+            count: questions.length,
+            questions: questions.map((q, idx) => ({ ...q, tempId: idx }))
+        });
+    } catch (error) {
+        console.error("Upload error:", error);
+        res.status(500).json({ error: "Failed to process question file" });
+    }
+});
+
+// POST /api/super-admin/questions/pipeline - Process file through the full sequential pipeline
+router.post("/questions/pipeline", upload.single("file"), async (req, res) => {
+    try {
+        const { category, creatorId } = req.body;
+
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        if (!category) {
+            return res.status(400).json({ error: "Category is required" });
+        }
+
+        const result = await pipelineService.runFullPipeline(
+            req.file,
+            category,
+            creatorId || "super-admin"
+        );
+
+        res.json(result);
+    } catch (error) {
+        console.error("Pipeline error:", error);
+        res.status(500).json({ error: error.message || "Failed to process pipeline" });
+    }
+});
+
 
 // POST /api/super-admin/questions/bulk - Bulk import (placeholder for CSV/Excel)
 router.post("/questions/bulk", async (req, res) => {
@@ -369,6 +440,35 @@ router.get("/analytics", async (req, res) => {
         });
     } catch (error) {
         console.error("Analytics error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================================================
+// SETTINGS MANAGEMENT
+// ============================================================================
+
+// GET /api/super-admin/settings - Get all settings
+router.get("/settings", async (req, res) => {
+    try {
+        const settings = await PlatformSettings.find();
+        res.json(settings);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/super-admin/settings - Update or create a setting
+router.post("/settings", async (req, res) => {
+    try {
+        const { key, value } = req.body;
+        const setting = await PlatformSettings.findOneAndUpdate(
+            { key },
+            { value },
+            { upsert: true, new: true }
+        );
+        res.json({ message: "Setting updated", setting });
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });

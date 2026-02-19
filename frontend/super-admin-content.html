@@ -1,3 +1,4 @@
+//super-admin-content.html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -70,45 +71,30 @@
 
         <div class="card">
             <div class="content-tabs">
-                <button class="content-tab active" onclick="switchTab('terms')">Terms & Conditions</button>
-                <button class="content-tab" onclick="switchTab('privacy')">Privacy Policy</button>
-                <button class="content-tab" onclick="switchTab('faqs')">FAQs</button>
+                <button class="content-tab active" data-tab="studentTerms">Student T&C</button>
+                <button class="content-tab" data-tab="instituteTerms">Institute T&C</button>
+                <button class="content-tab" data-tab="privacy">Privacy Policy</button>
+                <button class="content-tab" data-tab="faqs">FAQs</button>
             </div>
 
-            <!-- Terms & Conditions -->
-            <div id="terms" class="tab-content active">
-                <h3>Terms & Conditions</h3>
-                <textarea id="termsContent" placeholder="Enter terms and conditions...">
-# Terms and Conditions
+            <!-- Student Terms & Conditions -->
+            <div id="studentTerms" class="tab-content active">
+                <div class="flex justify-between items-center mb-3">
+                    <h3>Student Terms & Conditions</h3>
+                    <span class="badge badge-info">Key: studentTerms</span>
+                </div>
+                <textarea id="studentTermsContent" placeholder="Enter student terms and conditions..."></textarea>
+                <button class="btn btn-primary mt-3 btn-save" data-type="studentTerms">Save Student Terms</button>
+            </div>
 
-Last updated: February 15, 2026
-
-## 1. Acceptance of Terms
-By accessing and using AptioGen, you accept and agree to be bound by these terms.
-
-## 2. Use License
-Permission is granted to temporarily access the platform for educational purposes.
-
-## 3. User Accounts
-- Institutions must provide accurate information during registration
-- Students must use valid credentials provided by their institution
-- Account sharing is prohibited
-
-## 4. Intellectual Property
-All content, questions, and materials are property of AptioGen.
-
-## 5. Prohibited Activities
-- Cheating or academic dishonesty
-- Sharing quiz content
-- Attempting to breach security measures
-
-## 6. Termination
-We reserve the right to terminate accounts that violate these terms.
-
-## 7. Contact
-For questions, contact: support@aptiogen.com
-                </textarea>
-                <button class="btn btn-primary mt-3" onclick="saveContent('terms')">Save Terms</button>
+            <!-- Institute Terms & Conditions -->
+            <div id="instituteTerms" class="tab-content">
+                <div class="flex justify-between items-center mb-3">
+                    <h3>Institute Terms & Conditions</h3>
+                    <span class="badge badge-info">Key: instituteTerms</span>
+                </div>
+                <textarea id="instituteTermsContent" placeholder="Enter institute terms and conditions..."></textarea>
+                <button class="btn btn-primary mt-3 btn-save" data-type="instituteTerms">Save Institute Terms</button>
             </div>
 
             <!-- Privacy Policy -->
@@ -146,7 +132,7 @@ We implement industry-standard security measures to protect your data.
 ## Contact
 privacy@aptiogen.com
                 </textarea>
-                <button class="btn btn-primary mt-3" onclick="saveContent('privacy')">Save Privacy Policy</button>
+                <button class="btn btn-primary mt-3 btn-save" data-type="privacy">Save Privacy Policy</button>
             </div>
 
             <!-- FAQs -->
@@ -188,38 +174,86 @@ A: Currently web-only, but the platform is mobile-responsive.
 **Q: How do I report a bug?**
 A: Contact support@aptiogen.com with details.
                 </textarea>
-                <button class="btn btn-primary mt-3" onclick="saveContent('faqs')">Save FAQs</button>
+                <button class="btn btn-primary mt-3 btn-save" data-type="faqs">Save FAQs</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initTheme } from './js/theme.js';
+        import { auth, settingsAPI } from './js/superAdminAPI.js';
+
         initTheme();
 
-        const auth = sessionStorage.getItem('superAdminAuth');
-        if (!auth) window.location.href = 'super-admin-login.html';
+        if (!auth.isLoggedIn()) {
+            window.location.href = 'super-admin-login.html';
+        }
 
-        window.switchTab = (tab) => {
-            document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tab).classList.add('active');
+        // Tab Switching Logic
+        const switchTab = (tabId) => {
+            const tabs = document.querySelectorAll('.content-tab');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+
+            const activeBtn = document.querySelector(`.content-tab[data-tab="${tabId}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const activeContent = document.getElementById(tabId);
+            if (activeContent) activeContent.classList.add('active');
         };
 
-        window.saveContent = (type) => {
+        // Attach Tab Click Listeners
+        document.querySelectorAll('.content-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+
+        // Save Content Logic
+        const saveContent = async (type) => {
             const content = document.getElementById(`${type}Content`).value;
-            localStorage.setItem(`aptiogen_${type}`, content);
-            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} saved successfully!`);
+
+            try {
+                const result = await settingsAPI.updateSetting(type, content);
+                if (result.message) {
+                    alert(`${type} saved successfully!`);
+                }
+            } catch (error) {
+                alert('Failed to save: ' + error.message);
+            }
         };
+
+        // Attach Save Button Listeners
+        document.querySelectorAll('.btn-save').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.getAttribute('data-type');
+                saveContent(type);
+            });
+        });
 
         // Load saved content
-        ['terms', 'privacy', 'faqs'].forEach(type => {
-            const saved = localStorage.getItem(`aptiogen_${type}`);
-            if (saved) {
-                document.getElementById(`${type}Content`).value = saved;
+        async function loadAllContent() {
+            const types = ['studentTerms', 'instituteTerms', 'privacy', 'faqs'];
+
+            try {
+                const settings = await settingsAPI.getSettings();
+                console.log('Loading settings:', settings);
+
+                types.forEach(type => {
+                    const setting = settings.find(s => s.key === type);
+                    if (setting && document.getElementById(`${type}Content`)) {
+                        document.getElementById(`${type}Content`).value = setting.value;
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading content:', error);
             }
-        });
+        }
+
+        loadAllContent();
     </script>
 </body>
 

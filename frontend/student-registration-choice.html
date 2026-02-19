@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Registration Type - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .choice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+            padding: 20px;
+        }
+
+        .choice-wrapper {
+            max-width: 900px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .choice-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .choice-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+        }
+
+        .choice-card i {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .choice-card h2 {
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+        }
+
+        .choice-card p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .choice-card .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        .choice-badge {
+            position: absolute;
+            top: 20px;
+            right: -35px;
+            background: #10B981;
+            color: white;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="appbar">
+        <h2>AptioGen</h2>
+        <div class="right-icons">
+            <i class="fa-solid fa-moon theme-toggle"></i>
+            <a href="index.html"><i class="fa-solid fa-house"></i></a>
+        </div>
+    </header>
+
+    <div class="choice-container">
+        <div class="choice-wrapper">
+            <!-- Independent Student -->
+            <div class="choice-card" onclick="window.location.href='register.html'">
+                <i class="fa-solid fa-user"></i>
+                <h2>Independent Student</h2>
+                <p>Register as an individual learner. Access public quizzes, competitive leagues, and personal
+                    performance tracking.</p>
+                <button class="btn btn-outline" style="border-width: 2px;">Register Now</button>
+            </div>
+
+            <!-- Institution Student -->
+            <div class="choice-card" onclick="window.location.href='institution-student-register.html'">
+                <div class="choice-badge">Recommended</div>
+                <i class="fa-solid fa-building-columns"></i>
+                <h2>Institution Student</h2>
+                <p>Register via your college or university. Access private tests, department rankings, and specialized
+                    academic content.</p>
+                <button class="btn btn-primary">Connect Institution</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/theme.js" type="module"></script>
+    <script>
+        import { initTheme } from './js/theme.js';
+        initTheme();
+    </script>
+</body>
+
+</html>

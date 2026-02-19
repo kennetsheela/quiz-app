@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,17 +13,17 @@
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     :root {
       --accent-primary: #3b82f6;
       --accent-secondary: #8b5cf6;
       --card-bg: #ffffff;
-      --shadow: rgba(0,0,0,0.1);
+      --shadow: rgba(0, 0, 0, 0.1);
       --border-color: #e5e7eb;
       --text-primary: #1f2937;
       --text-secondary: #6b7280;
     }
-    
+
     body {
       font-family: 'Inter', sans-serif;
       display: flex;
@@ -32,7 +33,7 @@
       padding: 20px;
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
-    
+
     .details-container {
       background: var(--card-bg);
       border-radius: 20px;
@@ -42,12 +43,12 @@
       box-shadow: 0 20px 60px var(--shadow);
       border: 1px solid var(--border-color);
     }
-    
+
     .header {
       text-align: center;
       margin-bottom: 30px;
     }
-    
+
     .header h1 {
       font-size: 2rem;
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
@@ -55,12 +56,12 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
     }
-    
+
     .header p {
       color: var(--text-secondary);
       font-size: 14px;
     }
-    
+
     .user-avatar {
       width: 80px;
       height: 80px;
@@ -80,11 +81,11 @@
       height: 100%;
       object-fit: cover;
     }
-    
+
     .form-group {
       margin-bottom: 20px;
     }
-    
+
     .form-group label {
       display: block;
       margin-bottom: 8px;
@@ -97,7 +98,7 @@
       content: ' *';
       color: #ef4444;
     }
-    
+
     .form-group input,
     .form-group select {
       width: 100%;
@@ -108,27 +109,27 @@
       font-size: 14px;
       transition: border-color 0.3s;
     }
-    
+
     .form-group input:focus,
     .form-group select:focus {
       outline: none;
       border-color: var(--accent-primary);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-    
+
     .form-group input[readonly] {
       background: #f9fafb;
       color: var(--text-secondary);
       cursor: not-allowed;
     }
-    
+
     .progress-steps {
       display: flex;
       justify-content: space-between;
       margin-bottom: 30px;
       gap: 10px;
     }
-    
+
     .step {
       flex: 1;
       height: 4px;
@@ -136,11 +137,11 @@
       border-radius: 2px;
       overflow: hidden;
     }
-    
+
     .step.active {
       background: var(--accent-primary);
     }
-    
+
     .btn {
       width: 100%;
       padding: 12px;
@@ -155,12 +156,12 @@
       justify-content: center;
       gap: 8px;
     }
-    
+
     .btn-primary {
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
       color: white;
     }
-    
+
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
@@ -170,7 +171,7 @@
       opacity: 0.6;
       cursor: not-allowed;
     }
-    
+
     .error-message {
       background: #fee;
       color: #c33;
@@ -200,7 +201,7 @@
       font-size: 13px;
       border-left: 3px solid #0369a1;
     }
-    
+
     .spinner {
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-top: 2px solid white;
@@ -211,8 +212,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .skip-link {
@@ -233,6 +239,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="details-container">
     <div class="header">
@@ -242,7 +249,7 @@
       <h1>Complete Your Profile</h1>
       <p>Join our community of learners</p>
     </div>
-    
+
     <div class="progress-steps">
       <div class="step active"></div>
       <div class="step active"></div>
@@ -255,18 +262,18 @@
 
     <div id="errorMessage" class="error-message"></div>
     <div id="successMessage" class="success-message"></div>
-    
+
     <form id="detailsForm">
       <div class="form-group">
         <label for="username" class="label-required">Full Name</label>
         <input type="text" id="username" placeholder="Enter your full name" required>
       </div>
-      
+
       <div class="form-group">
         <label for="email">Email Address</label>
         <input type="email" id="email" placeholder="Your email" readonly>
       </div>
-      
+
       <div class="form-group">
         <label for="department" class="label-required">Department</label>
         <select id="department" required>
@@ -281,7 +288,7 @@
           <option value="other">Other</option>
         </select>
       </div>
-      
+
       <div class="form-group">
         <label for="college" class="label-required">College</label>
         <select id="college" required>
@@ -296,12 +303,12 @@
           <option value="Other">Other</option>
         </select>
       </div>
-      
+
       <div class="form-group">
         <label for="city" class="label-required">City</label>
         <input type="text" id="city" placeholder="Enter your city" required>
       </div>
-      
+
       <button type="submit" class="btn btn-primary" id="submitBtn">
         <span id="btnText">Continue to Dashboard</span>
         <i class="fas fa-arrow-right"></i>
@@ -383,7 +390,7 @@
       try {
         const profile = await authAPI.getProfile();
         console.log("Existing profile found:", profile);
-        
+
         if (profile) {
           // Pre-fill form with existing data
           if (profile.username) document.getElementById("username").value = profile.username;
@@ -399,7 +406,7 @@
     // Handle form submission
     detailsForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      
+
       const user = auth.currentUser;
       if (!user) {
         showError("Session expired. Please login again.");
@@ -409,7 +416,10 @@
 
       errorMessage.style.display = 'none';
       setLoading(true);
-      
+
+      // Check for pending specific data from registration
+      const pendingProfile = JSON.parse(sessionStorage.getItem('pendingProfile') || '{}');
+
       const profileData = {
         username: document.getElementById("username").value.trim(),
         email: document.getElementById("email").value,
@@ -417,7 +427,12 @@
         college: document.getElementById("college").value,
         city: document.getElementById("city").value.trim(),
         photoURL: user.photoURL || null,
-        provider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'email'
+        provider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'email',
+        // Institution specific additions
+        role: pendingProfile.role || 'student',
+        institutionId: pendingProfile.institutionId || undefined,
+        departmentId: pendingProfile.departmentId || undefined,
+        batchId: pendingProfile.batchId || undefined
       };
 
       console.log("Saving profile data:", profileData);
@@ -425,16 +440,17 @@
       try {
         const result = await authAPI.saveProfile(profileData);
         console.log("Profile saved successfully:", result);
-        
+
         showSuccess("Profile saved successfully! Redirecting...");
-        
+        sessionStorage.removeItem('pendingProfile'); // Clear after use
+
         setTimeout(() => {
           window.location.href = "explore.html";
         }, 1500);
-        
+
       } catch (error) {
         console.error("Error saving profile:", error);
-        
+
         let errorMsg = "Failed to save profile. ";
         if (error.message.includes("auth/")) {
           errorMsg += "Please login again.";
@@ -444,7 +460,7 @@
         } else {
           errorMsg += error.message || "Please try again.";
         }
-        
+
         showError(errorMsg);
         setLoading(false);
       }
@@ -453,11 +469,12 @@
     // Handle skip link
     document.getElementById("skipLink").addEventListener("click", (e) => {
       e.preventDefault();
-      
+
       if (confirm("Are you sure you want to skip? You'll need to complete your profile later to access all features.")) {
         window.location.href = "explore.html";
       }
     });
   </script>
 </body>
+
 </html>

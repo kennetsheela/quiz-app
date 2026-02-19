@@ -1,156 +1,3685 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Institution Dashboard - AptioGen</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Institution Dashboard — AptioGen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/components.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        .dashboard-container {
-            padding: 100px 30px 40px;
+        /* ===================== DESIGN TOKENS ===================== */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #eff6ff;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-w: 240px;
+            --header-h: 64px;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --surface2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-2: #64748b;
+            --text-3: #94a3b8;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 4px 16px rgba(0, 0, 0, .04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, .1), 0 8px 32px rgba(0, 0, 0, .06);
+            --radius: 12px;
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #94a3b8;
+            --sidebar-active: #3b82f6;
+            --sidebar-hover: rgba(255, 255, 255, .06);
         }
 
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 40px;
+        [data-theme="dark"] {
+            --bg: #0b1120;
+            --surface: #131c2e;
+            --surface2: #1e293b;
+            --border: #1e2d42;
+            --text: #e2e8f0;
+            --text-2: #94a3b8;
+            --text-3: #475569;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 4px 16px rgba(0, 0, 0, .2);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, .4), 0 8px 32px rgba(0, 0, 0, .3);
+            --primary-light: #1e3a5f;
         }
 
-        .action-card {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: left;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background .3s, color .3s;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Syne', sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        /* ===================== SIDEBAR ===================== */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform .3s ease;
+        }
+
+        .sidebar-logo {
+            padding: 20px 20px 8px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+            height: var(--header-h);
         }
 
-        .action-card:hover {
-            border-color: var(--accent-primary);
-            box-shadow: 0 10px 30px var(--shadow);
-            transform: translateY(-5px);
-        }
-
-        .action-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            background: rgba(59, 130, 246, 0.1);
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            color: var(--accent-primary);
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .sidebar-logo-text {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .sidebar-logo-text span {
+            color: var(--primary);
+        }
+
+        .sidebar-nav {
+            padding: 16px 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--sidebar-text);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all .2s;
+            margin-bottom: 2px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: var(--sidebar-active);
+            color: #fff;
+        }
+
+        .nav-item i {
+            width: 18px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid rgba(255, 255, 255, .07);
+            color: var(--sidebar-text);
+            font-size: 12px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .5);
+            z-index: 99;
+        }
+
+        /* ===================== HEADER ===================== */
+        .header {
+            position: fixed;
+            left: var(--sidebar-w);
+            right: 0;
+            top: 0;
+            height: var(--header-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+            z-index: 50;
+            transition: left .3s;
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-2);
+            padding: 4px 8px;
+        }
+
+        .header-title h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            color: var(--text-2);
+        }
+
+        .header-spacer {
+            flex: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-2);
+            font-size: 15px;
+            cursor: pointer;
+            transition: all .2s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .notif-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            position: absolute;
+            top: 6px;
+            right: 6px;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all .2s;
+            position: relative;
+        }
+
+        .profile-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .profile-avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .profile-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: var(--shadow-md);
+            min-width: 160px;
+            overflow: hidden;
+            display: none;
+            z-index: 200;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-menu a,
+        .dropdown-menu button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            transition: background .15s;
+        }
+
+        .dropdown-menu a:hover,
+        .dropdown-menu button:hover {
+            background: var(--surface2);
+        }
+
+        .dropdown-menu .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        /* ===================== MAIN CONTENT ===================== */
+        .main {
+            margin-left: var(--sidebar-w);
+            padding-top: var(--header-h);
+            min-height: 100vh;
+            transition: margin .3s;
+        }
+
+        .section {
+            display: none;
+            padding: 28px;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: var(--text-2);
+            margin-top: 2px;
+        }
+
+        /* ===================== CARDS ===================== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            transition: box-shadow .2s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            transition: all .2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .metric-icon.blue {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .metric-icon.green {
+            background: #ecfdf5;
+            color: var(--success);
+        }
+
+        .metric-icon.purple {
+            background: #f5f3ff;
+            color: var(--secondary);
+        }
+
+        .metric-icon.orange {
+            background: #fffbeb;
+            color: var(--warning);
+        }
+
+        [data-theme="dark"] .metric-icon.blue {
+            background: #1e3a5f;
+        }
+
+        [data-theme="dark"] .metric-icon.green {
+            background: #064e3b;
+        }
+
+        [data-theme="dark"] .metric-icon.purple {
+            background: #2e1065;
+        }
+
+        [data-theme="dark"] .metric-icon.orange {
+            background: #451a03;
+        }
+
+        .metric-value {
+            font-size: 26px;
+            font-weight: 800;
+            font-family: 'Syne', sans-serif;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-2);
+            margin-top: 4px;
+        }
+
+        /* ===================== TABLES ===================== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table th {
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--text-2);
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        table td {
+            padding: 12px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        table tr:last-child td {
+            border-bottom: none;
+        }
+
+        table tbody tr:hover {
+            background: var(--surface2);
+        }
+
+        /* ===================== BADGES ===================== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-blue {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .badge-green {
+            background: #ecfdf5;
+            color: var(--success);
+        }
+
+        .badge-orange {
+            background: #fffbeb;
+            color: var(--warning);
+        }
+
+        .badge-red {
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .badge-purple {
+            background: #f5f3ff;
+            color: var(--secondary);
+        }
+
+        .badge-gray {
+            background: var(--surface2);
+            color: var(--text-2);
+        }
+
+        [data-theme="dark"] .badge-blue {
+            background: #1e3a5f;
+        }
+
+        [data-theme="dark"] .badge-green {
+            background: #064e3b;
+        }
+
+        [data-theme="dark"] .badge-orange {
+            background: #451a03;
+        }
+
+        [data-theme="dark"] .badge-red {
+            background: #450a0a;
+        }
+
+        [data-theme="dark"] .badge-purple {
+            background: #2e1065;
+        }
+
+        /* ===================== BUTTONS ===================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-success {
+            background: #ecfdf5;
+            color: var(--success);
+            border: 1px solid #a7f3d0;
+        }
+
+        .btn-success:hover {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-icon {
+            padding: 7px;
+        }
+
+        /* ===================== FORMS ===================== */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-2);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+            transition: border .2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* ===================== FILTER BAR ===================== */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .filter-bar .form-control {
+            min-width: 140px;
+            flex: 1;
+        }
+
+        /* ===================== PAGINATION ===================== */
+        .pagination {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-2);
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .page-btn:hover:not(.active) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* ===================== MODAL ===================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .5);
+            backdrop-filter: blur(4px);
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: var(--shadow-md);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .close-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: var(--surface2);
+            border: none;
+            color: var(--text-2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .close-btn:hover {
+            background: var(--border);
+        }
+
+        /* ===================== TABS ===================== */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+            gap: 0;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            background: none;
+            color: var(--text-2);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all .2s;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* ===================== DEPT CARDS ===================== */
+        .dept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .dept-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            box-shadow: var(--shadow);
+            transition: all .2s;
+            position: relative;
+        }
+
+        .dept-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .dept-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .dept-code {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .dept-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .dept-meta {
+            font-size: 12px;
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dept-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .dept-stat {
+            text-align: center;
+        }
+
+        .dept-stat-val {
+            font-weight: 700;
+            font-size: 16px;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .dept-stat-lbl {
+            font-size: 10px;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        /* ===================== BATCH TIMELINE ===================== */
+        .timeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 20px 0;
+            overflow-x: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 70px;
+        }
+
+        .timeline-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface2);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-2);
+            z-index: 1;
+        }
+
+        .timeline-dot.current {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .timeline-dot.past {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+
+        .timeline-label {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        .timeline-label.current {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .timeline-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            min-width: 20px;
+        }
+
+        .timeline-line.past {
+            background: var(--success);
+        }
+
+        /* ===================== CHARTS ===================== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .chart-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .chart-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .chart-wrap {
+            position: relative;
+            height: 200px;
+        }
+
+        /* ===================== ANALYTICS ===================== */
+        .top-performer-card {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            border-radius: var(--radius);
+            padding: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .crown-icon {
+            font-size: 32px;
+        }
+
+        .performer-info h3 {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .performer-info p {
+            font-size: 13px;
+            opacity: .8;
+            margin-top: 2px;
+        }
+
+        .performer-stats {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .perf-stat {
+            text-align: center;
+        }
+
+        .perf-stat-val {
+            font-size: 20px;
+            font-weight: 800;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .perf-stat-lbl {
+            font-size: 11px;
+            opacity: .7;
+        }
+
+        /* ===================== WIZARD ===================== */
+        .wizard-modal {
+            max-width: 680px !important;
+        }
+
+        .wizard-steps-bar {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px 0;
+            gap: 0;
+        }
+
+        .wstep {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+            cursor: default;
+        }
+
+        .wstep:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .wstep.done:not(:last-child)::after {
+            background: var(--primary);
+        }
+
+        .wstep-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface2);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-2);
+            position: relative;
+            z-index: 1;
+            transition: all .3s;
+        }
+
+        .wstep.active .wstep-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .wstep.done .wstep-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+
+        .wstep-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-3);
+            margin-top: 6px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .wstep.active .wstep-label {
+            color: var(--primary);
+        }
+
+        .wstep.done .wstep-label {
+            color: var(--success);
+        }
+
+        .wizard-pane {
+            display: none;
+        }
+
+        .wizard-pane.active {
+            display: block;
+        }
+
+        .wizard-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--surface2);
+            border-radius: 0 0 16px 16px;
+        }
+
+        .wizard-step-indicator {
+            font-size: 12px;
+            color: var(--text-2);
+            font-weight: 600;
+        }
+
+        /* ===================== TOGGLE SWITCHES ===================== */
+        .toggle-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .toggle-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .toggle-icon.blue {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .toggle-icon.orange {
+            background: #fffbeb;
+            color: var(--warning);
+        }
+
+        .toggle-icon.purple {
+            background: #f5f3ff;
+            color: var(--secondary);
+        }
+
+        .toggle-icon.green {
+            background: #ecfdf5;
+            color: var(--success);
+        }
+
+        [data-theme="dark"] .toggle-icon.blue {
+            background: #1e3a5f;
+        }
+
+        [data-theme="dark"] .toggle-icon.orange {
+            background: #451a03;
+        }
+
+        [data-theme="dark"] .toggle-icon.purple {
+            background: #2e1065;
+        }
+
+        [data-theme="dark"] .toggle-icon.green {
+            background: #064e3b;
+        }
+
+        .toggle-text strong {
+            font-size: 13px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .toggle-text small {
+            font-size: 11px;
+            color: var(--text-2);
+        }
+
+        .switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 22px;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .slider:before {
+            content: '';
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .3s;
+        }
+
+        input:checked+.slider {
+            background: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(18px);
+        }
+
+        /* ===================== METHOD CARDS ===================== */
+        .method-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .method-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .method-card:hover {
+            border-color: var(--primary);
+        }
+
+        .method-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .method-card i {
+            font-size: 22px;
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .method-card span {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ===================== MULTI SELECT ===================== */
+        .multi-select-area {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 44px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            cursor: pointer;
+            background: var(--surface);
+        }
+
+        .multi-select-area:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
+        }
+
+        .ms-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--primary);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .ms-tag button {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .ms-options {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .ms-options.open {
+            display: block;
+        }
+
+        .ms-option {
+            padding: 9px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background .15s;
+        }
+
+        .ms-option:hover {
+            background: var(--surface2);
+        }
+
+        .ms-option.selected {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* ===================== SUMMARY GRID ===================== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .summary-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-2);
+            margin-bottom: 3px;
+        }
+
+        .summary-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ===================== RADIO/CHECKBOX ===================== */
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .radio-label input {
+            accent-color: var(--primary);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .checkbox-label input {
+            accent-color: var(--primary);
+        }
+
+        /* ===================== REPORT ===================== */
+        .report-output {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .report-output.show {
+            display: block;
+        }
+
+        .report-header {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .report-meta {
+            font-size: 12px;
+            opacity: .7;
+            margin-top: 4px;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* ===================== MISC ===================== */
+        .events-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .events-section-header h4 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .info-box {
+            background: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: var(--primary-dark);
+        }
+
+        [data-theme="dark"] .info-box {
+            border-color: #1e40af;
+            color: #93c5fd;
+        }
+
+        .batch-detail {
+            display: none;
+        }
+
+        .batch-detail.show {
+            display: block;
+        }
+
+        .back-btn {
+            margin-bottom: 16px;
+        }
+
+        .dist-table-wrap {
+            overflow-x: auto;
+        }
+
+        .dist-table th,
+        .dist-table td {
+            font-size: 12px;
+            padding: 8px 12px;
+            text-align: center;
+        }
+
+        .dist-table th:first-child,
+        .dist-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .grant-form {
+            background: var(--surface2);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        /* ===================== LOADING STATES ===================== */
+        .skeleton {
+            background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-2);
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: .4;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ===================== MOBILE ===================== */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .header {
+                left: 0;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .metric-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .performer-stats {
+                display: none;
+            }
+
+            .section {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section.active {
+            animation: fadeIn .2s ease;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-3);
         }
     </style>
 </head>
 
 <body>
-    <header class="appbar">
-        <h2>AptioGen <span class="badge badge-success ml-2"
-                style="font-size: 10px; vertical-align: middle;">INSTITUTION</span></h2>
-        <nav class="nav-links">
-            <a href="#" class="active">Dashboard</a>
-            <a href="#">Events</a>
-            <a href="#">Batches</a>
-            <a href="#">Analytics</a>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">⚡</div>
+            <div class="sidebar-logo-text">Aptio<span>Gen</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-section="dashboard"><i class="fa-solid fa-chart-pie"></i>
+                Dashboard</button>
+            <button class="nav-item" data-section="events"><i class="fa-solid fa-calendar-days"></i> Events</button>
+            <button class="nav-item" data-section="departments"><i class="fa-solid fa-building-columns"></i>
+                Departments</button>
+            <button class="nav-item" data-section="students"><i class="fa-solid fa-users"></i> Students</button>
+            <button class="nav-item" data-section="batches"><i class="fa-solid fa-graduation-cap"></i> Batches</button>
+            <button class="nav-item" data-section="analytics"><i class="fa-solid fa-chart-line"></i> Analytics</button>
+            <button class="nav-item" data-section="reports"><i class="fa-solid fa-file-chart-column"></i>
+                Reports</button>
         </nav>
-        <div class="right-icons">
-            <i class="fa-solid fa-moon theme-toggle"></i>
-            <div class="dropdown">
-                <button class="dropbtn"><i class="fa-solid fa-user-circle"></i></button>
-                <div class="dropdown-content">
-                    <a href="#"><i class="fas fa-building"></i> Profile</a>
-                    <a href="#"><i class="fas fa-credit-card"></i> Billing</a>
-                    <hr>
-                    <a href="index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <div class="sidebar-footer" id="sidebarPlan">Institution Admin Portal v2.0</div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <div class="header-title">
+            <h3 id="headerInstName">⏳ Loading...</h3>
+            <p id="headerInstLocation">Please wait</p>
+        </div>
+        <div class="header-spacer"></div>
+        <div class="header-actions">
+            <button class="icon-btn" id="themeToggle" title="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+            <div class="icon-btn" style="position:relative"><i class="fa-solid fa-bell"></i>
+                <div class="notif-dot" id="notifDot" style="display:none"></div>
+            </div>
+            <div class="profile-btn" id="profileBtn">
+                <div class="profile-avatar" id="profileAvatar">?</div>
+                <span class="profile-name" id="profileName">Admin</span>
+                <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--text-2)"></i>
+                <div class="dropdown-menu" id="profileDropdown">
+                    <a href="institution-profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+                    <a href="#"><i class="fa-solid fa-gear"></i> Settings</a>
+                    <div class="divider"></div>
+                    <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="dashboard-container container">
-        <div class="flex justify-between align-center mb-4">
-            <h2>Institution Overview</h2>
-            <p class="badge badge-primary">Plan: Premium</p>
-        </div>
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main">
 
-        <div class="action-grid">
-            <a href="create-event-wizard.html" style="text-decoration: none; color: inherit;">
-                <div class="action-card">
-                    <div class="action-icon"><i class="fas fa-calendar-plus"></i></div>
-                    <div>
-                        <h3>Create Event</h3>
-                        <p>Launch a new quiz or assessment</p>
-                    </div>
-                </div>
-            </a>
-            <a href="institution-batch-management.html" style="text-decoration: none; color: inherit;">
-                <div class="action-card">
-                    <div class="action-icon"><i class="fas fa-users"></i></div>
-                    <div>
-                        <h3>Manage Batches</h3>
-                        <p>Organize students and departments</p>
-                    </div>
-                </div>
-            </a>
-            <div class="action-card" onclick="alert('Analytics feature coming soon!')">
-                <div class="action-icon"><i class="fas fa-file-invoice"></i></div>
+        <!-- ========== DASHBOARD ========== -->
+        <div class="section active" id="section-dashboard">
+            <div class="section-header">
                 <div>
-                    <h3>Results & Reports</h3>
-                    <p>Analyze student performance</p>
+                    <div class="section-title">Dashboard</div>
+                    <div class="section-subtitle" id="dashSubtitle">Overview of your institution's performance</div>
+                </div>
+                <button class="btn btn-primary" onclick="openCreateEventModal()"><i class="fa-solid fa-plus"></i> Create
+                    Event</button>
+            </div>
+            <div class="metric-grid" id="dashMetrics">
+                <!-- Loaded dynamically -->
+                <div class="metric-card">
+                    <div class="metric-icon blue"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div>
+                        <div class="metric-value skeleton" style="width:60px;height:28px;margin-bottom:6px"></div>
+                        <div class="metric-label">Total Events</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="metric-value skeleton" style="width:60px;height:28px;margin-bottom:6px"></div>
+                        <div class="metric-label">Completed Events</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon purple"><i class="fa-solid fa-chart-bar"></i></div>
+                    <div>
+                        <div class="metric-value skeleton" style="width:60px;height:28px;margin-bottom:6px"></div>
+                        <div class="metric-label">Average Score</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon orange"><i class="fa-solid fa-circle-dot"></i></div>
+                    <div>
+                        <div class="metric-value skeleton" style="width:60px;height:28px;margin-bottom:6px"></div>
+                        <div class="metric-label">Active Events</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="events-section-header">
+                    <div>
+                        <h4>🔴 Active Events</h4>
+                        <p style="font-size:12px;color:var(--text-2)">Currently running assessments</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="showSection('events')">View All Events →</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Start Date</th>
+                                <th>Participants</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashActiveEvents">
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <div class="loading-spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div class="content-grid">
-            <section class="card" style="grid-column: span 2;">
-                <h3>Recent Events</h3>
-                <div class="event-grid">
-                    <div class="event-card">
-                        <h3>Python Mid-Term Quizz</h3>
-                        <div class="event-date"><i class="fas fa-clock"></i> Ends in 2 hours</div>
-                        <div class="flex justify-between mt-2">
-                            <span>Participants: 124</span>
-                            <span class="text-success">Live</span>
-                        </div>
-                        <div class="event-actions">
-                            <button class="btn btn-primary">Monitor</button>
-                            <button class="btn btn-secondary">Stop</button>
-                        </div>
-                    </div>
+        <!-- ========== EVENTS ========== -->
+        <div class="section" id="section-events">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Events Management</div>
+                    <div class="section-subtitle">Manage all assessments and quizzes</div>
                 </div>
-            </section>
-
-            <section class="card">
-                <h3>Quick Stats</h3>
-                <div class="mb-3">
-                    <p class="mb-1 small">Active Students</p>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 75%;"></div>
-                    </div>
-                    <span class="small">750 / 1000</span>
+                <button class="btn btn-primary" onclick="openCreateEventModal()"><i class="fa-solid fa-plus"></i> Create
+                    Event</button>
+            </div>
+            <div class="card" style="margin-bottom:16px">
+                <div class="filter-bar">
+                    <select class="form-control" id="evtFilterStatus" style="max-width:160px">
+                        <option value="">All Status</option>
+                        <option>Active</option>
+                        <option>Pending</option>
+                        <option>Completed</option>
+                    </select>
+                    <select class="form-control" id="evtFilterType" style="max-width:160px">
+                        <option value="">All Types</option>
+                        <option>Public</option>
+                        <option>Private</option>
+                    </select>
+                    <select class="form-control" id="evtFilterCategory" style="max-width:180px">
+                        <option value="">All Categories</option>
+                        <option>Aptitude</option>
+                        <option>Reasoning</option>
+                        <option>Coding</option>
+                        <option>Technical</option>
+                        <option>General Knowledge</option>
+                    </select>
+                    <input class="form-control" id="evtSearch" placeholder="Search events..." style="max-width:220px">
+                    <button class="btn btn-primary" onclick="filterAndRenderEvents()"><i class="fa-solid fa-filter"></i>
+                        Filter</button>
+                    <button class="btn btn-secondary" onclick="resetEventFilters()">Reset</button>
                 </div>
-                <div class="mb-3">
-                    <p class="mb-1 small">Success Rate</p>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 84%; background: #10b981;"></div>
-                    </div>
-                    <span class="small">84% Average Score</span>
+            </div>
+            <div class="card">
+                <div class="table-wrap">
+                    <table id="eventsTable">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Start Date</th>
+                                <th>Participants</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsTbody">
+                            <tr>
+                                <td colspan="7" style="text-align:center;padding:30px">
+                                    <div class="loading-spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </section>
+            </div>
         </div>
+
+        <!-- ========== DEPARTMENTS ========== -->
+        <div class="section" id="section-departments">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Department Management</div>
+                    <div class="section-subtitle">Manage departments and HOD access</div>
+                </div>
+                <button class="btn btn-primary" onclick="openModal('addDeptModal')"><i class="fa-solid fa-plus"></i> Add
+                    Department</button>
+            </div>
+            <div class="dept-grid" id="deptGrid">
+                <div style="text-align:center;padding:40px;grid-column:1/-1">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== STUDENTS ========== -->
+        <div class="section" id="section-students">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Student Management</div>
+                    <div class="section-subtitle" id="studentSubtitle">Loading students...</div>
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button class="btn btn-secondary"><i class="fa-solid fa-file-import"></i> Import CSV</button>
+                    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Student</button>
+                </div>
+            </div>
+            <div class="metric-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+                <div class="metric-card">
+                    <div class="metric-icon blue"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <div class="metric-value" id="stuTotal">—</div>
+                        <div class="metric-label">Total Students</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon green"><i class="fa-solid fa-user-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="stuActive">—</div>
+                        <div class="metric-label">Active</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon purple"><i class="fa-solid fa-user-graduate"></i></div>
+                    <div>
+                        <div class="metric-value" id="stuAlumni">—</div>
+                        <div class="metric-label">Alumni</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="margin-bottom:16px">
+                <div class="filter-bar">
+                    <select class="form-control" id="stuDeptFilter">
+                        <option value="">All Departments</option>
+                    </select>
+                    <select class="form-control" id="stuBatchFilter">
+                        <option value="">All Batches</option>
+                    </select>
+                    <input class="form-control" id="stuSearch" placeholder="🔍 Name, Roll No, Email">
+                    <button class="btn btn-primary" onclick="loadStudents()"><i class="fa-solid fa-filter"></i>
+                        Apply</button>
+                    <button class="btn btn-secondary" onclick="resetStudentFilters()">Reset</button>
+                </div>
+            </div>
+            <!-- Dist Tables -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" class="dist-grids">
+                <div class="card">
+                    <h4 style="font-size:14px;font-weight:700;margin-bottom:14px">📊 Department-wise Distribution</h4>
+                    <div class="dist-table-wrap">
+                        <table class="dist-table" id="deptDistTable">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="text-align:center">
+                                        <div class="loading-spinner"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4 style="font-size:14px;font-weight:700;margin-bottom:14px">🎓 Batch-wise Distribution</h4>
+                    <div class="dist-table-wrap">
+                        <table class="dist-table" id="batchDistTable">
+                            <thead>
+                                <tr>
+                                    <th>Batch</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="text-align:center">
+                                        <div class="loading-spinner"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="events-section-header">
+                    <h4>Student List <span class="badge badge-blue" id="stuCount">—</span></h4>
+                    <button class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Export CSV</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTbody">
+                            <tr>
+                                <td colspan="5" style="text-align:center;padding:30px">
+                                    <div class="loading-spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="stuPagination"></div>
+            </div>
+        </div>
+
+        <!-- ========== BATCHES ========== -->
+        <div class="section" id="section-batches">
+            <div id="batchListView">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Batch Management</div>
+                        <div class="section-subtitle">Track student batches through their academic lifecycle</div>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="activeBatches">🟢 Active Batches</button>
+                    <button class="tab-btn" data-tab="graduatedBatches">🎓 Graduated Batches</button>
+                </div>
+                <div class="tab-pane active" id="activeBatches">
+                    <div class="card">
+                        <div id="activeBatchesAlert"></div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Batch ID</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Department</th>
+                                        <th>Students</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activeBatchesTbody">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;padding:30px">
+                                            <div class="loading-spinner"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="graduatedBatches">
+                    <div class="card">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Batch ID</th>
+                                        <th>Graduated On</th>
+                                        <th>Students</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="graduatedBatchesTbody">
+                                    <tr>
+                                        <td colspan="4" style="text-align:center;padding:30px">
+                                            <div class="loading-spinner"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="batchDetailView" class="batch-detail">
+                <button class="btn btn-secondary btn-sm back-btn" onclick="closeBatchDetail()"><i
+                        class="fa-solid fa-arrow-left"></i> Back to Batches</button>
+                <div class="card" id="batchDetailCard"></div>
+            </div>
+        </div>
+
+        <!-- ========== ANALYTICS ========== -->
+        <div class="section" id="section-analytics">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Analytics</div>
+                    <div class="section-subtitle">Deep-dive into event performance data</div>
+                </div>
+            </div>
+            <div class="card" style="margin-bottom:20px">
+                <h4 style="font-size:14px;font-weight:700;margin-bottom:16px">📊 Analytics Filters</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px"
+                    class="analytics-filter-grid">
+                    <div class="form-group"><label>Select Event</label><select class="form-control" id="aEvt">
+                            <option value="">— Select Event —</option>
+                        </select></div>
+                    <div class="form-group"><label>Department</label><select class="form-control" id="aDept">
+                            <option value="">All Departments</option>
+                        </select></div>
+                    <div class="form-group"><label>Batch</label><select class="form-control" id="aBatch">
+                            <option value="">All Batches</option>
+                        </select></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+                    <div class="form-group"><label>Score Range</label>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="scoreRange" value="all" checked> All
+                                Scores</label>
+                            <label class="radio-label"><input type="radio" name="scoreRange" value="above80"> Above
+                                80%</label>
+                            <label class="radio-label"><input type="radio" name="scoreRange" value="70-80">
+                                70–80%</label>
+                            <label class="radio-label"><input type="radio" name="scoreRange" value="50-70">
+                                50–70%</label>
+                            <label class="radio-label"><input type="radio" name="scoreRange" value="below50"> Below
+                                50%</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Limit Results</label>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="limit" value="10"> Top 10</label>
+                            <label class="radio-label"><input type="radio" name="limit" value="100"> Top 100</label>
+                            <label class="radio-label"><input type="radio" name="limit" value="1000" checked> Top
+                                1000</label>
+                            <label class="radio-label"><input type="radio" name="limit" value="bottom10"> Bottom
+                                10</label>
+                            <label class="radio-label"><input type="radio" name="limit" value="bottom100"> Bottom
+                                100</label>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:8px">
+                    <button class="btn btn-primary" onclick="applyAnalytics()"><i class="fa-solid fa-filter"></i> Apply
+                        Filters</button>
+                    <button class="btn btn-secondary" onclick="resetAnalytics()">Reset</button>
+                </div>
+            </div>
+            <div id="analyticsResults" style="display:none">
+                <div class="top-performer-card">
+                    <div class="crown-icon">👑</div>
+                    <div class="performer-info">
+                        <h3 id="tpName">—</h3>
+                        <p id="tpMeta">—</p>
+                    </div>
+                    <div class="performer-stats">
+                        <div class="perf-stat">
+                            <div class="perf-stat-val" id="tpScore">—</div>
+                            <div class="perf-stat-lbl">Score</div>
+                        </div>
+                        <div class="perf-stat">
+                            <div class="perf-stat-val" id="tpRank">—</div>
+                            <div class="perf-stat-lbl">Rank</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+                    <div class="metric-card">
+                        <div class="metric-icon purple"><i class="fa-solid fa-chart-bar"></i></div>
+                        <div>
+                            <div class="metric-value" id="aAvgScore">—</div>
+                            <div class="metric-label">Average Score</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon blue"><i class="fa-solid fa-bolt"></i></div>
+                        <div>
+                            <div class="metric-value" id="aAvgTime">—</div>
+                            <div class="metric-label">Avg Completion Time</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon green"><i class="fa-solid fa-users"></i></div>
+                        <div>
+                            <div class="metric-value" id="aTotalPart">—</div>
+                            <div class="metric-label">Total Participants</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="margin-bottom:16px">
+                    <div class="events-section-header">
+                        <h4>📋 Filtered Participant List</h4>
+                        <button class="btn btn-secondary btn-sm" onclick="exportAnalyticsCSV()"><i
+                                class="fa-solid fa-download"></i> Export CSV</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Roll No</th>
+                                    <th>Name</th>
+                                    <th>Dept</th>
+                                    <th>Batch</th>
+                                    <th>Score</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participantsTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-title">📊 Score Distribution</div>
+                        <div class="chart-wrap"><canvas id="scoreDistChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">🏢 Department Performance</div>
+                        <div class="chart-wrap"><canvas id="deptPerfChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== REPORTS ========== -->
+        <div class="section" id="section-reports">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Reports</div>
+                    <div class="section-subtitle">Generate and export institution performance reports</div>
+                </div>
+            </div>
+            <div class="metric-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+                <div class="metric-card">
+                    <div class="metric-icon blue"><i class="fa-solid fa-trophy"></i></div>
+                    <div>
+                        <div class="metric-value" id="repTotalChallenges">—</div>
+                        <div class="metric-label">Total Challenges</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon purple"><i class="fa-solid fa-chart-bar"></i></div>
+                    <div>
+                        <div class="metric-value" id="repAvgScore">—</div>
+                        <div class="metric-label">Average Score</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="metric-value" id="repCompletion">—</div>
+                        <div class="metric-label">Completion Rate</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="margin-bottom:20px">
+                <h4 style="font-size:14px;font-weight:700;margin-bottom:16px">📊 Report Filters</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px" class="analytics-filter-grid">
+                    <div>
+                        <div class="form-group"><label>Period</label>
+                            <div class="radio-group">
+                                <label class="radio-label"><input type="radio" name="rPeriod" value="30" checked> Last
+                                    30 Days</label>
+                                <label class="radio-label"><input type="radio" name="rPeriod" value="90"> Last 3
+                                    Months</label>
+                                <label class="radio-label"><input type="radio" name="rPeriod" value="180"> Last 6
+                                    Months</label>
+                                <label class="radio-label"><input type="radio" name="rPeriod" value="academic"> This
+                                    Academic Year</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group"><label>Category</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" checked> Aptitude</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Reasoning</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Coding</label>
+                                <label class="checkbox-label"><input type="checkbox" checked> Technical</label>
+                                <label class="checkbox-label"><input type="checkbox"> General Knowledge</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group"><label>Department</label><select class="form-control"
+                                id="repDeptFilter">
+                                <option>All Departments</option>
+                            </select></div>
+                        <div class="form-group"><label>Batch</label><select class="form-control" id="repBatchFilter">
+                                <option>All Batches</option>
+                            </select></div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:8px">
+                    <button class="btn btn-primary" onclick="generateReport()"><i
+                            class="fa-solid fa-file-chart-column"></i> Generate Report</button>
+                    <button class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+            <div class="report-output" id="reportOutput">
+                <div class="report-header" id="reportHeader">
+                    <div>
+                        <div class="report-title" id="reportInstName">📋 Institution Performance Report</div>
+                        <div class="report-meta" id="reportMeta"></div>
+                    </div>
+                    <span class="badge badge-green" style="background:rgba(16,185,129,.2);color:#34d399">✓ Ready</span>
+                </div>
+                <div class="card" style="margin-bottom:16px">
+                    <h4 style="font-size:14px;font-weight:700;margin-bottom:14px">📋 Event Summary</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Event Name</th>
+                                    <th>Category</th>
+                                    <th>Participants</th>
+                                    <th>Avg Score</th>
+                                    <th>Completion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportEventsTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4 style="font-size:14px;font-weight:700;margin-bottom:14px">📈 Department Performance</h4>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Events</th>
+                                    <th>Participants</th>
+                                    <th>Avg Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportDeptTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="export-actions">
+                    <button class="btn btn-primary" onclick="exportReportPDF()"><i class="fa-solid fa-file-pdf"></i>
+                        Export as PDF</button>
+                    <button class="btn btn-success" onclick="exportReportExcel()"><i class="fa-solid fa-file-excel"></i>
+                        Export as Excel</button>
+                    <button class="btn btn-secondary" onclick="openModal('emailModal')"><i
+                            class="fa-solid fa-envelope"></i> Email Report</button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <script type="module" src="js/theme.js"></script>
+    <!-- ===== CREATE EVENT WIZARD MODAL ===== -->
+    <div class="modal-overlay" id="createEventModal">
+        <div class="modal wizard-modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title">🚀 Create New Event</div>
+                    <p style="font-size:12px;color:var(--text-2);margin-top:2px">Complete all 4 steps to launch your
+                        assessment</p>
+                </div>
+                <button class="close-btn" onclick="closeWizard()">×</button>
+            </div>
+            <div class="wizard-steps-bar">
+                <div class="wstep active" id="wstep1">
+                    <div class="wstep-circle">1</div>
+                    <div class="wstep-label">Details</div>
+                </div>
+                <div class="wstep" id="wstep2">
+                    <div class="wstep-circle">2</div>
+                    <div class="wstep-label">Access</div>
+                </div>
+                <div class="wstep" id="wstep3">
+                    <div class="wstep-circle">3</div>
+                    <div class="wstep-label">Quiz Logic</div>
+                </div>
+                <div class="wstep" id="wstep4">
+                    <div class="wstep-circle">4</div>
+                    <div class="wstep-label">Proctoring</div>
+                </div>
+            </div>
+            <!-- STEP 1 -->
+            <div class="modal-body" id="wpane1" style="padding-top:20px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group" style="grid-column:1/-1"><label>Event Name *</label><input
+                            class="form-control" id="wEvtName" placeholder="e.g. Monthly Coding Sprint"></div>
+                    <div class="form-group" style="grid-column:1/-1"><label>Category *</label>
+                        <select class="form-control" id="wEvtCategory">
+                            <option value="">— Select Category —</option>
+                            <option value="Aptitude">📐 Aptitude</option>
+                            <option value="Reasoning">🧠 Reasoning</option>
+                            <option value="Coding">💻 Coding</option>
+                            <option value="Technical">⚙️ Technical</option>
+                            <option value="General Knowledge">🌍 General Knowledge</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Start Date & Time *</label><input class="form-control"
+                            type="datetime-local" id="wEvtStart"></div>
+                    <div class="form-group"><label>End Date & Time *</label><input class="form-control"
+                            type="datetime-local" id="wEvtEnd"></div>
+                    <div class="form-group"><label>Event Type</label>
+                        <select class="form-control" id="wEvtType">
+                            <option value="Public">🌐 Public — Anyone can join</option>
+                            <option value="Private">🔒 Private — Invite only</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Duration (minutes)</label><input class="form-control" type="number"
+                            id="wEvtDuration" value="60" min="10" max="360"></div>
+                    <div class="form-group" style="grid-column:1/-1"><label>Description</label><textarea
+                            class="form-control" id="wEvtDesc" rows="2" placeholder="Brief description..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- STEP 2 -->
+            <div class="modal-body" id="wpane2" style="display:none;padding-top:20px">
+                <div class="form-group">
+                    <label>Target Departments</label>
+                    <div style="position:relative">
+                        <div class="multi-select-area" id="deptTagsArea" onclick="toggleMsDropdown('deptOpts')">
+                            <span id="deptTagsPlaceholder"
+                                style="font-size:13px;color:var(--text-3);padding:2px 4px">Click to select
+                                departments…</span>
+                        </div>
+                        <div class="ms-options" id="deptOpts" style="max-height:200px;overflow-y:auto"></div>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-2);margin-top:4px">Leave empty to target all departments
+                    </p>
+                </div>
+                <div class="form-group">
+                    <label>Target Batches</label>
+                    <div style="position:relative">
+                        <div class="multi-select-area" id="batchTagsArea" onclick="toggleMsDropdown('batchOpts')">
+                            <span id="batchTagsPlaceholder"
+                                style="font-size:13px;color:var(--text-3);padding:2px 4px">Click to select
+                                batches…</span>
+                        </div>
+                        <div class="ms-options" id="batchOpts" style="max-height:200px;overflow-y:auto"></div>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-2);margin-top:4px">Leave empty to target all batches</p>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group"><label>Registration Deadline</label><input class="form-control"
+                            type="datetime-local" id="wEvtDeadline"></div>
+                    <div class="form-group"><label>Max Participants</label><input class="form-control" type="number"
+                            id="wEvtMaxPart" placeholder="Unlimited"></div>
+                </div>
+                <div class="form-group"><label>Visibility After Completion</label>
+                    <select class="form-control" id="wEvtVisibility">
+                        <option value="scores_only">Show scores only</option>
+                        <option value="rank_and_scores">Show rank & scores</option>
+                        <option value="full_leaderboard">Full leaderboard visible</option>
+                        <option value="hidden">Hidden (admin view only)</option>
+                    </select>
+                </div>
+            </div>
+            <!-- STEP 3 -->
+            <div class="modal-body" id="wpane3" style="display:none;padding-top:20px">
+                <div class="form-group">
+                    <label>Question Selection Method *</label>
+                    <div class="method-cards">
+                        <div class="method-card selected" id="mcard_random" onclick="selectMethod('random')"><i
+                                class="fa-solid fa-shuffle"></i><span>Random from Bank</span></div>
+                        <div class="method-card" id="mcard_set" onclick="selectMethod('set')"><i
+                                class="fa-solid fa-layer-group"></i><span>Specific Quiz Set</span></div>
+                        <div class="method-card" id="mcard_upload" onclick="selectMethod('upload')"><i
+                                class="fa-solid fa-file-arrow-up"></i><span>Manual Upload</span></div>
+                    </div>
+                </div>
+                <div id="methodOpts_random">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div class="form-group"><label>Number of Questions *</label><input class="form-control"
+                                type="number" id="wEvtQCount" value="30" min="1" max="200"></div>
+                        <div class="form-group"><label>Marks Per Question</label><input class="form-control"
+                                type="number" id="wEvtMarks" value="1" min="1"></div>
+                        <div class="form-group"><label>Negative Marking</label>
+                            <select class="form-control" id="wEvtNegative">
+                                <option value="0">No negative marking</option>
+                                <option value="0.25">-0.25 per wrong</option>
+                                <option value="0.5">-0.5 per wrong</option>
+                                <option value="1">-1 per wrong</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Difficulty Mix</label>
+                            <select class="form-control" id="wEvtDifficulty">
+                                <option value="auto">Auto (balanced)</option>
+                                <option value="easy">Easy only</option>
+                                <option value="medium">Medium only</option>
+                                <option value="hard">Hard only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="methodOpts_set" style="display:none">
+                    <div class="form-group"><label>Select Quiz Set</label>
+                        <select class="form-control" id="wEvtQuizSet">
+                            <option value="">— Choose a pre-built set —</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="methodOpts_upload" style="display:none">
+                    <div class="form-group"><label>Upload Question File</label>
+                        <div style="border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;background:var(--surface2);cursor:pointer"
+                            onclick="document.getElementById('wEvtFile').click()">
+                            <i class="fa-solid fa-cloud-arrow-up"
+                                style="font-size:28px;color:var(--text-3);display:block;margin-bottom:8px"></i>
+                            <p style="font-size:13px;color:var(--text-2)">Click to upload or drag & drop</p>
+                            <p style="font-size:11px;color:var(--text-3);margin-top:4px">Supports: .xlsx, .csv, .json
+                            </p>
+                            <input type="file" id="wEvtFile" accept=".xlsx,.csv,.json" style="display:none">
+                        </div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+                    <div class="form-group"><label>Question Order</label><select class="form-control" id="wEvtQOrder">
+                            <option value="random">Randomize per student</option>
+                            <option value="fixed">Fixed order</option>
+                        </select></div>
+                    <div class="form-group"><label>Allow Revisiting</label><select class="form-control"
+                            id="wEvtRevisit">
+                            <option value="yes">Yes — can go back</option>
+                            <option value="no">No — one-way only</option>
+                        </select></div>
+                </div>
+            </div>
+            <!-- STEP 4 -->
+            <div class="modal-body" id="wpane4" style="display:none;padding-top:20px">
+                <div class="toggle-list">
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon blue"><i class="fa-solid fa-expand"></i></div>
+                            <div class="toggle-text"><strong>Fullscreen Lock</strong><small>Force fullscreen mode during
+                                    exam</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pFullscreen" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon orange"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+                            <div class="toggle-text"><strong>Disable Tab Switching</strong><small>Warn & auto-submit on
+                                    tab switch</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pTabLock" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon purple"><i class="fa-solid fa-camera"></i></div>
+                            <div class="toggle-text"><strong>Face Recognition (Webcam)</strong><small>Periodic identity
+                                    verification</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pFaceRec"><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon green"><i class="fa-solid fa-shuffle"></i></div>
+                            <div class="toggle-text"><strong>Randomize Question Sequence</strong><small>Each student
+                                    gets unique order</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pRandomQ" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon blue"><i class="fa-solid fa-copy"></i></div>
+                            <div class="toggle-text"><strong>Disable Copy/Paste</strong><small>Block clipboard actions
+                                    during exam</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pNoCopy" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon orange"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            <div class="toggle-text"><strong>Auto-submit on Time Up</strong><small>Automatically submit
+                                    when timer expires</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pAutoSubmit" checked><span
+                                class="slider"></span></label>
+                    </div>
+                </div>
+                <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+                    <p
+                        style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);margin-bottom:12px">
+                        📋 Event Summary</p>
+                    <div class="summary-grid" id="wizardSummary"></div>
+                </div>
+            </div>
+            <div class="wizard-nav">
+                <div class="wizard-step-indicator" id="wizardStepLabel">Step 1 of 4 — Event Details</div>
+                <div style="display:flex;gap:10px">
+                    <button class="btn btn-secondary" id="wizBtnBack" onclick="wizardBack()" style="display:none"><i
+                            class="fa-solid fa-arrow-left"></i> Back</button>
+                    <button class="btn btn-primary" id="wizBtnNext" onclick="wizardNext()">Next: Access & Targeting <i
+                            class="fa-solid fa-arrow-right"></i></button>
+                    <button class="btn btn-primary" id="wizBtnLaunch" onclick="wizardLaunch()" style="display:none"><i
+                            class="fa-solid fa-rocket"></i> Launch Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Department Modal -->
+    <div class="modal-overlay" id="addDeptModal">
+        <div class="modal" style="max-width:440px">
+            <div class="modal-header">
+                <div class="modal-title">Add Department</div><button class="close-btn"
+                    onclick="closeModal('addDeptModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Department Name</label><input class="form-control" id="newDeptName"
+                        placeholder="e.g. Computer Science"></div>
+                <div class="form-group"><label>Department Code</label><input class="form-control" id="newDeptCode"
+                        placeholder="e.g. CS"></div>
+                <div class="form-group"><label>HOD Name</label><input class="form-control" id="newHodName"
+                        placeholder="Dr. John Doe"></div>
+                <div class="form-group"><label>HOD Email</label><input class="form-control" id="newHodEmail"
+                        type="email" placeholder="hod@institution.edu"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addDeptModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="addDepartmentAPI()"><i class="fa-solid fa-plus"></i> Add
+                    Department</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOD Access Modal -->
+    <div class="modal-overlay" id="hodModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="hodModalTitle">🔐 Manage Access</div>
+                    <p style="font-size:12px;color:var(--text-2);margin-top:2px" id="hodModalDept"></p>
+                </div>
+                <button class="close-btn" onclick="closeModal('hodModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div
+                    style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px">
+                    <div
+                        style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+                        Current HOD</div>
+                    <div id="hodNameDisplay" style="font-weight:600"></div>
+                    <div id="hodEmailDisplay" style="font-size:13px;color:var(--text-2)"></div>
+                </div>
+                <div class="grant-form">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Grant New Access</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                        <div class="form-group"><label>Email</label><input class="form-control" id="grantEmail"
+                                placeholder="staff@uni.edu"></div>
+                        <div class="form-group"><label>Role</label><select class="form-control" id="grantRole">
+                                <option>HOD</option>
+                                <option>Staff</option>
+                                <option>Admin</option>
+                            </select></div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="grantAccessAPI()"><i class="fa-solid fa-key"></i>
+                        Grant Access</button>
+                </div>
+                <div style="margin-top:16px">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:8px">Staff with Access</div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accessTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('hodModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Report Modal -->
+    <div class="modal-overlay" id="emailModal">
+        <div class="modal" style="max-width:400px">
+            <div class="modal-header">
+                <div class="modal-title">📧 Email Report</div><button class="close-btn"
+                    onclick="closeModal('emailModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Send To</label><input class="form-control" id="emailTo"
+                        placeholder="recipient@institution.edu" type="email"></div>
+                <div class="form-group"><label>Subject</label><input class="form-control" id="emailSubject"
+                        value="AptioGen Performance Report"></div>
+                <div class="form-group"><label>Message (optional)</label><textarea class="form-control" id="emailMsg"
+                        rows="3" placeholder="Please find the attached report..."></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('emailModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="sendEmailReport()"><i class="fa-solid fa-paper-plane"></i> Send
+                    Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from './js/firebase.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import API_CONFIG from './js/config.js';
+
+        // ======================== CONFIG ========================
+        const API_BASE = API_CONFIG.API_URL;
+
+        // ======================== STATE ========================
+        let institutionData = null;  // Full institution object from /institutions/my
+        let institutionId = null;
+        let authToken = null;
+        let allEvents = [];
+        let allDepts = [];
+        let allBatches = [];
+        let allStudents = [];
+        let stuPage = 1;
+        const STU_PER_PAGE = 20;
+        let analyticsCharts = {};
+        let reportData = null;
+        // Wizard state
+        let wizardStep = 1;
+        const WIZARD_STEPS = 4;
+        const msState = { dept: [], batch: [] };
+        let currentHodDeptId = null;
+
+        // ======================== AUTH ========================
+        async function apiFetch(path, opts = {}) {
+            const res = await fetch(`${API_BASE}${path}`, {
+                ...opts,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                    ...(opts.headers || {})
+                }
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            return res.json();
+        }
+
+        // ======================== INIT ========================
+        async function init() {
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    window.location.href = 'institution-login.html';
+                    return;
+                }
+
+                try {
+                    authToken = await user.getIdToken();
+
+                    // 1. Load institution data
+                    const instData = await apiFetch('/institutions/my');
+                    institutionData = instData.institution;
+                    institutionId = institutionData._id;
+
+                    // Populate header
+                    document.getElementById('headerInstName').textContent = `🏢 ${institutionData.name}`;
+                    const loc = institutionData.location;
+                    document.getElementById('headerInstLocation').textContent =
+                        loc ? `${loc.district || ''}, ${loc.state || ''}`.replace(/^,\s*|,\s*$/, '') : institutionData.email;
+                    // Profile avatar initials
+                    const initials = institutionData.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                    document.getElementById('profileAvatar').textContent = initials;
+                    document.getElementById('profileName').textContent = 'Admin';
+                    // Sidebar plan badge
+                    const plan = institutionData.subscription?.plan || 'free';
+                    document.getElementById('sidebarPlan').textContent = `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan · Admin Portal`;
+                    // Report title
+                    document.getElementById('reportInstName').textContent = `📋 ${institutionData.name} — Performance Report`;
+                    // Update emailSubject
+                    document.getElementById('emailSubject').value = `AptioGen Performance Report — ${institutionData.name}`;
+
+                    // 2. Load dashboard data
+                    await loadDashboard();
+
+                    // 3. Pre-load deps & batches for dropdowns
+                    await Promise.all([loadDepartments(), loadBatches()]);
+                    populateDropdowns();
+
+                } catch (err) {
+                    console.error('Init error:', err);
+                    showToast('Failed to load institution data: ' + err.message, 'error');
+                }
+            });
+        }
+
+        // ======================== DASHBOARD ========================
+        async function loadDashboard() {
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/dashboard`);
+                const m = data.metrics || {};
+                // Update metric cards
+                document.getElementById('dashMetrics').innerHTML = `
+      <div class="metric-card"><div class="metric-icon blue"><i class="fa-solid fa-calendar-check"></i></div><div><div class="metric-value">${m.totalEvents ?? 0}</div><div class="metric-label">Total Events</div></div></div>
+      <div class="metric-card"><div class="metric-icon green"><i class="fa-solid fa-circle-check"></i></div><div><div class="metric-value">${m.completedEvents ?? 0}</div><div class="metric-label">Completed Events</div></div></div>
+      <div class="metric-card"><div class="metric-icon purple"><i class="fa-solid fa-chart-bar"></i></div><div><div class="metric-value">${m.averageScore ? m.averageScore.toFixed(1) + '%' : 'N/A'}</div><div class="metric-label">Average Score</div></div></div>
+      <div class="metric-card"><div class="metric-icon orange"><i class="fa-solid fa-circle-dot"></i></div><div><div class="metric-value">${m.activeEvents ?? 0}</div><div class="metric-label">Active Events</div></div></div>
+    `;
+                // Active events table
+                const events = data.activeEvents || [];
+                allEvents = events; // seed
+                const tbody = document.getElementById('dashActiveEvents');
+                if (events.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-calendar-xmark"></i><p>No active events yet. Create your first event!</p></div></td></tr>`;
+                } else {
+                    tbody.innerHTML = events.map(e => `
+        <tr>
+          <td><strong>${e.name}</strong></td>
+          <td><span class="badge ${e.type === 'Public' ? 'badge-blue' : 'badge-orange'}">${e.type}</span></td>
+          <td><span class="badge badge-purple">${e.category}</span></td>
+          <td>${formatDate(e.start)}</td>
+          <td>${e.participants}</td>
+          <td><span class="badge ${e.status === 'Active' ? 'badge-green' : e.status === 'Pending' ? 'badge-orange' : 'badge-gray'}">${e.status}</span></td>
+        </tr>`).join('');
+                }
+                document.getElementById('dashSubtitle').textContent = `${institutionData.type || 'Institution'} · ${institutionData.email}`;
+            } catch (err) {
+                console.error('Dashboard load error:', err);
+                document.getElementById('dashMetrics').innerHTML = `
+      <div class="metric-card"><div class="metric-icon blue"><i class="fa-solid fa-calendar-check"></i></div><div><div class="metric-value">—</div><div class="metric-label">Total Events</div></div></div>
+      <div class="metric-card"><div class="metric-icon green"><i class="fa-solid fa-circle-check"></i></div><div><div class="metric-value">—</div><div class="metric-label">Completed Events</div></div></div>
+      <div class="metric-card"><div class="metric-icon purple"><i class="fa-solid fa-chart-bar"></i></div><div><div class="metric-value">—</div><div class="metric-label">Average Score</div></div></div>
+      <div class="metric-card"><div class="metric-icon orange"><i class="fa-solid fa-circle-dot"></i></div><div><div class="metric-value">—</div><div class="metric-label">Active Events</div></div></div>
+    `;
+            }
+        }
+
+        // ======================== EVENTS ========================
+        async function loadEvents() {
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/events`);
+                allEvents = data.events || [];
+                renderEvents(allEvents);
+            } catch (err) {
+                document.getElementById('eventsTbody').innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger)">Failed to load events: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderEvents(events) {
+            const tbody = document.getElementById('eventsTbody');
+            if (events.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-calendar-xmark"></i><p>No events found. Create your first event!</p></div></td></tr>`;
+                return;
+            }
+            tbody.innerHTML = events.map(e => `
+    <tr>
+      <td><strong>${e.name}</strong></td>
+      <td><span class="badge badge-purple">${e.category}</span></td>
+      <td><span class="badge ${e.type === 'Public' ? 'badge-blue' : 'badge-orange'}">${e.type}</span></td>
+      <td>${formatDate(e.start)}</td>
+      <td>${e.participants}</td>
+      <td><span class="badge ${e.status === 'Active' ? 'badge-green' : e.status === 'Pending' ? 'badge-orange' : 'badge-gray'}">${e.status}</span></td>
+      <td><button class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i> View</button></td>
+    </tr>`).join('');
+        }
+
+        window.filterAndRenderEvents = () => {
+            const status = document.getElementById('evtFilterStatus').value;
+            const type = document.getElementById('evtFilterType').value;
+            const cat = document.getElementById('evtFilterCategory').value;
+            const search = document.getElementById('evtSearch').value.toLowerCase();
+            const filtered = allEvents.filter(e =>
+                (!status || e.status === status) &&
+                (!type || e.type === type) &&
+                (!cat || e.category === cat) &&
+                (!search || e.name.toLowerCase().includes(search))
+            );
+            renderEvents(filtered);
+        };
+
+        window.resetEventFilters = () => {
+            ['evtFilterStatus', 'evtFilterType', 'evtFilterCategory'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('evtSearch').value = '';
+            renderEvents(allEvents);
+        };
+
+        // ======================== DEPARTMENTS ========================
+        async function loadDepartments() {
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/departments`);
+                allDepts = data.departments || [];
+                renderDepts();
+            } catch (err) {
+                document.getElementById('deptGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--danger)">Failed to load departments: ${err.message}</div>`;
+            }
+        }
+
+        function renderDepts() {
+            const grid = document.getElementById('deptGrid');
+            if (allDepts.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><i class="fa-solid fa-building-columns"></i><p>No departments added yet. Click "Add Department" to get started.</p></div></div>`;
+                return;
+            }
+            grid.innerHTML = allDepts.map(d => `
+    <div class="dept-card">
+      <div class="dept-card-header">
+        <div class="dept-code">${d.code}</div>
+        <button class="btn btn-secondary btn-sm btn-icon" onclick="openHodModal('${d._id}','${d.name}','${d.code}','${d.hodName || ''}','${d.hodEmail || ''}')"><i class="fa-solid fa-gear"></i></button>
+      </div>
+      <div class="dept-name">${d.name}</div>
+      <div class="dept-meta">
+        <i class="fa-solid fa-user"></i>
+        ${d.hodName ? d.hodName : '<span style="color:var(--warning)">No HOD Assigned</span>'}
+      </div>
+      <div class="dept-stats">
+        <div class="dept-stat"><div class="dept-stat-val">${d.statistics?.totalStudents || 0}</div><div class="dept-stat-lbl">Students</div></div>
+        <div class="dept-stat"><div class="dept-stat-val">${d.statistics?.totalEvents || 0}</div><div class="dept-stat-lbl">Events</div></div>
+        <div class="dept-stat"><div class="dept-stat-val">${d.statistics?.averageScore ? d.statistics.averageScore.toFixed(1) + '%' : 'N/A'}</div><div class="dept-stat-lbl">Avg Score</div></div>
+      </div>
+    </div>`).join('');
+        }
+
+        window.addDepartmentAPI = async () => {
+            const name = document.getElementById('newDeptName').value.trim();
+            const code = document.getElementById('newDeptCode').value.trim();
+            const hodName = document.getElementById('newHodName').value.trim();
+            const hodEmail = document.getElementById('newHodEmail').value.trim();
+            if (!name || !code) { alert('Please fill department name and code'); return; }
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/departments`, {
+                    method: 'POST',
+                    body: JSON.stringify({ name, code, hodName, hodEmail })
+                });
+                allDepts.push(data.department);
+                renderDepts();
+                populateDropdowns();
+                closeModal('addDeptModal');
+                document.getElementById('newDeptName').value = '';
+                document.getElementById('newDeptCode').value = '';
+                document.getElementById('newHodName').value = '';
+                document.getElementById('newHodEmail').value = '';
+                showToast(`✅ Department "${name}" added successfully!`);
+            } catch (err) {
+                alert('Failed to add department: ' + err.message);
+            }
+        };
+
+        window.openHodModal = async (deptId, name, code, hodName, hodEmail) => {
+            currentHodDeptId = deptId;
+            document.getElementById('hodModalTitle').textContent = `🔐 Manage Access — ${name}`;
+            document.getElementById('hodModalDept').textContent = `${code} Department`;
+            document.getElementById('hodNameDisplay').textContent = hodName || 'Not Assigned';
+            document.getElementById('hodEmailDisplay').textContent = hodEmail || '—';
+            // Load staff
+            try {
+                const data = await apiFetch(`/institutions/departments/${deptId}/access`);
+                const staff = data.staff || [];
+                document.getElementById('accessTbody').innerHTML = staff.length
+                    ? staff.map(s => `<tr><td>${s.email}</td><td><span class="badge badge-blue">${s.role}</span></td><td><button class="btn btn-danger btn-sm" onclick="revokeAccessAPI('${s.email}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')
+                    : '<tr><td colspan="3" style="text-align:center;color:var(--text-2)">No staff assigned</td></tr>';
+            } catch { document.getElementById('accessTbody').innerHTML = '<tr><td colspan="3">Could not load staff</td></tr>'; }
+            openModal('hodModal');
+        };
+
+        window.grantAccessAPI = async () => {
+            const email = document.getElementById('grantEmail').value.trim();
+            const role = document.getElementById('grantRole').value.toLowerCase();
+            if (!email) { alert('Please enter email'); return; }
+            try {
+                await apiFetch(`/institutions/departments/${currentHodDeptId}/grant-access`, {
+                    method: 'POST', body: JSON.stringify({ email, role })
+                });
+                document.getElementById('grantEmail').value = '';
+                showToast(`✅ Access granted to ${email}`);
+                window.openHodModal(currentHodDeptId,
+                    document.getElementById('hodModalTitle').textContent.replace('🔐 Manage Access — ', ''),
+                    document.getElementById('hodModalDept').textContent.split(' ')[0],
+                    document.getElementById('hodNameDisplay').textContent,
+                    document.getElementById('hodEmailDisplay').textContent);
+            } catch (err) { alert('Failed to grant access: ' + err.message); }
+        };
+
+        window.revokeAccessAPI = async (email) => {
+            if (!confirm(`Revoke access for ${email}?`)) return;
+            try {
+                await apiFetch(`/institutions/departments/${currentHodDeptId}/revoke-access`, {
+                    method: 'DELETE', body: JSON.stringify({ email })
+                });
+                showToast(`Access revoked for ${email}`);
+                // Refresh
+                document.getElementById('grantEmail').value = email;
+                window.grantAccessAPI && window.openHodModal(currentHodDeptId, '', '', '', '');
+            } catch (err) { alert('Failed to revoke access: ' + err.message); }
+        };
+
+        // ======================== STUDENTS ========================
+        async function loadStudents() {
+            try {
+                const dept = document.getElementById('stuDeptFilter')?.value || '';
+                const batch = document.getElementById('stuBatchFilter')?.value || '';
+                const search = document.getElementById('stuSearch')?.value || '';
+                const params = new URLSearchParams();
+                if (dept) params.append('department', dept);
+                if (batch) params.append('batch', batch);
+                if (search) params.append('search', search);
+                const data = await apiFetch(`/institutions/${institutionId}/students?${params}`);
+                allStudents = data.students || [];
+                renderStudents(1);
+                // Stats
+                const statsData = await apiFetch(`/institutions/${institutionId}/students/stats`);
+                document.getElementById('stuTotal').textContent = statsData.total ?? '—';
+                document.getElementById('stuActive').textContent = statsData.active ?? '—';
+                document.getElementById('stuAlumni').textContent = statsData.alumni ?? '—';
+                document.getElementById('studentSubtitle').textContent = `${statsData.total || 0} students across all departments`;
+                // Dept distribution table
+                const deptDist = statsData.perDepartment || {};
+                document.getElementById('deptDistTable').querySelector('tbody').innerHTML =
+                    Object.keys(deptDist).length
+                        ? Object.entries(deptDist).map(([d, info]) => `<tr><td>${d}</td><td>${info.total}</td></tr>`).join('')
+                        : '<tr><td colspan="2" style="text-align:center;color:var(--text-2)">No data</td></tr>';
+                // Batch distribution
+                const batchDist = statsData.perBatch || {};
+                document.getElementById('batchDistTable').querySelector('tbody').innerHTML =
+                    Object.keys(batchDist).length
+                        ? Object.entries(batchDist).map(([b, info]) => `<tr><td>${b}</td><td>${info.total}</td></tr>`).join('')
+                        : '<tr><td colspan="2" style="text-align:center;color:var(--text-2)">No data</td></tr>';
+            } catch (err) {
+                document.getElementById('studentTbody').innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger)">Failed to load students: ${err.message}</td></tr>`;
+            }
+        }
+        window.loadStudents = loadStudents;
+
+        function renderStudents(page) {
+            stuPage = page;
+            const slice = allStudents.slice((page - 1) * STU_PER_PAGE, page * STU_PER_PAGE);
+            document.getElementById('stuCount').textContent = allStudents.length;
+            const tbody = document.getElementById('studentTbody');
+            if (slice.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-users-slash"></i><p>No students found.</p></div></td></tr>`;
+            } else {
+                tbody.innerHTML = slice.map(s => `
+      <tr>
+        <td><code style="font-size:12px;background:var(--surface2);padding:2px 6px;border-radius:4px">${s.rollNumber || '—'}</code></td>
+        <td>${s.username || '—'}</td>
+        <td style="font-size:12px;color:var(--text-2)">${s.email || '—'}</td>
+        <td>${s.department || '—'}</td>
+        <td style="font-size:12px;color:var(--text-2)">${s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '—'}</td>
+      </tr>`).join('');
+            }
+            renderPagination('stuPagination', Math.ceil(allStudents.length / STU_PER_PAGE), page, renderStudents);
+        }
+
+        window.resetStudentFilters = () => {
+            ['stuDeptFilter', 'stuBatchFilter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            document.getElementById('stuSearch').value = '';
+            loadStudents();
+        };
+
+        // ======================== BATCHES ========================
+        async function loadBatches() {
+            try {
+                const [activeData, gradData] = await Promise.all([
+                    apiFetch(`/institutions/${institutionId}/batches/active`),
+                    apiFetch(`/institutions/${institutionId}/batches/graduated`)
+                ]);
+                allBatches = [...(activeData.batches || []), ...(gradData.batches || [])];
+                renderActiveBatches(activeData.batches || []);
+                renderGraduatedBatches(gradData.batches || []);
+            } catch (err) {
+                // Fallback: try generic batches endpoint
+                try {
+                    const data = await apiFetch(`/institutions/${institutionId}/batches`);
+                    allBatches = data.batches || [];
+                    const active = allBatches.filter(b => b.status === 'active');
+                    const grad = allBatches.filter(b => b.status !== 'active');
+                    renderActiveBatches(active);
+                    renderGraduatedBatches(grad);
+                } catch (e) {
+                    document.getElementById('activeBatchesTbody').innerHTML = `<tr><td colspan="6" style="color:var(--danger)">Failed to load batches</td></tr>`;
+                }
+            }
+        }
+
+        function renderActiveBatches(batches) {
+            const tbody = document.getElementById('activeBatchesTbody');
+            if (batches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-graduation-cap"></i><p>No active batches. Add batches in the setup wizard.</p></div></td></tr>`;
+                return;
+            }
+            const currentYear = new Date().getFullYear();
+            tbody.innerHTML = batches.map(b => {
+                const dept = b.departmentId?.name || b.departmentId || '—';
+                const isNearGrad = b.endYear && (b.endYear - currentYear <= 0);
+                return `
+      <tr>
+        <td><strong>${b.batchID || b.name || b._id}</strong></td>
+        <td>${b.startYear || '—'}</td>
+        <td>${b.endYear || '—'}</td>
+        <td>${dept}</td>
+        <td>${b.statistics?.totalStudents || b.studentCount || '—'}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm" onclick="openBatchDetail('${b._id}')">View</button>
+            ${isNearGrad ? `<button class="btn btn-success btn-sm" onclick="graduateBatch('${b._id}','${b.batchID || b.name}')">Graduate</button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+            }).join('');
+            // Alert for near-graduating batches
+            const nearGrad = batches.filter(b => b.endYear && (b.endYear - currentYear <= 0));
+            const alertEl = document.getElementById('activeBatchesAlert');
+            if (nearGrad.length > 0) {
+                alertEl.innerHTML = `<div class="info-box" style="margin-bottom:16px">⚠️ <strong>${nearGrad.map(b => b.batchID || b.name).join(', ')}</strong> — graduation period reached. Review and mark as graduated.</div>`;
+            } else {
+                alertEl.innerHTML = '';
+            }
+        }
+
+        function renderGraduatedBatches(batches) {
+            const tbody = document.getElementById('graduatedBatchesTbody');
+            if (batches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="fa-solid fa-user-graduate"></i><p>No graduated batches yet.</p></div></td></tr>`;
+                return;
+            }
+            tbody.innerHTML = batches.map(b => `
+    <tr>
+      <td><strong>${b.batchID || b.name}</strong></td>
+      <td>${b.graduationDate ? formatDate(b.graduationDate) : '—'}</td>
+      <td>${b.statistics?.totalStudents || '—'}</td>
+      <td><span class="badge badge-green">🎓 Graduated</span></td>
+    </tr>`).join('');
+        }
+
+        window.openBatchDetail = async (batchId) => {
+            document.getElementById('batchListView').style.display = 'none';
+            const detailView = document.getElementById('batchDetailView');
+            detailView.classList.add('show');
+            document.getElementById('batchDetailCard').innerHTML = '<div style="text-align:center;padding:40px"><div class="loading-spinner"></div></div>';
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/batches/${batchId}/details`);
+                const years = data.years || [];
+                const currentYear = data.currentYear;
+                const timelineItems = years.map((yr, i) => {
+                    const isPast = yr < currentYear;
+                    const isCurrent = yr === currentYear;
+                    const lineClass = i > 0 && years[i - 1] < currentYear ? 'timeline-line past' : 'timeline-line';
+                    let html = i > 0 ? `<div class="${lineClass}"></div>` : '';
+                    html += `<div class="timeline-item"><div class="timeline-dot ${isCurrent ? 'current' : isPast ? 'past' : ''}">${yr}</div><div class="timeline-label ${isCurrent ? 'current' : ''}">${isCurrent ? 'NOW' : isPast ? 'Past' : ''}</div></div>`;
+                    return html;
+                }).join('');
+                const deptDist = data.deptDistribution || {};
+                const perfRows = (data.performanceProgression || []).map(p => `
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px">${p.yr}</span>
+        <div style="display:flex;gap:12px;align-items:center"><strong>${p.avg}</strong>${p.change ? `<span class="badge badge-green">${p.change}</span>` : ''}</div>
+      </div>`).join('');
+                document.getElementById('batchDetailCard').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+        <div><h3 style="font-size:20px;font-weight:800">Batch: ${data.batchId}</h3><p style="color:var(--text-2);font-size:13px">${data.currentYearLabel} Year · ${data.studentCount} Students</p></div>
+        <div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="showSection('students')">View Students</button></div>
+      </div>
+      <h4 style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em">Academic Timeline</h4>
+      <div style="background:var(--surface2);border-radius:10px;padding:16px;margin-bottom:20px"><div class="timeline">${timelineItems}</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em">Department Distribution</h4>
+          ${Object.keys(deptDist).length ? Object.entries(deptDist).map(([dept, cnt]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:13px;font-weight:600">${dept}</span>
+              <div style="display:flex;gap:10px;align-items:center">
+                <div style="width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${data.studentCount ? Math.round(cnt / data.studentCount * 100) : 0}%;height:100%;background:var(--primary);border-radius:3px"></div></div>
+                <span style="font-size:13px;font-weight:700;min-width:28px;text-align:right">${cnt}</span>
+              </div>
+            </div>`).join('') : '<p style="color:var(--text-2);font-size:13px">No distribution data</p>'}
+        </div>
+        <div>
+          <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em">Performance Progression</h4>
+          ${perfRows || '<p style="color:var(--text-2);font-size:13px">No performance data yet</p>'}
+        </div>
+      </div>`;
+            } catch (err) {
+                document.getElementById('batchDetailCard').innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger)">Failed to load batch details: ${err.message}</div>`;
+            }
+        };
+
+        window.closeBatchDetail = () => {
+            document.getElementById('batchDetailView').classList.remove('show');
+            document.getElementById('batchListView').style.display = '';
+        };
+
+        window.graduateBatch = async (batchId, name) => {
+            if (!confirm(`Mark batch "${name}" as Graduated? This action is irreversible.`)) return;
+            try {
+                await apiFetch(`/institutions/${institutionId}/batches/${batchId}/graduate`, { method: 'POST' });
+                showToast(`🎓 Batch "${name}" graduated successfully!`);
+                await loadBatches();
+            } catch (err) { alert('Failed to graduate batch: ' + err.message); }
+        };
+
+        // ======================== ANALYTICS ========================
+        window.applyAnalytics = async () => {
+            const eventId = document.getElementById('aEvt').value;
+            const department = document.getElementById('aDept').value;
+            const batch = document.getElementById('aBatch').value;
+            const scoreRange = document.querySelector('input[name="scoreRange"]:checked')?.value || 'all';
+            const limit = document.querySelector('input[name="limit"]:checked')?.value || '1000';
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/analytics/filter`, {
+                    method: 'POST',
+                    body: JSON.stringify({ eventId, department, batch, scoreRange, limit })
+                });
+                document.getElementById('analyticsResults').style.display = 'block';
+                // Top performer
+                if (data.topPerformer) {
+                    document.getElementById('tpName').textContent = `${data.topPerformer.name} (${data.topPerformer.rollNo})`;
+                    document.getElementById('tpMeta').textContent = `${data.topPerformer.department}, ${data.topPerformer.score}`;
+                    document.getElementById('tpScore').textContent = data.topPerformer.score;
+                    document.getElementById('tpRank').textContent = `#1/${data.totalParticipants}`;
+                }
+                document.getElementById('aAvgScore').textContent = data.averageScore ? data.averageScore.toFixed(1) + '%' : 'N/A';
+                document.getElementById('aAvgTime').textContent = data.averageTime || 'N/A';
+                document.getElementById('aTotalPart').textContent = data.totalParticipants || 0;
+                // Participants table
+                const participants = data.participants || [];
+                document.getElementById('participantsTbody').innerHTML = participants.length
+                    ? participants.map(p => `<tr><td><strong>#${p.rank}</strong></td><td><code style="font-size:11px;background:var(--surface2);padding:2px 5px;border-radius:4px">${p.rollNo}</code></td><td>${p.name}</td><td>${p.dept}</td><td><span class="badge badge-gray">${p.batch}</span></td><td>${p.score}</td><td>${p.time}</td></tr>`).join('')
+                    : '<tr><td colspan="7" style="text-align:center;color:var(--text-2)">No participants data</td></tr>';
+                // Charts
+                renderAnalyticsCharts(data.chartData);
+            } catch (err) {
+                showToast('Analytics error: ' + err.message, 'error');
+            }
+        };
+
+        window.resetAnalytics = () => {
+            document.getElementById('analyticsResults').style.display = 'none';
+        };
+
+        function renderAnalyticsCharts(chartData) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const gridColor = isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+            ['scoreDistChart', 'deptPerfChart'].forEach(id => { if (analyticsCharts[id]) analyticsCharts[id].destroy(); });
+            const cd = chartData || {};
+            const scoreCtx = document.getElementById('scoreDistChart').getContext('2d');
+            analyticsCharts['scoreDistChart'] = new Chart(scoreCtx, {
+                type: 'bar',
+                data: { labels: cd.scoreDistribution?.labels || ['0-50', '50-60', '60-70', '70-80', '80-90', '90-100'], datasets: [{ data: cd.scoreDistribution?.values || [0, 0, 0, 0, 0, 0], backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'], borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } }
+            });
+            const deptCtx = document.getElementById('deptPerfChart').getContext('2d');
+            analyticsCharts['deptPerfChart'] = new Chart(deptCtx, {
+                type: 'bar',
+                data: { labels: cd.deptPerformance?.labels || [], datasets: [{ data: cd.deptPerformance?.values || [], backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'], borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor, callback: v => v + '%' }, grid: { color: gridColor } } } }
+            });
+        }
+
+        window.exportAnalyticsCSV = () => {
+            const rows = [...document.querySelectorAll('#participantsTbody tr')].map(tr =>
+                [...tr.querySelectorAll('td')].map(td => td.textContent.trim()).join(',')
+            );
+            downloadBlob('Rank,Roll No,Name,Department,Batch,Score,Time\n' + rows.join('\n'), 'analytics-export.csv', 'text/csv');
+        };
+
+        // ======================== REPORTS ========================
+        window.generateReport = async () => {
+            const period = document.querySelector('input[name="rPeriod"]:checked')?.value || '30';
+            const labels = { 30: 'Last 30 Days', 90: 'Last 3 Months', 180: 'Last 6 Months', academic: 'This Academic Year' };
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/reports/generate`, {
+                    method: 'POST', body: JSON.stringify({ period })
+                });
+                reportData = data;
+                const metrics = data.metrics || {};
+                document.getElementById('repTotalChallenges').textContent = metrics.totalChallenges ?? '—';
+                document.getElementById('repAvgScore').textContent = metrics.averageScore ? metrics.averageScore.toFixed(1) + '%' : '—';
+                document.getElementById('repCompletion').textContent = metrics.completionRate ? metrics.completionRate.toFixed(1) + '%' : '—';
+                document.getElementById('reportMeta').textContent = `${labels[period]} · Generated ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                // Event summary
+                const evtRows = data.eventSummary || [];
+                document.getElementById('reportEventsTbody').innerHTML = evtRows.length
+                    ? evtRows.map(e => `<tr><td><strong>${e.name}</strong></td><td><span class="badge badge-purple">${e.category}</span></td><td>${e.participants}</td><td>${e.avgScore}</td><td>${e.completion}</td></tr>`).join('')
+                    : '<tr><td colspan="5" style="text-align:center;color:var(--text-2)">No events in this period</td></tr>';
+                // Dept comparison
+                const deptRows = data.departmentComparison || [];
+                document.getElementById('reportDeptTbody').innerHTML = deptRows.length
+                    ? deptRows.map(d => `<tr><td><strong>${d.dept}</strong></td><td>${d.events}</td><td>${d.participants}</td><td>${d.avgScore}</td></tr>`).join('')
+                    : '<tr><td colspan="4" style="text-align:center;color:var(--text-2)">No data</td></tr>';
+                const output = document.getElementById('reportOutput');
+                output.classList.add('show');
+                output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (err) {
+                showToast('Report generation failed: ' + err.message, 'error');
+            }
+        };
+
+        window.exportReportPDF = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+            doc.text(`${institutionData?.name || 'Institution'} — Performance Report`, 14, 20);
+            doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+            doc.text(document.getElementById('reportMeta').textContent, 14, 28);
+            doc.line(14, 32, 196, 32);
+            doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.text('Key Metrics', 14, 42);
+            doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+            doc.text(`Total Challenges: ${document.getElementById('repTotalChallenges').textContent}`, 14, 50);
+            doc.text(`Average Score: ${document.getElementById('repAvgScore').textContent}`, 80, 50);
+            doc.text(`Completion Rate: ${document.getElementById('repCompletion').textContent}`, 145, 50);
+            doc.save(`aptiogen-report-${Date.now()}.pdf`);
+        };
+
+        window.exportReportExcel = () => {
+            const ws = XLSX.utils.aoa_to_sheet([
+                [`${institutionData?.name || 'Institution'} — AptioGen Performance Report`],
+                [document.getElementById('reportMeta').textContent],
+                [],
+                ['Department', 'Events', 'Participants', 'Avg Score'],
+                ...(reportData?.departmentComparison || []).map(d => [d.dept, d.events, d.participants, d.avgScore]),
+                [], ['Event Summary'],
+                ['Event Name', 'Category', 'Participants', 'Avg Score', 'Completion'],
+                ...(reportData?.eventSummary || []).map(e => [e.name, e.category, e.participants, e.avgScore, e.completion])
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Report');
+            XLSX.writeFile(wb, `aptiogen-report-${Date.now()}.xlsx`);
+        };
+
+        window.sendEmailReport = async () => {
+            const email = document.getElementById('emailTo').value;
+            if (!email) { alert('Please enter recipient email'); return; }
+            try {
+                await apiFetch(`/institutions/${institutionId}/reports/email`, {
+                    method: 'POST', body: JSON.stringify({ email, subject: document.getElementById('emailSubject').value })
+                });
+                showToast(`📧 Report queued to send to ${email}`);
+                closeModal('emailModal');
+            } catch (err) { alert('Failed to send: ' + err.message); }
+        };
+
+        // ======================== EVENT WIZARD ========================
+        const wizardNextLabels = [
+            'Next: Access & Targeting <i class="fa-solid fa-arrow-right"></i>',
+            'Next: Quiz Logic <i class="fa-solid fa-arrow-right"></i>',
+            'Next: Proctoring <i class="fa-solid fa-arrow-right"></i>',
+            ''
+        ];
+        const wizardStepLabels = [
+            'Step 1 of 4 — Event Details',
+            'Step 2 of 4 — Access & Targeting',
+            'Step 3 of 4 — Quiz Logic',
+            'Step 4 of 4 — Proctoring & Launch'
+        ];
+
+        window.openCreateEventModal = () => {
+            wizardStep = 1;
+            msState.dept = []; msState.batch = [];
+            renderWizardStep();
+            openModal('createEventModal');
+        };
+        window.closeWizard = () => closeModal('createEventModal');
+
+        function renderWizardStep() {
+            for (let i = 1; i <= WIZARD_STEPS; i++) {
+                const pane = document.getElementById('wpane' + i);
+                if (pane) pane.style.display = i === wizardStep ? 'block' : 'none';
+                const step = document.getElementById('wstep' + i);
+                if (step) {
+                    step.classList.remove('active', 'done');
+                    if (i === wizardStep) step.classList.add('active');
+                    else if (i < wizardStep) step.classList.add('done');
+                    const circle = step.querySelector('.wstep-circle');
+                    if (circle) circle.innerHTML = i < wizardStep ? '<i class="fa-solid fa-check" style="font-size:12px"></i>' : i;
+                }
+            }
+            document.getElementById('wizardStepLabel').textContent = wizardStepLabels[wizardStep - 1];
+            document.getElementById('wizBtnBack').style.display = wizardStep > 1 ? '' : 'none';
+            document.getElementById('wizBtnNext').style.display = wizardStep < WIZARD_STEPS ? '' : 'none';
+            document.getElementById('wizBtnLaunch').style.display = wizardStep === WIZARD_STEPS ? '' : 'none';
+            if (wizardStep < WIZARD_STEPS) document.getElementById('wizBtnNext').innerHTML = wizardNextLabels[wizardStep - 1];
+            if (wizardStep === WIZARD_STEPS) buildWizardSummary();
+            if (wizardStep === 2) populateWizardSelects();
+        }
+
+        function populateWizardSelects() {
+            // Populate dept options
+            const deptOpts = document.getElementById('deptOpts');
+            deptOpts.innerHTML = allDepts.map(d => `<div class="ms-option" onclick="toggleMsTag('dept','${d.code}')"><input type="checkbox" id="dCK_${d.code}"> ${d.name} (${d.code})</div>`).join('');
+            // Populate batch options
+            const batchOpts = document.getElementById('batchOpts');
+            const activeBatches = allBatches.filter(b => b.status === 'active');
+            batchOpts.innerHTML = activeBatches.map(b => `<div class="ms-option" onclick="toggleMsTag('batch','${b.batchID || b._id}')"><input type="checkbox" id="bCK_${b._id}"> ${b.batchID || b.name}</div>`).join('');
+        }
+
+        window.wizardNext = () => {
+            if (!wizardValidate()) return;
+            if (wizardStep < WIZARD_STEPS) { wizardStep++; renderWizardStep(); }
+        };
+        window.wizardBack = () => {
+            if (wizardStep > 1) { wizardStep--; renderWizardStep(); }
+        };
+
+        function wizardValidate() {
+            if (wizardStep === 1) {
+                if (!document.getElementById('wEvtName').value.trim()) { alert('Please enter an Event Name.'); return false; }
+                if (!document.getElementById('wEvtCategory').value) { alert('Please select a Category.'); return false; }
+                if (!document.getElementById('wEvtStart').value) { alert('Please set a Start Date & Time.'); return false; }
+                if (!document.getElementById('wEvtEnd').value) { alert('Please set an End Date & Time.'); return false; }
+                if (new Date(document.getElementById('wEvtEnd').value) <= new Date(document.getElementById('wEvtStart').value)) { alert('End Date must be after Start Date.'); return false; }
+            }
+            return true;
+        }
+
+        function buildWizardSummary() {
+            const items = [
+                { label: 'Event Name', value: document.getElementById('wEvtName').value || '—' },
+                { label: 'Category', value: document.getElementById('wEvtCategory').value || '—' },
+                { label: 'Type', value: document.getElementById('wEvtType').value },
+                { label: 'Duration', value: document.getElementById('wEvtDuration').value + ' mins' },
+                { label: 'Departments', value: msState.dept.length ? msState.dept.join(', ') : 'All' },
+                { label: 'Batches', value: msState.batch.length ? msState.batch.join(', ') : 'All' },
+                { label: 'Questions', value: document.getElementById('wEvtQCount').value },
+                { label: 'Fullscreen', value: document.getElementById('pFullscreen').checked ? '✅ Yes' : '❌ No' },
+            ];
+            document.getElementById('wizardSummary').innerHTML = items.map(i => `<div class="summary-item"><div class="summary-label">${i.label}</div><div class="summary-value">${i.value}</div></div>`).join('');
+        }
+
+        window.wizardLaunch = async () => {
+            const eventData = {
+                name: document.getElementById('wEvtName').value,
+                category: document.getElementById('wEvtCategory').value,
+                type: document.getElementById('wEvtType').value,
+                start: document.getElementById('wEvtStart').value,
+                end: document.getElementById('wEvtEnd').value,
+                duration: parseInt(document.getElementById('wEvtDuration').value),
+                description: document.getElementById('wEvtDesc').value,
+                targetDepts: [...msState.dept],
+                targetBatches: [...msState.batch],
+                maxParticipants: document.getElementById('wEvtMaxPart').value || null,
+                visibility: document.getElementById('wEvtVisibility').value,
+                questionMethod: document.querySelector('.method-card.selected')?.id?.replace('mcard_', '') || 'random',
+                numQuestions: parseInt(document.getElementById('wEvtQCount').value),
+                marksPerQ: parseInt(document.getElementById('wEvtMarks').value),
+                negativeMarking: parseFloat(document.getElementById('wEvtNegative').value),
+                proctoring: {
+                    fullscreen: document.getElementById('pFullscreen').checked,
+                    tabLock: document.getElementById('pTabLock').checked,
+                    faceRecognition: document.getElementById('pFaceRec').checked,
+                    randomizeQ: document.getElementById('pRandomQ').checked,
+                    noCopyPaste: document.getElementById('pNoCopy').checked,
+                    autoSubmit: document.getElementById('pAutoSubmit').checked
+                }
+            };
+            try {
+                const data = await apiFetch(`/institutions/${institutionId}/events`, {
+                    method: 'POST', body: JSON.stringify(eventData)
+                });
+                // Push to local cache
+                allEvents.unshift({ ...data.event, name: data.event.name, type: eventData.type, start: eventData.start, participants: 0, status: 'Pending' });
+                closeWizard();
+                showToast(`🚀 "${eventData.name}" event created and scheduled!`);
+                // Re-render events if on events tab
+                renderEvents(allEvents);
+                // Refresh dashboard
+                loadDashboard();
+            } catch (err) {
+                alert('Failed to create event: ' + err.message);
+            }
+        };
+
+        // Multi-select helpers
+        window.toggleMsDropdown = (optId) => {
+            event.stopPropagation();
+            document.querySelectorAll('.ms-options').forEach(o => { if (o.id !== optId) o.classList.remove('open'); });
+            document.getElementById(optId).classList.toggle('open');
+        };
+        document.addEventListener('click', () => document.querySelectorAll('.ms-options').forEach(o => o.classList.remove('open')));
+
+        window.toggleMsTag = (type, val) => {
+            event.stopPropagation();
+            const arr = msState[type];
+            const idx = arr.indexOf(val);
+            if (idx === -1) arr.push(val); else arr.splice(idx, 1);
+            renderMsTags(type);
+        };
+        function renderMsTags(type) {
+            const arr = msState[type];
+            const areaId = type === 'dept' ? 'deptTagsArea' : 'batchTagsArea';
+            const phId = type === 'dept' ? 'deptTagsPlaceholder' : 'batchTagsPlaceholder';
+            const area = document.getElementById(areaId);
+            const ph = document.getElementById(phId);
+            area.querySelectorAll('.ms-tag').forEach(t => t.remove());
+            if (arr.length === 0) { ph.style.display = ''; return; }
+            ph.style.display = 'none';
+            arr.forEach(val => {
+                const tag = document.createElement('span');
+                tag.className = 'ms-tag';
+                tag.innerHTML = `${val}<button type="button" onclick="toggleMsTag('${type}','${val}')">×</button>`;
+                area.insertBefore(tag, ph);
+            });
+        }
+
+        let selectedMethod = 'random';
+        window.selectMethod = (method) => {
+            selectedMethod = method;
+            ['random', 'set', 'upload'].forEach(m => {
+                document.getElementById('mcard_' + m)?.classList.toggle('selected', m === method);
+                const opts = document.getElementById('methodOpts_' + m);
+                if (opts) opts.style.display = m === method ? '' : 'none';
+            });
+        };
+
+        // ======================== DROPDOWNS ========================
+        function populateDropdowns() {
+            // Analytics selects
+            const aDept = document.getElementById('aDept');
+            const aBatch = document.getElementById('aBatch');
+            allDepts.forEach(d => {
+                [aDept, document.getElementById('stuDeptFilter'), document.getElementById('repDeptFilter')].forEach(el => {
+                    if (el && !el.querySelector(`option[value="${d.code}"]`)) {
+                        el.insertAdjacentHTML('beforeend', `<option value="${d.code}">${d.name} (${d.code})</option>`);
+                    }
+                });
+            });
+            allBatches.filter(b => b.status === 'active').forEach(b => {
+                const bid = b.batchID || b._id;
+                [aBatch, document.getElementById('stuBatchFilter'), document.getElementById('repBatchFilter')].forEach(el => {
+                    if (el && !el.querySelector(`option[value="${bid}"]`)) {
+                        el.insertAdjacentHTML('beforeend', `<option value="${bid}">${bid}</option>`);
+                    }
+                });
+            });
+            // Events for analytics
+            const aEvt = document.getElementById('aEvt');
+            allEvents.forEach(e => {
+                if (!aEvt.querySelector(`option[value="${e._id}"]`)) {
+                    aEvt.insertAdjacentHTML('beforeend', `<option value="${e._id}">${e.name}</option>`);
+                }
+            });
+        }
+
+        // ======================== NAVIGATION ========================
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                showSection(item.dataset.section);
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('show');
+            });
+        });
+
+        window.showSection = (name) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('section-' + name).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => {
+                n.classList.toggle('active', n.dataset.section === name);
+            });
+            // Lazy load data per section
+            if (name === 'events') loadEvents();
+            if (name === 'departments') loadDepartments();
+            if (name === 'students') loadStudents();
+            if (name === 'batches') loadBatches();
+        };
+
+        // ======================== TABS ========================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ======================== THEME ========================
+        const themeToggle = document.getElementById('themeToggle');
+        let isDark = localStorage.getItem('theme') === 'dark';
+        if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.querySelector('i').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        themeToggle.addEventListener('click', () => {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            themeToggle.querySelector('i').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        });
+
+        // ======================== PROFILE DROPDOWN ========================
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        profileBtn.addEventListener('click', e => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
+        document.addEventListener('click', () => profileDropdown.classList.remove('show'));
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                await getAuth().signOut();
+            } catch { }
+            sessionStorage.clear();
+            window.location.href = 'institution-login.html';
+        });
+
+        // ======================== MOBILE ========================
+        document.getElementById('hamburger').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('show');
+        });
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('show');
+        });
+
+        // ======================== MODALS ========================
+        window.openModal = id => document.getElementById(id).classList.add('show');
+        window.closeModal = id => document.getElementById(id).classList.remove('show');
+        document.querySelectorAll('.modal-overlay').forEach(o => {
+            o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+        });
+
+        // ======================== UTILS ========================
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return isNaN(d) ? dateStr : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function downloadBlob(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showToast(msg, type = 'success') {
+            let toast = document.getElementById('globalToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'globalToast';
+                toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:500;max-width:380px;box-shadow:0 8px 24px rgba(0,0,0,.15);transform:translateY(100px);opacity:0;transition:all .3s;';
+                document.body.appendChild(toast);
+            }
+            toast.style.background = type === 'success' ? '#10b981' : '#ef4444';
+            toast.style.color = '#fff';
+            toast.textContent = msg;
+            setTimeout(() => { toast.style.transform = 'translateY(0)'; toast.style.opacity = '1'; }, 10);
+            setTimeout(() => { toast.style.transform = 'translateY(100px)'; toast.style.opacity = '0'; }, 4000);
+        }
+
+        function renderPagination(containerId, totalPages, current, cb) {
+            const el = document.getElementById(containerId);
+            if (!el || totalPages <= 1) { if (el) el.innerHTML = ''; return; }
+            let html = '';
+            if (current > 1) html += `<button class="page-btn" onclick="window._paginationCb_${containerId}(${current - 1})">‹</button>`;
+            for (let i = 1; i <= Math.min(totalPages, 7); i++) {
+                html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="window._paginationCb_${containerId}(${i})">${i}</button>`;
+            }
+            if (current < totalPages) html += `<button class="page-btn" onclick="window._paginationCb_${containerId}(${current + 1})">›</button>`;
+            el.innerHTML = html;
+            window['_paginationCb_' + containerId] = cb;
+        }
+
+        // ======================== RESPONSIVE ========================
+        const distGrids = document.querySelector('.dist-grids');
+        if (distGrids && window.innerWidth < 768) distGrids.style.gridTemplateColumns = '1fr';
+
+        // ======================== BOOT ========================
+        init();
+    </script>
 </body>
 
 </html>

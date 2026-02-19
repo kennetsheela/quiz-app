@@ -1,41 +1,162 @@
+//super-admin-analytics.html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics - Super Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Analytics - Super Admin - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/components.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .charts-grid {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
-        .chart-card {
-            background: white;
-            padding: 20px;
+        .stat-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 24px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(59,130,246,0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .chart-card h3 {
-            margin-bottom: 15px;
-            font-size: 16px;
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.35); }
+        .stat-card h3 { font-size: 13px; font-weight: 500; opacity: 0.9; margin-bottom: 8px; color: white; }
+        .stat-card .stat-value { font-size: 32px; font-weight: 800; margin-bottom: 4px; }
+        .stat-card .stat-label { font-size: 12px; opacity: 0.8; }
+        .stat-card.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
+        .stat-card.warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 12px rgba(245,158,11,0.25); }
+        .stat-card.purple  { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); box-shadow: 0 4px 12px rgba(139,92,246,0.25); }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        canvas {
-            max-height: 300px;
+        @media (max-width: 768px) { .analytics-grid { grid-template-columns: 1fr; } }
+
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .chart-card h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        canvas { max-height: 280px; }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-row:last-child { border-bottom: none; }
+        .stat-row-label { font-size: 14px; color: var(--text-secondary); }
+        .stat-row-value { font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+
+        .badge-pill {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-pill.up   { background: rgba(16,185,129,0.12); color: #059669; }
+        .badge-pill.down { background: rgba(239,68,68,0.12);  color: #dc2626; }
+        .badge-pill.neutral { background: rgba(100,116,139,0.12); color: #64748b; }
+
+        .full-width { grid-column: 1 / -1; }
+
+        .top-table { width: 100%; border-collapse: collapse; }
+        .top-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 14px; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+        .top-table td { padding: 12px 14px; font-size: 14px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); vertical-align: middle; }
+        .top-table tr:last-child td { border-bottom: none; }
+        .top-table tr:hover td { background: rgba(59,130,246,0.04); }
+
+        .rank-num { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; font-weight: 700; color: white; background: #3b82f6; }
+        .rank-num.gold   { background: #f59e0b; }
+        .rank-num.silver { background: #94a3b8; }
+        .rank-num.bronze { background: #b45309; }
+
+        .inst-name { font-weight: 600; }
+        .inst-email { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-badge.active    { background: rgba(16,185,129,0.12); color: #059669; }
+        .status-badge.suspended { background: rgba(239,68,68,0.12);  color: #dc2626; }
+
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--border-color) 25%, var(--card-bg) 50%, var(--border-color) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .sk-stat  { height: 110px; border-radius: 12px; }
+        .sk-chart { height: 280px; }
+        .sk-row   { height: 20px; border-radius: 6px; margin-bottom: 14px; }
+
+        /* Error */
+        .error-banner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #ef4444;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .error-banner.show { display: flex; }
+
+        .page-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 24px;
+        }
+
+        select.filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
         }
     </style>
 </head>
-
 <body>
     <header class="appbar">
         <h2>AptioGen - Analytics</h2>
@@ -46,25 +167,80 @@
     </header>
 
     <div class="container">
-        <h1>Platform Analytics</h1>
-        <p>Growth trends and insights across the platform</p>
+        <div class="page-toolbar">
+            <div>
+                <h1>Platform Analytics</h1>
+                <p>Growth trends and insights across the platform</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <label style="font-size:14px;color:var(--text-secondary);">Period:</label>
+                <select class="filter-select" id="periodFilter" onchange="loadAnalytics()">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                    <option value="365">This year</option>
+                </select>
+            </div>
+        </div>
 
-        <div class="charts-grid">
+        <div class="error-banner" id="errorBanner">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="errorMsg">Could not load analytics data.</span>
+        </div>
+
+        <!-- KPI Cards — populated by JS -->
+        <div class="stats-grid" id="kpiGrid">
+            <div class="skeleton sk-stat"></div>
+            <div class="skeleton sk-stat"></div>
+            <div class="skeleton sk-stat"></div>
+            <div class="skeleton sk-stat"></div>
+        </div>
+
+        <div class="analytics-grid">
+            <!-- Institution Growth -->
             <div class="chart-card">
-                <h3>Institution Growth</h3>
-                <canvas id="institutionChart"></canvas>
+                <h4><i class="fa fa-building-columns" style="margin-right:6px;color:#3b82f6;"></i>Institution Growth</h4>
+                <div class="skeleton sk-chart" id="skInstitution"></div>
+                <canvas id="institutionChart" style="display:none;"></canvas>
             </div>
+
+            <!-- Student Growth -->
             <div class="chart-card">
-                <h3>Student Growth</h3>
-                <canvas id="studentChart"></canvas>
+                <h4><i class="fa fa-users" style="margin-right:6px;color:#10b981;"></i>Student Growth</h4>
+                <div class="skeleton sk-chart" id="skStudent"></div>
+                <canvas id="studentChart" style="display:none;"></canvas>
             </div>
+
+            <!-- Questions by Category -->
             <div class="chart-card">
-                <h3>Questions by Category</h3>
-                <canvas id="categoryChart"></canvas>
+                <h4><i class="fa fa-tags" style="margin-right:6px;color:#8b5cf6;"></i>Questions by Category</h4>
+                <div class="skeleton sk-chart" id="skCategory"></div>
+                <canvas id="categoryChart" style="display:none;"></canvas>
             </div>
+
+            <!-- Questions by Difficulty -->
             <div class="chart-card">
-                <h3>Questions by Difficulty</h3>
-                <canvas id="difficultyChart"></canvas>
+                <h4><i class="fa fa-signal" style="margin-right:6px;color:#f59e0b;"></i>Questions by Difficulty</h4>
+                <div class="skeleton sk-chart" id="skDifficulty"></div>
+                <canvas id="difficultyChart" style="display:none;"></canvas>
+            </div>
+
+            <!-- Platform Health -->
+            <div class="chart-card">
+                <h4><i class="fa fa-heart-pulse" style="margin-right:6px;color:#ef4444;"></i>Platform Health</h4>
+                <div id="healthRows">
+                    <div class="skeleton sk-row"></div>
+                    <div class="skeleton sk-row"></div>
+                    <div class="skeleton sk-row"></div>
+                    <div class="skeleton sk-row"></div>
+                    <div class="skeleton sk-row" style="margin-bottom:0;"></div>
+                </div>
+            </div>
+
+            <!-- Top Institutions Table -->
+            <div class="chart-card full-width">
+                <h4><i class="fa fa-ranking-star" style="margin-right:6px;color:#f59e0b;"></i>Top Institutions</h4>
+                <div id="topTable"><div class="skeleton" style="height:200px;border-radius:8px;"></div></div>
             </div>
         </div>
     </div>
@@ -77,78 +253,253 @@
         const auth = sessionStorage.getItem('superAdminAuth');
         if (!auth) window.location.href = 'super-admin-login.html';
 
-        async function loadAnalytics() {
-            try {
-                const response = await fetch(`${API_BASE}/super-admin/analytics`);
-                const data = await response.json();
+        const chartInstances = {};
 
-                if (response.ok) {
-                    renderCharts(data);
+        function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+        function chartDefaults() {
+            const text = cssVar('--text-secondary') || '#64748b';
+            const grid = cssVar('--border-color')   || '#e2e8f0';
+            return {
+                responsive: true,
+                plugins: { legend: { labels: { color: text } } },
+                scales: {
+                    x: { ticks: { color: text }, grid: { color: grid } },
+                    y: { ticks: { color: text }, grid: { color: grid } }
                 }
+            };
+        }
+
+        function reveal(skId, canvasId) {
+            document.getElementById(skId).style.display    = 'none';
+            document.getElementById(canvasId).style.display = 'block';
+        }
+
+        function kill(key) {
+            if (chartInstances[key]) { chartInstances[key].destroy(); delete chartInstances[key]; }
+        }
+
+        function renderKPIs(ov) {
+            document.getElementById('kpiGrid').innerHTML = `
+                <div class="stat-card">
+                    <h3><i class="fa fa-building-columns"></i> Total Institutions</h3>
+                    <div class="stat-value">${ov.totalInstitutions ?? '—'}</div>
+                    <div class="stat-label">Registered on platform</div>
+                </div>
+                <div class="stat-card success">
+                    <h3><i class="fa fa-users"></i> Total Students</h3>
+                    <div class="stat-value">${ov.totalStudents?.toLocaleString() ?? '—'}</div>
+                    <div class="stat-label">Platform-wide enrolments</div>
+                </div>
+                <div class="stat-card warning">
+                    <h3><i class="fa fa-calendar-check"></i> Total Events</h3>
+                    <div class="stat-value">${ov.totalEvents ?? '—'}</div>
+                    <div class="stat-label">All-time events</div>
+                </div>
+                <div class="stat-card purple">
+                    <h3><i class="fa fa-question-circle"></i> Question Bank</h3>
+                    <div class="stat-value">${ov.totalQuestions ?? '—'}</div>
+                    <div class="stat-label">Total questions</div>
+                </div>`;
+        }
+
+        function renderHealth(ov) {
+            const active    = ov.activeInstitutions    ?? 0;
+            const total     = ov.totalInstitutions     ?? 1;
+            const suspended = ov.suspendedInstitutions ?? 0;
+            const pct = total ? Math.round((active / total) * 100) : 0;
+
+            document.getElementById('healthRows').innerHTML = `
+                <div class="stat-row">
+                    <span class="stat-row-label">Active rate</span>
+                    <span class="stat-row-value">${pct}% <span class="badge-pill up">${active} active</span></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-row-label">Suspended</span>
+                    <span class="stat-row-value">${suspended} <span class="badge-pill ${suspended > 0 ? 'down' : 'up'}">${suspended > 0 ? 'needs review' : 'all clear'}</span></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-row-label">Total students</span>
+                    <span class="stat-row-value">${(ov.totalStudents ?? 0).toLocaleString()}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-row-label">Total questions</span>
+                    <span class="stat-row-value">${(ov.totalQuestions ?? 0).toLocaleString()}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-row-label">Total events</span>
+                    <span class="stat-row-value">${(ov.totalEvents ?? 0).toLocaleString()}</span>
+                </div>`;
+        }
+
+        function renderTopTable(institutions) {
+            if (!institutions?.length) {
+                document.getElementById('topTable').innerHTML =
+                    '<p style="text-align:center;padding:30px;color:var(--text-secondary);">No data available.</p>';
+                return;
+            }
+
+            const rankClass = i => ['gold','silver','bronze'][i] ?? '';
+
+            document.getElementById('topTable').innerHTML = `
+                <table class="top-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Institution</th>
+                            <th>Plan</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${institutions.slice(0, 10).map((inst, i) => `
+                        <tr>
+                            <td><span class="rank-num ${rankClass(i)}">${i + 1}</span></td>
+                            <td>
+                                <div class="inst-name">${inst.name}</div>
+                                <div class="inst-email">${inst.email ?? ''}</div>
+                            </td>
+                            <td><span class="badge-pill neutral">${inst.subscription?.plan ?? '—'}</span></td>
+                            <td><span class="status-badge ${inst.subscription?.status}">${inst.subscription?.status ?? '—'}</span></td>
+                            <td>${inst.createdAt ? new Date(inst.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '—'}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>`;
+        }
+
+        window.loadAnalytics = async function () {
+            document.getElementById('errorBanner').classList.remove('show');
+
+            // Reset chart skeletons
+            ['Institution','Student','Category','Difficulty'].forEach(id => {
+                document.getElementById('sk' + id).style.display = 'block';
+                document.getElementById(id.charAt(0).toLowerCase() + id.slice(1) + 'Chart').style.display = 'none';
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/super-admin/analytics`, {
+                    headers: { 'Authorization': `Bearer ${auth}` }
+                });
+
+                if (!response.ok) throw new Error(`Server error ${response.status}`);
+
+                const data = await response.json();
+                const defaults = chartDefaults();
+                const text = cssVar('--text-secondary') || '#64748b';
+
+                // KPIs + Health
+                if (data.overview) {
+                    renderKPIs(data.overview);
+                    renderHealth(data.overview);
+                }
+
+                // Top table — from embedded data or separate fetch
+                if (data.topInstitutions) {
+                    renderTopTable(data.topInstitutions);
+                } else {
+                    fetch(`${API_BASE}/super-admin/institutions?limit=10`, {
+                        headers: { 'Authorization': `Bearer ${auth}` }
+                    })
+                    .then(r => r.json())
+                    .then(d => renderTopTable(d.institutions ?? []))
+                    .catch(() => renderTopTable([]));
+                }
+
+                // Institution Growth
+                const instRows = data?.growth?.institutions ?? [];
+                reveal('skInstitution', 'institutionChart');
+                kill('institution');
+                if (instRows.length) {
+                    chartInstances.institution = new Chart(document.getElementById('institutionChart'), {
+                        type: 'line',
+                        data: {
+                            labels: instRows.map(d => d._id),
+                            datasets: [{
+                                label: 'Institutions',
+                                data: instRows.map(d => d.count),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59,130,246,0.1)',
+                                tension: 0.4, fill: true,
+                                pointBackgroundColor: '#3b82f6', pointRadius: 4
+                            }]
+                        },
+                        options: defaults
+                    });
+                }
+
+                // Student Growth
+                const stuRows = data?.growth?.students ?? [];
+                reveal('skStudent', 'studentChart');
+                kill('student');
+                if (stuRows.length) {
+                    chartInstances.student = new Chart(document.getElementById('studentChart'), {
+                        type: 'line',
+                        data: {
+                            labels: stuRows.map(d => d._id),
+                            datasets: [{
+                                label: 'Students',
+                                data: stuRows.map(d => d.count),
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16,185,129,0.1)',
+                                tension: 0.4, fill: true,
+                                pointBackgroundColor: '#10b981', pointRadius: 4
+                            }]
+                        },
+                        options: defaults
+                    });
+                }
+
+                // Category Doughnut
+                const catRows = data?.questionBank?.byCategory ?? [];
+                reveal('skCategory', 'categoryChart');
+                kill('category');
+                if (catRows.length) {
+                    chartInstances.category = new Chart(document.getElementById('categoryChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: catRows.map(d => d._id),
+                            datasets: [{
+                                data: catRows.map(d => d.count),
+                                backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: { responsive: true, plugins: { legend: { labels: { color: text } } } }
+                    });
+                }
+
+                // Difficulty Bar
+                const diffRows = data?.questionBank?.byDifficulty ?? [];
+                reveal('skDifficulty', 'difficultyChart');
+                kill('difficulty');
+                if (diffRows.length) {
+                    chartInstances.difficulty = new Chart(document.getElementById('difficultyChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: diffRows.map(d => d._id),
+                            datasets: [{
+                                label: 'Questions',
+                                data: diffRows.map(d => d.count),
+                                backgroundColor: ['#10b981','#f59e0b','#ef4444'],
+                                borderRadius: 6
+                            }]
+                        },
+                        options: defaults
+                    });
+                }
+
             } catch (error) {
                 console.error('Analytics error:', error);
+                document.getElementById('errorMsg').textContent = `Failed to load analytics: ${error.message}`;
+                document.getElementById('errorBanner').classList.add('show');
+                ['Institution','Student','Category','Difficulty'].forEach(id => {
+                    document.getElementById('sk' + id).style.display = 'none';
+                });
             }
-        }
-
-        function renderCharts(data) {
-            // Institution Growth
-            new Chart(document.getElementById('institutionChart'), {
-                type: 'line',
-                data: {
-                    labels: data.growth.institutions.map(d => d._id),
-                    datasets: [{
-                        label: 'Institutions',
-                        data: data.growth.institutions.map(d => d.count),
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.4
-                    }]
-                }
-            });
-
-            // Student Growth
-            new Chart(document.getElementById('studentChart'), {
-                type: 'line',
-                data: {
-                    labels: data.growth.students.map(d => d._id),
-                    datasets: [{
-                        label: 'Students',
-                        data: data.growth.students.map(d => d.count),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4
-                    }]
-                }
-            });
-
-            // Category Distribution
-            new Chart(document.getElementById('categoryChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: data.questionBank.byCategory.map(d => d._id),
-                    datasets: [{
-                        data: data.questionBank.byCategory.map(d => d.count),
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
-                    }]
-                }
-            });
-
-            // Difficulty Distribution
-            new Chart(document.getElementById('difficultyChart'), {
-                type: 'bar',
-                data: {
-                    labels: data.questionBank.byDifficulty.map(d => d._id),
-                    datasets: [{
-                        label: 'Questions',
-                        data: data.questionBank.byDifficulty.map(d => d.count),
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
-                    }]
-                }
-            });
-        }
+        };
 
         loadAnalytics();
     </script>
 </body>
-
 </html>

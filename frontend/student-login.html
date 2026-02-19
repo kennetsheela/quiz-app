@@ -107,7 +107,7 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Sign In</button>
                         <p class="text-center mt-3">
-                            New here? <a href="#" onclick="toggleIndpMode('reg')">Create an independent account</a>
+                            New here? <a href="student-registration-choice.html">Create a student account</a>
                         </p>
                     </form>
                     <div class="social-login text-center mt-4">
@@ -119,32 +119,6 @@
                                     class="fab fa-github"></i></button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Independent Register Form -->
-                <div id="indpRegisterView" style="display: none;">
-                    <form id="studentRegisterForm">
-                        <div class="form-group">
-                            <label>Full Name</label>
-                            <input type="text" id="regName" placeholder="Full Name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" id="regEmail" placeholder="you@example.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" id="regPassword" placeholder="Min 6 characters" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Country</label>
-                            <input type="text" id="regCountry" value="India" required>
-                        </div>
-                        <button type="submit" class="btn btn-success w-100">Register</button>
-                        <p class="text-center mt-3">
-                            Already have an account? <a href="#" onclick="toggleIndpMode('login')">Login</a>
-                        </p>
-                    </form>
                 </div>
             </div>
         </div>
@@ -176,15 +150,6 @@
             }
         };
 
-        window.toggleIndpMode = (mode) => {
-            if (mode === 'reg') {
-                document.getElementById('indpLoginView').style.display = 'none';
-                document.getElementById('indpRegisterView').style.display = 'block';
-            } else {
-                document.getElementById('indpLoginView').style.display = 'block';
-                document.getElementById('indpRegisterView').style.display = 'none';
-            }
-        };
 
         const API_BASE = 'http://localhost:5000/api';
 
@@ -240,21 +205,6 @@
             }
         });
 
-        // Independent Register
-        document.getElementById('studentRegisterForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const name = document.getElementById('regName').value;
-            const country = document.getElementById('regCountry').value;
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await handleBackendLogin(userCredential.user, { name, email, country });
-            } catch (error) {
-                alert('Registration failed: ' + error.message);
-            }
-        });
 
         // Social Login
         window.socialLogin = async (providerName) => {

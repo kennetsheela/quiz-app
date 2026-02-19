@@ -1,3 +1,4 @@
+//institution-login.html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,54 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Institution Portal - AptioGen</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/components.css">
-    <style>
-        .login-page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 80px);
-            padding: 20px;
-        }
-
-        .login-card {
-            max-width: 500px;
-            width: 100%;
-        }
-
-        .auth-toggle {
-            display: flex;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-        }
-
-        .auth-tab.active {
-            color: var(--accent-primary);
-            border-bottom: 3px solid var(--accent-primary);
-        }
-
-        .form-section {
-            display: none;
-        }
-
-        .form-section.active {
-            display: block;
-        }
-    </style>
+    <link rel="stylesheet" href="css/institution.css">
 </head>
 
 <body>
@@ -75,8 +35,8 @@
             </div>
 
             <div class="auth-toggle">
-                <button class="auth-tab active" onclick="showAuth('login')">Login</button>
-                <button class="auth-tab" onclick="showAuth('register')">Register</button>
+                <button class="auth-tab active" data-auth="login">Login</button>
+                <button class="auth-tab" data-auth="register">Register</button>
             </div>
 
             <!-- Login Section -->
@@ -90,132 +50,539 @@
                         <label for="password">Password</label>
                         <input type="password" id="password" placeholder="Enter password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Institutional Login</button>
+                    <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                        Institutional Login
+                    </button>
                 </form>
             </div>
 
             <!-- Register Section -->
             <div id="registerSection" class="form-section">
+                <div class="registration-steps mb-4">
+                    <div class="reg-step active" data-step="1">1</div>
+                    <div class="reg-step" data-step="2">2</div>
+                    <div class="reg-step" data-step="3">3</div>
+                </div>
+
                 <form id="instRegisterForm">
-                    <div class="form-group mb-3">
-                        <label for="instName">Institution Name</label>
-                        <input type="text" id="instName" placeholder="Full name of College/School" required>
+                    <!-- Step 1 -->
+                    <div class="register-step-content active" id="regStep1">
+                        <h4 class="mb-3">Institution Details</h4>
+                        <div class="form-group mb-3">
+                            <label for="instName">Institution Name</label>
+                            <input type="text" id="instName" placeholder="Full name of College/School" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="instType">Institution Type</label>
+                            <select id="instType" required>
+                                <option value="">Select type</option>
+                                <option value="University">University</option>
+                                <option value="College">College</option>
+                                <option value="School">School</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="regEmail">Admin Email</label>
+                            <input type="email" id="regEmail" placeholder="Primary contact email" required>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="instPhone">Contact Number</label>
+                            <input type="tel" id="instPhone" placeholder="Mobile or landline" required>
+                        </div>
+                        <button type="button" class="btn btn-primary w-100" onclick="nextRegStep(2)">
+                            Next: Academic Config →
+                        </button>
                     </div>
-                    <div class="form-group mb-3">
-                        <label for="instType">Institution Type</label>
-                        <select id="instType">
-                            <option value="University">University</option>
-                            <option value="College">College</option>
-                            <option value="School">School</option>
-                        </select>
+
+                    <!-- Step 2 -->
+                    <div class="register-step-content" id="regStep2">
+                        <h4 class="mb-3">Academic Configuration</h4>
+                        <div class="form-group mb-3">
+                            <label for="progDuration">Program Duration (Years)</label>
+                            <select id="progDuration" required>
+                                <option value="2">2 Years (Diploma/PG)</option>
+                                <option value="3">3 Years (Bachelors)</option>
+                                <option value="4" selected>4 Years (Engineering/Bachelors)</option>
+                                <option value="5">5 Years (Integrated/Medical)</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="acadYear">Current Academic Year</label>
+                            <input type="text" id="acadYear" placeholder="e.g. 2023-24" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="expectedStudents">Expected Students</label>
+                            <select id="expectedStudents" required>
+                                <option value="0-100">0 - 100</option>
+                                <option value="101-500">101 - 500</option>
+                                <option value="501-1000">501 - 1000</option>
+                                <option value="1000+">1000+</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" class="btn btn-secondary w-100" onclick="nextRegStep(1)">Back</button>
+                            <button type="button" class="btn btn-primary w-100" onclick="nextRegStep(3)">Next:
+                                Credentials →</button>
+                        </div>
                     </div>
-                    <div class="form-group mb-3">
-                        <label for="regEmail">Admin Email</label>
-                        <input type="email" id="regEmail" placeholder="Primary contact email" required>
+
+                    <!-- Step 3 -->
+                    <div class="register-step-content" id="regStep3">
+                        <h4 class="mb-3">Security & Terms</h4>
+                        <div class="form-group mb-3">
+                            <label for="regPass">Create Password</label>
+                            <input type="password" id="regPass" placeholder="Strong password (min 6 characters)"
+                                required minlength="6">
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="termsCheck" required>
+                                <span>
+                                    I agree to the
+                                    <button type="button" class="terms-link" onclick="openGlideDialog('terms')">Terms
+                                        &amp; Conditions</button>
+                                    and
+                                    <button type="button" class="terms-link"
+                                        onclick="openGlideDialog('privacy')">Privacy Policy</button>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" class="btn btn-secondary w-100" onclick="nextRegStep(2)">Back</button>
+                            <button type="submit" class="btn btn-success w-100" id="registerBtn">
+                                Complete Registration &amp; Pay →
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group mb-4">
-                        <label for="regPass">Create Password</label>
-                        <input type="password" id="regPass" placeholder="Strong password" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Continue to Onboarding →</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Glide Dialog ──────────────────────────────────────────────────── -->
+    <div class="glide-overlay" id="glideOverlay" role="dialog" aria-modal="true" aria-labelledby="glideDialogTitle">
+        <div class="glide-dialog" id="glideDialog">
+
+            <!-- Drag handle -->
+            <div class="glide-handle" id="glideHandle"></div>
+
+            <!-- Header -->
+            <div class="glide-header">
+                <div class="glide-title">
+                    <div class="glide-title-icon" id="glideIcon">
+                        <i class="fa-solid fa-file-contract"></i>
+                    </div>
+                    <div>
+                        <h3 id="glideDialogTitle">Terms &amp; Conditions</h3>
+                        <p id="glideDialogSubtitle">AptioGen Platform Agreement</p>
+                    </div>
+                </div>
+                <button class="glide-close" onclick="closeGlideDialog()" aria-label="Close dialog">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Tab switcher -->
+            <div class="glide-tabs">
+                <button class="glide-tab active" id="tabTerms" onclick="switchGlideTab('terms')">
+                    <i class="fa-solid fa-file-lines"></i> Terms &amp; Conditions
+                </button>
+                <button class="glide-tab" id="tabPrivacy" onclick="switchGlideTab('privacy')">
+                    <i class="fa-solid fa-shield-halved"></i> Privacy Policy
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="glide-body">
+
+                <!-- Terms section -->
+                <div class="glide-section active" id="sectionTerms">
+                    <p class="last-updated">Last updated: January 2025</p>
+                    <div class="glide-badge"><i class="fa-solid fa-circle-check"></i> Legally binding agreement</div>
+
+                    <h4><i class="fa-solid fa-handshake"></i> 1. Acceptance of Terms</h4>
+                    <p>By registering your institution on AptioGen, you confirm that you are an authorized
+                        representative with the legal authority to bind your institution to these Terms &amp;
+                        Conditions. These terms govern your access to and use of the AptioGen platform.</p>
+
+                    <h4><i class="fa-solid fa-building-columns"></i> 2. Institution Registration</h4>
+                    <p>You agree to provide accurate, current, and complete information during registration. You are
+                        responsible for maintaining the confidentiality of your account credentials and all activities
+                        that occur under your account.</p>
+                    <ul>
+                        <li>One institution per administrator account</li>
+                        <li>You must notify us immediately of any unauthorized access</li>
+                        <li>False information may result in account termination</li>
+                    </ul>
+
+                    <h4><i class="fa-solid fa-users"></i> 3. Student Data Responsibility</h4>
+                    <p>As an institution admin, you are the data controller for your students' information. You are
+                        responsible for obtaining appropriate consent from students and complying with applicable data
+                        protection laws in your jurisdiction.</p>
+
+                    <h4><i class="fa-solid fa-credit-card"></i> 4. Subscription &amp; Payments</h4>
+                    <p>Access to premium features requires a paid subscription. Fees are billed as per the selected
+                        plan. Subscriptions auto-renew unless cancelled before the renewal date. Refunds are issued at
+                        our discretion within 7 days of payment.</p>
+
+                    <h4><i class="fa-solid fa-ban"></i> 5. Prohibited Activities</h4>
+                    <p>You agree not to misuse the platform. Prohibited activities include:</p>
+                    <ul>
+                        <li>Uploading harmful, offensive, or illegal content</li>
+                        <li>Attempting to reverse-engineer or exploit the platform</li>
+                        <li>Sharing access credentials with unauthorized parties</li>
+                        <li>Using the platform for purposes other than educational assessment</li>
+                    </ul>
+
+                    <h4><i class="fa-solid fa-gavel"></i> 6. Termination</h4>
+                    <p>We reserve the right to suspend or terminate accounts that violate these terms, without prior
+                        notice. Upon termination, your institution's data will be retained for 30 days before permanent
+                        deletion.</p>
+
+                    <h4><i class="fa-solid fa-envelope"></i> 7. Contact</h4>
+                    <p>For questions regarding these terms, contact us at <strong>legal@aptiogen.com</strong>.</p>
+                </div>
+
+                <!-- Privacy section -->
+                <div class="glide-section" id="sectionPrivacy">
+                    <p class="last-updated">Last updated: January 2025</p>
+                    <div class="glide-badge"><i class="fa-solid fa-lock"></i> Your data is protected</div>
+
+                    <h4><i class="fa-solid fa-database"></i> 1. Data We Collect</h4>
+                    <p>We collect information necessary to provide the AptioGen service:</p>
+                    <ul>
+                        <li><strong>Institution data:</strong> Name, type, location, contact details</li>
+                        <li><strong>Admin data:</strong> Email address, login credentials (encrypted)</li>
+                        <li><strong>Student data:</strong> Names, roll numbers, academic records (managed by your
+                            institution)</li>
+                        <li><strong>Usage data:</strong> Platform activity logs, feature usage analytics</li>
+                    </ul>
+
+                    <h4><i class="fa-solid fa-gears"></i> 2. How We Use Your Data</h4>
+                    <p>Your data is used exclusively to provide, maintain, and improve the AptioGen platform. We do not
+                        sell your data to third parties. Specific uses include:</p>
+                    <ul>
+                        <li>Authenticating users and maintaining secure sessions</li>
+                        <li>Generating performance reports and analytics</li>
+                        <li>Sending service-related communications</li>
+                        <li>Improving platform features based on usage patterns</li>
+                    </ul>
+
+                    <h4><i class="fa-solid fa-share-nodes"></i> 3. Data Sharing</h4>
+                    <p>We share data only with trusted service providers (such as Firebase for authentication, MongoDB
+                        Atlas for storage) under strict data processing agreements. These providers are prohibited from
+                        using your data for any other purpose.</p>
+
+                    <h4><i class="fa-solid fa-clock-rotate-left"></i> 4. Data Retention</h4>
+                    <p>Institution and student data is retained for the duration of your subscription plus 30 days. You
+                        may request data export or deletion at any time by contacting our support team.</p>
+
+                    <h4><i class="fa-solid fa-user-shield"></i> 5. Your Rights</h4>
+                    <p>You have the right to access, correct, export, or delete your institution's data at any time.
+                        Submit requests to <strong>privacy@aptiogen.com</strong> and we will respond within 30 days.</p>
+
+                    <h4><i class="fa-solid fa-cookie"></i> 6. Cookies</h4>
+                    <p>We use essential cookies for authentication and session management. No advertising or tracking
+                        cookies are used. You can disable cookies in your browser, but this may affect platform
+                        functionality.</p>
+
+                    <h4><i class="fa-solid fa-triangle-exclamation"></i> 7. Security</h4>
+                    <p>We implement industry-standard security measures including TLS encryption, hashed passwords, and
+                        regular security audits. However, no online service can guarantee absolute security.</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="glide-footer">
+                <button class="glide-decline" onclick="closeGlideDialog()">
+                    <i class="fa-solid fa-xmark"></i> Decline
+                </button>
+                <button class="glide-accept" onclick="acceptAndClose()">
+                    <i class="fa-solid fa-circle-check"></i> I Accept These Terms
+                </button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { auth } from './js/firebase.js';
+        import API_CONFIG from './js/config.js';
         import {
             signInWithEmailAndPassword,
-            createUserWithEmailAndPassword
-        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+            createUserWithEmailAndPassword,
+            onAuthStateChanged
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-        window.showAuth = function (type) {
-            document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+        const API_BASE_URL = API_CONFIG?.BASE_URL
+            ? `${API_CONFIG.BASE_URL}/api`
+            : 'http://localhost:5000/api';
 
-            if (type === 'login') {
-                document.querySelector('.auth-tab:first-child').classList.add('active');
-                document.getElementById('loginSection').classList.add('active');
-            } else {
-                document.querySelector('.auth-tab:last-child').classList.add('active');
-                document.getElementById('registerSection').classList.add('active');
-            }
+        // ── Tab switching ──────────────────────────────────────────────────
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                showAuth(this.getAttribute('data-auth'));
+            });
+        });
+
+        function showAuth(type) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+            document.querySelector(`[data-auth="${type}"]`).classList.add('active');
+            document.getElementById(type === 'login' ? 'loginSection' : 'registerSection').classList.add('active');
         }
 
-        // Institution Login
+        // ── Role-based redirect ────────────────────────────────────────────
+        function redirectByRole(role) {
+            const routes = {
+                'super-admin': 'super-admin-dashboard.html',
+                'inst-admin': 'institution-dashboard.html',
+                'hod': 'hod-dashboard.html',
+                'student': 'student-dashboard.html'
+            };
+            window.location.href = routes[role] || 'student-dashboard.html';
+        }
+
+        // ── Auth state check ───────────────────────────────────────────────
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return;
+            try {
+                const token = await Promise.race([
+                    user.getIdToken(false),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                ]);
+                const instRes = await fetch(`${API_BASE_URL}/institutions/my`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (instRes.ok) {
+                    const instData = await instRes.json();
+                    if (instData.institution?._id) localStorage.setItem('institutionId', instData.institution._id);
+                    redirectByRole('inst-admin');
+                    return;
+                }
+                const profileRes = await fetch(`${API_BASE_URL}/auth/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (profileRes.ok) {
+                    const profile = await profileRes.json();
+                    if (profile?.role && profile.role !== 'student') redirectByRole(profile.role);
+                }
+            } catch (error) {
+                console.warn('⚠️ Session restore failed:', error.message);
+            }
+        });
+
+        // ── Institution Login ──────────────────────────────────────────────
         document.getElementById('instLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const origHTML = loginBtn.innerHTML;
 
             try {
-                // Sign in with Firebase
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const token = await userCredential.user.getIdToken();
 
-                // Check if institution exists for this user
-                const response = await fetch('http://localhost:5000/api/institutions/my', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                const instRes = await fetch(`${API_BASE_URL}/institutions/my`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Institution found:', data);
-                    // Redirect to institution dashboard
-                    window.location.href = 'institution-dashboard.html';
-                } else if (response.status === 404) {
-                    // Institution not found, redirect to setup
-                    alert('No institution found. Please complete registration.');
+                if (instRes.ok) {
+                    const instData = await instRes.json();
+                    if (instData.institution?._id) localStorage.setItem('institutionId', instData.institution._id);
+                    await fetch(`${API_BASE_URL}/auth/profile`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: 'inst-admin' })
+                    });
+                    redirectByRole('inst-admin');
+                } else if (instRes.status === 404) {
+                    const profileRes = await fetch(`${API_BASE_URL}/auth/profile`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (profileRes.ok) {
+                        const profile = await profileRes.json();
+                        if (profile.role === 'hod' || profile.role === 'super-admin') {
+                            redirectByRole(profile.role); return;
+                        }
+                    }
+                    alert('No institution found for this account. Please complete registration.');
                     showAuth('register');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = origHTML;
                 } else {
-                    const error = await response.json();
-                    alert('Error: ' + error.error);
+                    const errorData = await instRes.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server error: ${instRes.status}`);
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed: ' + error.message);
+                let msg = 'Login failed. ';
+                if (error.code === 'auth/user-not-found') msg += 'No account found with this email.';
+                else if (error.code === 'auth/wrong-password') msg += 'Incorrect password.';
+                else if (error.code === 'auth/invalid-email') msg += 'Invalid email address.';
+                else if (error.code === 'auth/invalid-credential') msg += 'Invalid email or password.';
+                else msg += error.message;
+                alert(msg);
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = origHTML;
             }
         });
 
-        // Institution Registration
+        // ── Multi-step registration ────────────────────────────────────────
+        window.nextRegStep = function (step) {
+            if (step === 2) {
+                const name = document.getElementById('instName').value.trim();
+                const type = document.getElementById('instType').value;
+                const email = document.getElementById('regEmail').value.trim();
+                const phone = document.getElementById('instPhone').value.trim();
+                if (!name || !type || !email || !phone) { alert('Please fill in all institution details'); return; }
+            }
+            if (step === 3) {
+                if (!document.getElementById('acadYear').value.trim()) { alert('Please enter current academic year'); return; }
+            }
+            document.querySelectorAll('.register-step-content').forEach(s => s.classList.remove('active'));
+            document.getElementById('regStep' + step).classList.add('active');
+            document.querySelectorAll('.reg-step').forEach(s => {
+                s.classList.toggle('active', parseInt(s.dataset.step) <= step);
+            });
+        };
+
+        // ── Institution Registration ───────────────────────────────────────
         document.getElementById('instRegisterForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const instName = document.getElementById('instName').value;
-            const instType = document.getElementById('instType').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPass').value;
+            const registerBtn = document.getElementById('registerBtn');
+            const origHTML = registerBtn.innerHTML;
+            if (!document.getElementById('termsCheck').checked) { alert('Please accept terms and conditions'); return; }
 
             try {
-                // Create Firebase user
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const token = await userCredential.user.getIdToken();
+                registerBtn.disabled = true;
+                registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
 
-                // Store basic institution data
+                const userCredential = await createUserWithEmailAndPassword(
+                    auth,
+                    document.getElementById('regEmail').value.trim(),
+                    document.getElementById('regPass').value
+                );
+
                 sessionStorage.setItem('pendingInstitution', JSON.stringify({
-                    name: instName,
-                    type: instType,
-                    email: email
+                    name: document.getElementById('instName').value.trim(),
+                    type: document.getElementById('instType').value,
+                    email: document.getElementById('regEmail').value.trim(),
+                    phone: document.getElementById('instPhone').value.trim(),
+                    userId: userCredential.user.uid,
+                    academicConfig: {
+                        programDuration: parseInt(document.getElementById('progDuration').value),
+                        currentAcademicYear: document.getElementById('acadYear').value.trim(),
+                        expectedStudents: document.getElementById('expectedStudents').value
+                    }
                 }));
 
-                // Redirect to payment/onboarding
                 window.location.href = 'payment.html';
             } catch (error) {
-                console.error('Registration error:', error);
-                if (error.code === 'auth/email-already-in-use') {
-                    alert('This email is already registered. Please login instead.');
-                    showAuth('login');
-                } else {
-                    alert('Registration failed: ' + error.message);
-                }
+                const msg = error.code === 'auth/email-already-in-use'
+                    ? 'This email is already registered. Please login instead.'
+                    : 'Registration failed. ' + error.message;
+                alert(msg);
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = origHTML;
             }
         });
     </script>
+
+    <!-- ── Glide Dialog Script (non-module, needs window scope) ─────────── -->
+    <script>
+        const overlay = document.getElementById('glideOverlay');
+        const dialog = document.getElementById('glideDialog');
+        let isDragging = false;
+        let startY = 0;
+        let currentY = 0;
+
+        // Open dialog
+        window.openGlideDialog = function (tab = 'terms') {
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            switchGlideTab(tab);
+        };
+
+        // Close dialog
+        window.closeGlideDialog = function () {
+            overlay.classList.remove('open');
+            dialog.style.transform = '';
+            document.body.style.overflow = '';
+        };
+
+        // Accept and tick the checkbox
+        window.acceptAndClose = function () {
+            document.getElementById('termsCheck').checked = true;
+            closeGlideDialog();
+        };
+
+        // Switch between Terms / Privacy tabs
+        window.switchGlideTab = function (tab) {
+            // Update tab buttons
+            document.getElementById('tabTerms').classList.toggle('active', tab === 'terms');
+            document.getElementById('tabPrivacy').classList.toggle('active', tab === 'privacy');
+
+            // Update sections
+            document.getElementById('sectionTerms').classList.toggle('active', tab === 'terms');
+            document.getElementById('sectionPrivacy').classList.toggle('active', tab === 'privacy');
+
+            // Update header
+            const isTerms = tab === 'terms';
+            document.getElementById('glideDialogTitle').textContent = isTerms ? 'Terms & Conditions' : 'Privacy Policy';
+            document.getElementById('glideDialogSubtitle').textContent = isTerms ? 'AptioGen Platform Agreement' : 'How we handle your data';
+            document.getElementById('glideIcon').innerHTML = isTerms
+                ? '<i class="fa-solid fa-file-contract"></i>'
+                : '<i class="fa-solid fa-shield-halved"></i>';
+        };
+
+        // Close on overlay click
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeGlideDialog();
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeGlideDialog();
+        });
+
+        // ── Drag-to-dismiss ────────────────────────────────────────────────
+        const handle = document.getElementById('glideHandle');
+
+        handle.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            startY = e.clientY;
+            handle.style.cursor = 'grabbing';
+            dialog.style.transition = 'none';
+            e.preventDefault();
+        });
+
+        document.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            currentY = Math.max(0, e.clientY - startY); // only drag down
+            dialog.style.transform = `translateY(${currentY}px)`;
+        });
+
+        document.addEventListener('pointerup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            handle.style.cursor = 'grab';
+            dialog.style.transition = '';
+
+            if (currentY > 120) {
+                // Dragged far enough — dismiss
+                closeGlideDialog();
+            } else {
+                // Snap back
+                dialog.style.transform = 'translateY(0)';
+            }
+            currentY = 0;
+        });
+    </script>
+
+    <script src="js/theme.js" type="module"></script>
 </body>
 
 </html>

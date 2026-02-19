@@ -240,5 +240,23 @@ router.delete("/profile", verifyToken, async (req, res) => {
   }
 });
 
+// Middleware to verify if user is an institution admin
+const verifyInstAdmin = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+
+    if (!user || user.role !== "inst-admin") {
+      return res.status(403).json({ error: "Access denied. Institution admin role required." });
+    }
+
+    req.instAdmin = user;
+    next();
+  } catch (error) {
+    console.error("verifyInstAdmin error:", error);
+    res.status(500).json({ error: "Authorization check failed" });
+  }
+};
+
 module.exports = router;
 module.exports.verifyToken = verifyToken;
+module.exports.verifyInstAdmin = verifyInstAdmin;

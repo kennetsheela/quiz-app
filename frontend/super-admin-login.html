@@ -1,3 +1,4 @@
+//super-admin-login.html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -61,27 +62,45 @@
 
     <script type="module">
         import { initTheme } from './js/theme.js';
+        import { auth } from './js/superAdminAPI.js';
+        import API_CONFIG from './js/config.js';
+
+        initTheme();
 
         const loginForm = document.getElementById('adminLoginForm');
         const message = document.getElementById('message');
 
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-            // Direct login for Super Admin (Simulated logic for now, should hit backend)
-            if (user === 'superadmin' && pass === 'kennetsheela310110@') {
-                message.style.display = 'block';
-                message.style.color = 'var(--success)';
-                message.textContent = 'Login successful! Redirecting...';
-                setTimeout(() => {
-                    window.location.href = 'admin-panel.html';
-                }, 1500);
-            } else {
+            try {
+                const response = await fetch(`${API_CONFIG.API_URL}/super-admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    auth.login(data.token);
+                    message.style.display = 'block';
+                    message.style.color = 'var(--success)';
+                    message.textContent = 'Login successful! Redirecting...';
+                    setTimeout(() => {
+                        window.location.href = 'super-admin-dashboard.html';
+                    }, 1500);
+                } else {
+                    message.style.display = 'block';
+                    message.style.color = 'var(--error)';
+                    message.textContent = data.error || 'Invalid credentials';
+                }
+            } catch (error) {
                 message.style.display = 'block';
                 message.style.color = 'var(--error)';
-                message.textContent = 'Invalid credentials';
+                message.textContent = 'Connection error. Please check if backend is running.';
             }
         });
     </script>

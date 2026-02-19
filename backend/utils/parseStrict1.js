@@ -2,11 +2,11 @@
 function parseStrict(text, metadata = {}) {
   console.log("📄 Parsing text, length:", text.length);
   console.log("📝 First 500 characters:", text.substring(0, 500));
-  
+
   const { category = null } = metadata;
-  
+
   const questions = [];
-  
+
   // Normalize line endings and split into lines
   const lines = text
     .replace(/\r\n/g, '\n')
@@ -25,26 +25,26 @@ function parseStrict(text, metadata = {}) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
-    // Check for topic marker in PDF
-    const topicMatch = line.match(/^===\s*TOPIC:\s*(.+?),\s*LEVEL:\s*(.+?)\s*===/i);
+
+    // Check for topic marker in PDF - more lenient match
+    const topicMatch = line.match(/===\s*TOPIC:\s*(.+?),\s*LEVEL:\s*(.+?)\s*===/i);
     if (topicMatch) {
       currentTopic = topicMatch[1].trim().toLowerCase();
       currentLevel = topicMatch[2].trim().toLowerCase();
       console.log(`\n📚 Switched to topic: ${currentTopic}, level: ${currentLevel}`);
       continue;
     }
-    
+
     // Pattern 1: Question starts with number (1. or 1) or Q1. or Question 1)
     const questionMatch = line.match(/^(?:Q(?:uestion)?\s*)?(\d+)[\.\):\s]+(.+)/i);
-    
+
     if (questionMatch) {
       // Save previous question if valid
       if (currentQuestion && isValidQuestion(currentQuestion)) {
         questions.push(currentQuestion);
         console.log(`✅ Added question ${questions.length}`);
       }
-      
+
       questionCounter++;
       currentQuestion = {
         category: category,
@@ -55,9 +55,9 @@ function parseStrict(text, metadata = {}) {
         correctAnswer: null,
         answerText: null // Store raw answer text for verification
       };
-      
+
       collectingQuestion = true;
-      
+
       console.log(`📝 Found question ${questionCounter}: ${currentQuestion.question.substring(0, 50)}...`);
       continue;
     }
@@ -66,7 +66,7 @@ function parseStrict(text, metadata = {}) {
 
     // Pattern 2: Options (A. or A) or a. or a))
     const optionMatch = line.match(/^([A-Da-d])[\.\):\s]+(.+)/);
-    
+
     if (optionMatch && currentQuestion.options.length < 4) {
       collectingQuestion = false;
       const optionText = optionMatch[2].trim();
@@ -77,12 +77,12 @@ function parseStrict(text, metadata = {}) {
 
     // Pattern 3: Answer with letter (Answer: A or Correct: B or Ans: C or just A)
     const answerLetterMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]*([A-Da-d])/i);
-    
+
     if (answerLetterMatch) {
       collectingQuestion = false;
       const answerLetter = answerLetterMatch[1].toUpperCase();
       const answerIndex = answerLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-      
+
       if (answerIndex >= 0 && answerIndex < currentQuestion.options.length) {
         currentQuestion.correctAnswer = currentQuestion.options[answerIndex];
         console.log(`   ✓ Answer: ${answerLetter} (${currentQuestion.correctAnswer.substring(0, 30)}...)`);
@@ -92,12 +92,12 @@ function parseStrict(text, metadata = {}) {
 
     // Pattern 3B: Answer as text (Answer: some text explanation)
     const answerTextMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]+(.+)/i);
-    
+
     if (answerTextMatch && !answerLetterMatch) {
       collectingQuestion = false;
       const answerText = answerTextMatch[1].trim();
       currentQuestion.answerText = answerText;
-      
+
       // If we have options, try to match the answer text to an option
       if (currentQuestion.options.length > 0) {
         const matchedOption = findBestMatchingOption(answerText, currentQuestion.options);
@@ -130,7 +130,7 @@ function parseStrict(text, metadata = {}) {
       // Check if line looks like a bullet point or continuation
       const isBulletPoint = /^[-•·*]\s/.test(line);
       const isDash = /^-\s/.test(line);
-      
+
       if (isBulletPoint || isDash) {
         // Add bullet point to question with line break
         currentQuestion.question += '\n• ' + line.replace(/^[-•·*]\s*/, '');
@@ -150,7 +150,7 @@ function parseStrict(text, metadata = {}) {
         questions.push(currentQuestion);
         console.log(`✅ Added question ${questions.length}`);
       }
-      
+
       // Start a new question with the follow-up text
       questionCounter++;
       currentQuestion = {
@@ -162,7 +162,7 @@ function parseStrict(text, metadata = {}) {
         correctAnswer: null,
         answerText: null
       };
-      
+
       collectingQuestion = true;
       console.log(`📝 Found follow-up question ${questionCounter}: ${line.substring(0, 50)}...`);
       continue;
@@ -193,7 +193,7 @@ function parseStrict(text, metadata = {}) {
   });
 
   console.log(`\n📊 Final result: ${processedQuestions.length} valid questions parsed`);
-  
+
   if (processedQuestions.length === 0) {
     console.error("❌ No questions parsed!");
     console.error("Sample of raw text:");
@@ -222,35 +222,35 @@ function parseStrict(text, metadata = {}) {
 function generateOptionsFromAnswer(question) {
   console.log(`   🎯 Generating options for: ${question.question.substring(0, 50)}...`);
   console.log(`   📝 Answer text: ${question.answerText}`);
-  
+
   // The correct answer
   const correctAnswer = question.answerText;
-  
+
   // Generate plausible distractors based on the answer type
   const distractors = generateDistractors(correctAnswer, question.question);
-  
+
   // Combine correct answer with distractors
   const allOptions = [correctAnswer, ...distractors].slice(0, 4);
-  
+
   // Shuffle options
   const shuffledOptions = shuffleArray(allOptions);
-  
+
   question.options = shuffledOptions;
   question.correctAnswer = correctAnswer;
-  
+
   console.log(`   ✅ Generated ${question.options.length} options`);
   question.options.forEach((opt, idx) => {
     const marker = opt === correctAnswer ? '✓' : ' ';
     console.log(`   ${marker} ${String.fromCharCode(65 + idx)}. ${opt.substring(0, 40)}...`);
   });
-  
+
   return question;
 }
 
 // NEW FUNCTION: Generate plausible wrong answers
 function generateDistractors(correctAnswer, questionText) {
   const distractors = [];
-  
+
   // Check if answer is numeric
   if (/^\d+$/.test(correctAnswer)) {
     const num = parseInt(correctAnswer);
@@ -276,16 +276,16 @@ function generateDistractors(correctAnswer, questionText) {
   else {
     // Split answer into words
     const words = correctAnswer.split(/\s+/);
-    
+
     // Generate variations
     if (words.length > 1) {
       // Swap words
       const swapped = [...words].reverse().join(' ');
       distractors.push(swapped);
-      
+
       // Remove first word
       distractors.push(words.slice(1).join(' '));
-      
+
       // Remove last word
       distractors.push(words.slice(0, -1).join(' '));
     } else {
@@ -295,60 +295,60 @@ function generateDistractors(correctAnswer, questionText) {
       distractors.push(correctAnswer + ' related');
     }
   }
-  
+
   // Ensure we have at least 3 unique distractors
   const uniqueDistractors = [...new Set(distractors)];
   while (uniqueDistractors.length < 3) {
     uniqueDistractors.push(`Option ${uniqueDistractors.length + 1}`);
   }
-  
+
   return uniqueDistractors.slice(0, 3);
 }
 
 // NEW FUNCTION: Find best matching option for answer text
 function findBestMatchingOption(answerText, options) {
   const normalizedAnswer = answerText.toLowerCase().trim();
-  
+
   // Try exact match first
   for (const option of options) {
     if (option.toLowerCase().trim() === normalizedAnswer) {
       return option;
     }
   }
-  
+
   // Try partial match (answer text contained in option)
   for (const option of options) {
     if (option.toLowerCase().includes(normalizedAnswer)) {
       return option;
     }
   }
-  
+
   // Try reverse partial match (option contained in answer text)
   for (const option of options) {
     if (normalizedAnswer.includes(option.toLowerCase().trim())) {
       return option;
     }
   }
-  
+
   // Try matching key words (at least 50% word overlap)
   const answerWords = normalizedAnswer.split(/\s+/).filter(w => w.length > 3);
   let bestMatch = null;
   let bestScore = 0;
-  
+
   for (const option of options) {
     const optionWords = option.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    const matchCount = answerWords.filter(word => 
+    const matchCount = answerWords.filter(word =>
       optionWords.some(ow => ow.includes(word) || word.includes(ow))
     ).length;
-    
+
     const score = matchCount / Math.max(answerWords.length, optionWords.length);
-    
+
     if (score > bestScore && score >= 0.5) {
       bestScore = score;
       bestMatch = option;
     }
   }
-  
+
   return bestMatch;
 }
 
@@ -366,17 +366,17 @@ function isValidQuestion(q) {
   // Modified validation - options can be empty if we have answerText
   const hasValidOptions = q.options.length === 4 && q.correctAnswer !== null && q.options.includes(q.correctAnswer);
   const hasAnswerText = q.answerText !== null && q.answerText.length > 0;
-  
-  const valid = 
-    q.question && 
-    q.question.length > 5 && 
+
+  const valid =
+    q.question &&
+    q.question.length > 5 &&
     (hasValidOptions || hasAnswerText) &&
     q.category &&
     q.topic &&
     q.level;
-  
+
   if (!valid) {
-    console.log(`⚠️  Invalid question: ${JSON.stringify({
+    const reasons = {
       hasQuestion: !!q.question,
       questionLength: q.question?.length,
       optionsCount: q.options.length,
@@ -386,14 +386,20 @@ function isValidQuestion(q) {
       hasCategory: !!q.category,
       hasTopic: !!q.topic,
       hasLevel: !!q.level
-    })}`);
-    
+    };
+    console.log(`⚠️  Invalid question: ${JSON.stringify(reasons)}`);
+
+    // Log helpful warning about missing topic if that's the issue
+    if (!q.topic || !q.level) {
+      console.log("   TIP: Make sure your file has '=== TOPIC: topic, LEVEL: level ===' markers!");
+    }
+
     // Show the actual question for debugging
     if (q.question) {
-      console.log(`   Question preview: ${q.question.substring(0, 100)}...`);
+      console.log(`   Question preview: ${q.question.substring(0, 50)}...`);
     }
   }
-  
+
   return valid;
 }
 

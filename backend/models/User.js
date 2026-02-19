@@ -1,11 +1,14 @@
-//User.js
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
   firebaseUid: {
     type: String,
-    required: true,
+    // NOT required at schema level — HOD accounts are created by the backend
+    // without a Firebase UID initially (they set their password on first login)
+    required: false,
     unique: true,
+    sparse: true,   // ← KEY FIX: null/undefined values are excluded from the
+                    //   unique index, so multiple HODs can have no UID yet
     index: true
   },
   email: {
@@ -37,7 +40,7 @@ const UserSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    required: false // Made optional for Super Admins and Independent students
+    required: false
   },
 
   // Institution student specific fields
@@ -52,52 +55,43 @@ const UserSchema = new mongoose.Schema({
     ref: "Department"
   },
   hodPermissions: {
-    viewDepartmentStudents: { type: Boolean, default: true },
-    viewDepartmentAnalytics: { type: Boolean, default: true },
-    createDepartmentEvents: { type: Boolean, default: true },
-    createCrossDepartmentEvents: { type: Boolean, default: false },
-    addStudents: { type: Boolean, default: true },
-    editStudents: { type: Boolean, default: true },
-    deleteStudents: { type: Boolean, default: false },
-    generateReports: { type: Boolean, default: true },
-    sendNotifications: { type: Boolean, default: true }
+    viewDepartmentStudents:       { type: Boolean, default: true  },
+    viewDepartmentAnalytics:      { type: Boolean, default: true  },
+    createDepartmentEvents:       { type: Boolean, default: true  },
+    createCrossDepartmentEvents:  { type: Boolean, default: false },
+    addStudents:                  { type: Boolean, default: true  },
+    editStudents:                 { type: Boolean, default: true  },
+    deleteStudents:               { type: Boolean, default: false },
+    generateReports:              { type: Boolean, default: true  },
+    sendNotifications:            { type: Boolean, default: true  }
   },
 
   // Independent student specific fields
-  country: {
-    type: String
-  },
+  country:  { type: String },
   ageRange: {
     type: String,
     enum: ["under-18", "18-24", "25-34", "35+"]
   },
 
-  // Legacy fields (keeping for backward compatibility)
-  college: {
-    type: String,
-    required: false // For institution students, we use institutionId reference
-  },
-  city: {
-    type: String,
-    required: false
-  },
-  photoURL: {
-    type: String,
-    default: null
-  },
+  // Legacy fields
+  college:  { type: String, required: false },
+  city:     { type: String, required: false },
+  photoURL: { type: String, default: null   },
+
   provider: {
     type: String,
     enum: ["email", "google", "github", "anonymous"],
     default: "email"
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+
+  // Flag to track if HOD has completed first-login password setup
+  isPasswordSet: {
+    type: Boolean,
+    default: false   // false for HODs until they set their own password
   },
-  lastLogin: {
-    type: Date,
-    default: Date.now
-  }
+
+  createdAt: { type: Date, default: Date.now },
+  lastLogin:  { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model("User", UserSchema);

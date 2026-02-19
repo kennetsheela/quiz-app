@@ -1,15 +1,59 @@
+//super-admin-institution.html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Institutions - Super Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Institutions - Super Admin - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/components.css">
     <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 24px;
+        }
+
+        /* ── Mini stats row ────────────────────────────────────── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mini-stat {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .mini-stat-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+        }
+
+        .mini-stat-icon.blue   { background: rgba(59,130,246,0.12);  color: #3b82f6; }
+        .mini-stat-icon.green  { background: rgba(16,185,129,0.12);  color: #10b981; }
+        .mini-stat-icon.orange { background: rgba(245,158,11,0.12);  color: #f59e0b; }
+        .mini-stat-icon.red    { background: rgba(239,68,68,0.12);   color: #ef4444; }
+
+        .mini-stat-info h4 { font-size: 22px; font-weight: 700; margin: 0 0 2px; color: var(--text-primary); }
+        .mini-stat-info p  { font-size: 12px; color: var(--text-secondary); margin: 0; }
+
+        /* ── Filters ───────────────────────────────────────────── */
         .filters {
             display: flex;
             gap: 10px;
@@ -17,6 +61,19 @@
             margin-bottom: 20px;
         }
 
+        .filters select,
+        .filters input {
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .filters input { flex: 1; min-width: 180px; }
+
+        /* ── Institutions card grid ─────────────────────────────── */
         .institutions-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -24,93 +81,116 @@
         }
 
         .institution-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 20px;
-            border: 2px solid #e2e8f0;
-            transition: all 0.3s ease;
+            border: 2px solid var(--border-color);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: 0 2px 8px var(--shadow);
         }
 
         .institution-card:hover {
             border-color: #3b82f6;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 6px 16px rgba(59,130,246,0.15);
         }
 
         .institution-header {
             display: flex;
             justify-content: space-between;
-            align-items: start;
+            align-items: flex-start;
             margin-bottom: 15px;
         }
 
         .institution-name {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 5px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
         }
 
         .institution-type {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-secondary);
         }
 
-        .institution-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 15px 0;
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 14px;
         }
 
-        .stat-item {
+        .detail-row:last-of-type { border-bottom: none; }
+
+        .detail-label { font-weight: 600; color: var(--text-secondary); font-size: 13px; }
+
+        .institution-actions { display: flex; gap: 8px; margin-top: 15px; }
+
+        /* ── Badges ────────────────────────────────────────────── */
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: rgba(16,185,129,0.12); color: #059669; }
+        .badge-error   { background: rgba(239,68,68,0.12);  color: #dc2626; }
+        .badge-primary { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .badge-warning { background: rgba(245,158,11,0.12); color: #d97706; }
+
+        /* ── Empty / error state ───────────────────────────────── */
+        .state-box {
             text-align: center;
-            padding: 10px;
-            background: #f8fafc;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .state-box i { font-size: 40px; opacity: 0.25; display: block; margin-bottom: 12px; }
+        .state-box.error-state i { color: #ef4444; opacity: 1; }
+        .state-box.error-state p { color: #ef4444; }
+
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--border-color) 25%, var(--card-bg) 50%, var(--border-color) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
             border-radius: 8px;
         }
 
-        .stat-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #3b82f6;
-        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
+        .sk-mini { height: 80px; border-radius: 12px; }
+        .sk-card { height: 220px; border-radius: 12px; }
 
-        .institution-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
+        /* ── Modal ─────────────────────────────────────────────── */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
 
         .modal-content {
-            background: white;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             padding: 30px;
             border-radius: 16px;
             max-width: 600px;
-            width: 90%;
+            width: 100%;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            animation: slideUp 0.3s ease;
         }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .modal-header {
             display: flex;
@@ -119,27 +199,40 @@
             margin-bottom: 20px;
         }
 
+        .modal-header h2 { color: var(--text-primary); font-size: 1.3rem; }
+
         .close-modal {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            line-height: 1;
         }
 
-        .detail-row {
+        .close-modal:hover { background: var(--border-color); color: var(--text-primary); }
+
+        .modal-detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
+            align-items: center;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 14px;
         }
 
-        .detail-label {
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
+        .modal-detail-row:last-child { border-bottom: none; }
+        .modal-detail-label { font-weight: 600; color: var(--text-secondary); font-size: 13px; }
+
+        /* Spinner */
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border-color); border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-
 <body>
     <header class="appbar">
         <h2>AptioGen - Institutions</h2>
@@ -155,6 +248,14 @@
                 <h1>Institution Management</h1>
                 <p>View and manage all registered institutions</p>
             </div>
+        </div>
+
+        <!-- Mini stat cards -->
+        <div class="stats-row" id="statsRow">
+            <div class="skeleton sk-mini"></div>
+            <div class="skeleton sk-mini"></div>
+            <div class="skeleton sk-mini"></div>
+            <div class="skeleton sk-mini"></div>
         </div>
 
         <!-- Filters -->
@@ -173,20 +274,25 @@
                     <option value="premium">Premium</option>
                     <option value="enterprise">Enterprise</option>
                 </select>
-                <input type="text" id="searchInput" placeholder="Search institutions..." onkeyup="handleSearch()">
+                <input type="text" id="searchInput" placeholder="Search institutions..." oninput="handleSearch()">
             </div>
         </div>
 
-        <!-- Institutions Grid -->
-        <div id="loading" class="loading">Loading institutions...</div>
-        <div class="institutions-grid" id="institutionsGrid" style="display:none;"></div>
+        <!-- Content area -->
+        <div id="contentArea">
+            <div class="institutions-grid">
+                <div class="skeleton sk-card"></div>
+                <div class="skeleton sk-card"></div>
+                <div class="skeleton sk-card"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Institution Details Modal -->
     <div class="modal" id="detailsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Institution Details</h2>
+                <h2><i class="fa fa-building-columns" style="margin-right:8px;color:#3b82f6;"></i>Institution Details</h2>
                 <button class="close-modal" onclick="closeModal()">&times;</button>
             </div>
             <div id="institutionDetails"></div>
@@ -198,200 +304,224 @@
         initTheme();
 
         const API_BASE = 'http://localhost:5000/api';
-        let searchTimeout;
-
-        // Check authentication
         const auth = sessionStorage.getItem('superAdminAuth');
-        if (!auth) {
-            window.location.href = 'super-admin-login.html';
+        if (!auth) window.location.href = 'super-admin-login.html';
+
+        let searchTimeout;
+        let allInstitutions = [];
+
+        // ── Stats row ──────────────────────────────────────────────────
+        function renderStats(institutions) {
+            const total     = institutions.length;
+            const active    = institutions.filter(i => i.subscription?.status === 'active').length;
+            const suspended = institutions.filter(i => i.subscription?.status === 'suspended').length;
+            const expired   = institutions.filter(i => i.subscription?.status === 'expired').length;
+
+            document.getElementById('statsRow').innerHTML = `
+                <div class="mini-stat">
+                    <div class="mini-stat-icon blue"><i class="fa fa-building-columns"></i></div>
+                    <div class="mini-stat-info"><h4>${total}</h4><p>Total Institutions</p></div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-icon green"><i class="fa fa-circle-check"></i></div>
+                    <div class="mini-stat-info"><h4>${active}</h4><p>Active</p></div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-icon red"><i class="fa fa-ban"></i></div>
+                    <div class="mini-stat-info"><h4>${suspended}</h4><p>Suspended</p></div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-icon orange"><i class="fa fa-clock"></i></div>
+                    <div class="mini-stat-info"><h4>${expired}</h4><p>Expired</p></div>
+                </div>`;
         }
 
-        window.loadInstitutions = async () => {
-            const status = document.getElementById('statusFilter').value;
-            const plan = document.getElementById('planFilter').value;
-            const search = document.getElementById('searchInput').value;
-
-            const params = new URLSearchParams({
-                page: 1,
-                limit: 50,
-                ...(status && { status }),
-                ...(plan && { plan }),
-                ...(search && { search })
-            });
-
-            try {
-                const response = await fetch(`${API_BASE}/super-admin/institutions?${params}`);
-                const data = await response.json();
-
-                if (response.ok) {
-                    displayInstitutions(data.institutions);
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('institutionsGrid').style.display = 'grid';
-                } else {
-                    console.error('Failed to load institutions:', data);
-                }
-            } catch (error) {
-                console.error('Load institutions error:', error);
-            }
-        };
-
+        // ── Render cards ───────────────────────────────────────────────
         function displayInstitutions(institutions) {
-            const grid = document.getElementById('institutionsGrid');
-            grid.innerHTML = institutions.map(inst => `
+            if (!institutions.length) {
+                document.getElementById('contentArea').innerHTML = `
+                    <div class="state-box">
+                        <i class="fa fa-building-columns"></i>
+                        <p>No institutions found matching your filters.</p>
+                    </div>`;
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'institutions-grid';
+            grid.innerHTML = institutions.map(inst => {
+                const isActive = inst.subscription?.status === 'active';
+                const badgeClass = isActive ? 'badge-success' : inst.subscription?.status === 'suspended' ? 'badge-error' : 'badge-warning';
+                return `
                 <div class="institution-card">
                     <div class="institution-header">
                         <div>
                             <div class="institution-name">${inst.name}</div>
-                            <div class="institution-type">${inst.type}</div>
+                            <div class="institution-type">${inst.type ?? 'Institution'}</div>
                         </div>
-                        <span class="badge ${inst.subscription.status === 'active' ? 'badge-success' : 'badge-error'}">
-                            ${inst.subscription.status}
-                        </span>
+                        <span class="badge ${badgeClass}">${inst.subscription?.status ?? 'unknown'}</span>
                     </div>
-                    
+
                     <div class="detail-row">
-                        <span class="detail-label">Plan:</span>
-                        <span class="badge badge-primary">${inst.subscription.plan}</span>
+                        <span class="detail-label">Plan</span>
+                        <span class="badge badge-primary">${inst.subscription?.plan ?? '—'}</span>
                     </div>
-                    
                     <div class="detail-row">
-                        <span class="detail-label">Location:</span>
-                        <span>${inst.location.district}, ${inst.location.state}</span>
+                        <span class="detail-label">Location</span>
+                        <span>${inst.location?.district ?? '—'}, ${inst.location?.state ?? '—'}</span>
                     </div>
-                    
                     <div class="detail-row">
-                        <span class="detail-label">Email:</span>
-                        <span>${inst.email}</span>
+                        <span class="detail-label">Email</span>
+                        <span style="word-break:break-all;">${inst.email ?? '—'}</span>
                     </div>
 
                     <div class="institution-actions">
-                        <button class="btn btn-primary" onclick="viewDetails('${inst._id}')" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="viewDetails('${inst._id}')" style="flex:1;">
                             <i class="fa-solid fa-eye"></i> View Details
                         </button>
-                        ${inst.subscription.status === 'active'
-                    ? `<button class="btn btn-danger" onclick="suspendInstitution('${inst._id}')">
-                                <i class="fa-solid fa-ban"></i> Suspend
-                              </button>`
-                    : `<button class="btn btn-success" onclick="activateInstitution('${inst._id}')">
-                                <i class="fa-solid fa-check"></i> Activate
-                              </button>`
-                }
+                        ${isActive
+                            ? `<button class="btn btn-danger" onclick="suspendInstitution('${inst._id}')">
+                                   <i class="fa-solid fa-ban"></i> Suspend
+                               </button>`
+                            : `<button class="btn btn-success" onclick="activateInstitution('${inst._id}')">
+                                   <i class="fa-solid fa-check"></i> Activate
+                               </button>`}
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
+
+            document.getElementById('contentArea').innerHTML = '';
+            document.getElementById('contentArea').appendChild(grid);
         }
 
+        // ── Load institutions ──────────────────────────────────────────
+        window.loadInstitutions = async () => {
+            const status = document.getElementById('statusFilter').value;
+            const plan   = document.getElementById('planFilter').value;
+            const search = document.getElementById('searchInput').value;
+
+            const params = new URLSearchParams({
+                page: 1, limit: 50,
+                ...(status && { status }),
+                ...(plan   && { plan }),
+                ...(search && { search })
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/super-admin/institutions?${params}`, {
+                    headers: { 'Authorization': `Bearer ${auth}` }
+                });
+
+                if (!response.ok) throw new Error(`Server error ${response.status}`);
+
+                const data = await response.json();
+                allInstitutions = data.institutions ?? [];
+
+                renderStats(allInstitutions);
+                displayInstitutions(allInstitutions);
+
+            } catch (error) {
+                console.error('Load institutions error:', error);
+                document.getElementById('contentArea').innerHTML = `
+                    <div class="state-box error-state">
+                        <i class="fa fa-triangle-exclamation"></i>
+                        <p>Failed to load institutions: ${error.message}</p>
+                    </div>`;
+            }
+        };
+
+        // ── Debounced search ───────────────────────────────────────────
         window.handleSearch = () => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => loadInstitutions(), 500);
         };
 
+        // ── View details modal ─────────────────────────────────────────
         window.viewDetails = async (id) => {
+            document.getElementById('institutionDetails').innerHTML =
+                '<div style="text-align:center;padding:30px;"><span class="spinner"></span> Loading…</div>';
+            document.getElementById('detailsModal').classList.add('active');
+
             try {
-                const response = await fetch(`${API_BASE}/super-admin/institutions/${id}`);
-                const data = await response.json();
+                const response = await fetch(`${API_BASE}/super-admin/institutions/${id}`, {
+                    headers: { 'Authorization': `Bearer ${auth}` }
+                });
 
-                if (response.ok) {
-                    const inst = data.institution;
-                    const stats = data.stats;
+                if (!response.ok) throw new Error(`Server error ${response.status}`);
 
-                    document.getElementById('institutionDetails').innerHTML = `
-                        <div class="detail-row">
-                            <span class="detail-label">Name:</span>
-                            <span>${inst.name}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Type:</span>
-                            <span>${inst.type}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Email:</span>
-                            <span>${inst.email}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Phone:</span>
-                            <span>${inst.phone}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Location:</span>
-                            <span>${inst.location.fullAddress || `${inst.location.district}, ${inst.location.state}, ${inst.location.country}`}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Subscription Plan:</span>
-                            <span class="badge badge-primary">${inst.subscription.plan}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Status:</span>
-                            <span class="badge ${inst.subscription.status === 'active' ? 'badge-success' : 'badge-error'}">
-                                ${inst.subscription.status}
-                            </span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Total Students:</span>
-                            <span>${stats.totalStudents}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Total Events:</span>
-                            <span>${stats.totalEvents}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Registered:</span>
-                            <span>${new Date(inst.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    `;
+                const data  = await response.json();
+                const inst  = data.institution;
+                const stats = data.stats;
 
-                    document.getElementById('detailsModal').classList.add('active');
-                }
+                document.getElementById('institutionDetails').innerHTML = `
+                    <div class="modal-detail-row"><span class="modal-detail-label">Name</span><span>${inst.name}</span></div>
+                    <div class="modal-detail-row"><span class="modal-detail-label">Type</span><span>${inst.type}</span></div>
+                    <div class="modal-detail-row"><span class="modal-detail-label">Email</span><span>${inst.email}</span></div>
+                    <div class="modal-detail-row"><span class="modal-detail-label">Phone</span><span>${inst.phone ?? '—'}</span></div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Location</span>
+                        <span>${inst.location?.fullAddress ?? `${inst.location?.district}, ${inst.location?.state}, ${inst.location?.country}`}</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Plan</span>
+                        <span class="badge badge-primary">${inst.subscription?.plan ?? '—'}</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Status</span>
+                        <span class="badge ${inst.subscription?.status === 'active' ? 'badge-success' : 'badge-error'}">
+                            ${inst.subscription?.status ?? '—'}
+                        </span>
+                    </div>
+                    <div class="modal-detail-row"><span class="modal-detail-label">Total Students</span><span>${stats?.totalStudents ?? '—'}</span></div>
+                    <div class="modal-detail-row"><span class="modal-detail-label">Total Events</span><span>${stats?.totalEvents ?? '—'}</span></div>
+                    <div class="modal-detail-row">
+                        <span class="modal-detail-label">Registered</span>
+                        <span>${inst.createdAt ? new Date(inst.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '—'}</span>
+                    </div>`;
+
             } catch (error) {
-                console.error('View details error:', error);
+                document.getElementById('institutionDetails').innerHTML = `
+                    <div class="state-box error-state">
+                        <i class="fa fa-triangle-exclamation"></i>
+                        <p>Could not load details: ${error.message}</p>
+                    </div>`;
             }
         };
 
+        // ── Suspend / Activate ─────────────────────────────────────────
         window.suspendInstitution = async (id) => {
             if (!confirm('Are you sure you want to suspend this institution?')) return;
-
             try {
-                const response = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, {
-                    method: 'PUT'
+                const res = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${auth}` }
                 });
-
-                if (response.ok) {
-                    alert('Institution suspended successfully');
-                    loadInstitutions();
-                } else {
-                    alert('Failed to suspend institution');
-                }
-            } catch (error) {
-                console.error('Suspend error:', error);
-            }
+                if (res.ok) { alert('Institution suspended successfully.'); loadInstitutions(); }
+                else        alert('Failed to suspend institution.');
+            } catch (e) { console.error('Suspend error:', e); }
         };
 
         window.activateInstitution = async (id) => {
             if (!confirm('Are you sure you want to activate this institution?')) return;
-
             try {
-                const response = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, {
-                    method: 'PUT'
+                const res = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${auth}` }
                 });
-
-                if (response.ok) {
-                    alert('Institution activated successfully');
-                    loadInstitutions();
-                } else {
-                    alert('Failed to activate institution');
-                }
-            } catch (error) {
-                console.error('Activate error:', error);
-            }
+                if (res.ok) { alert('Institution activated successfully.'); loadInstitutions(); }
+                else        alert('Failed to activate institution.');
+            } catch (e) { console.error('Activate error:', e); }
         };
 
-        window.closeModal = () => {
-            document.getElementById('detailsModal').classList.remove('active');
-        };
+        // ── Modal close ────────────────────────────────────────────────
+        window.closeModal = () => document.getElementById('detailsModal').classList.remove('active');
+
+        document.getElementById('detailsModal').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeModal();
+        });
 
         // Initial load
         loadInstitutions();
     </script>
 </body>
-
 </html>

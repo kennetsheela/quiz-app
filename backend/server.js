@@ -19,6 +19,7 @@ const superAdminRoutes = require("./routes/superAdminRoutes");
 const hodRoutes = require("./routes/hodRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 const { startCleanupScheduler } = require("./services/cleanupService");
 
 /* ================= APP ================= */
@@ -51,7 +52,7 @@ app.use(helmet());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -62,10 +63,6 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
-app.use("/api", limiter);
-app.use("/api/auth/login", authLimiter);
-app.use("/api/events/student-login", authLimiter);
-app.use("/api/analytics", analyticsRoutes);
 /* ================= CORS ================= */
 app.use(cors({
   origin: [
@@ -75,12 +72,19 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5000',
     'http://localhost:5500',
-    'http://127.0.0.1:3000'
+    'http://localhost:5501',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5500',
+    'http://127.0.0.1:5501'
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+app.use("/api", limiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/events/student-login", authLimiter);
 
 /* ================= MIDDLEWARE ================= */
 app.use(express.json({ limit: "10mb" }));
@@ -98,6 +102,7 @@ app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/hod", hodRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/public", publicRoutes);
 
 /* ================= HEALTH ================= */
 app.get("/api/health", (req, res) => {

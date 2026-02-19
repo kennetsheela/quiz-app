@@ -62,7 +62,11 @@ const InstitutionSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  departments: [{
+    name: { type: String, required: true },
+    code: { type: String, required: true }
+  }]
 });
 
 module.exports = mongoose.model("Institution", InstitutionSchema);
