@@ -93,7 +93,7 @@ router.get("/dashboard", async (req, res) => {
 // POST /api/super-admin/questions - Add single question
 router.post("/questions", async (req, res) => {
     try {
-        const { category, topic, level, question, options, correctAnswer, explanation, tags, createdBy } = req.body;
+        const { category, topic, level, question, options, answer, explanation, tags, createdBy } = req.body;
 
         const newQuestion = new QuestionBank({
             category,
@@ -101,7 +101,7 @@ router.post("/questions", async (req, res) => {
             level,
             question,
             options,
-            correctAnswer,
+            answer,
             explanation,
             tags: tags || [],
             createdBy: createdBy || "super-admin"
@@ -250,13 +250,24 @@ router.post("/questions/pipeline", upload.single("file"), async (req, res) => {
 // POST /api/super-admin/questions/bulk - Bulk import (placeholder for CSV/Excel)
 router.post("/questions/bulk", async (req, res) => {
     try {
-        const { questions } = req.body; // Array of question objects
+        const { questions } = req.body;
 
         if (!Array.isArray(questions) || questions.length === 0) {
             return res.status(400).json({ error: "Invalid questions array" });
         }
 
-        const results = await QuestionBank.insertMany(questions);
+        // Get the current count to generate IDs manually
+        const currentCount = await QuestionBank.countDocuments();
+
+        const questionsToInsert = questions.map((q, index) => {
+            const nextCount = currentCount + index + 1;
+            return {
+                ...q,
+                questionID: `Q${String(nextCount).padStart(3, '0')}`
+            };
+        });
+
+        const results = await QuestionBank.insertMany(questionsToInsert);
 
         res.status(201).json({
             message: `${results.length} questions imported successfully`,
@@ -460,6 +471,21 @@ router.get("/settings", async (req, res) => {
 
 // POST /api/super-admin/settings - Update or create a setting
 router.post("/settings", async (req, res) => {
+    try {
+        const { key, value } = req.body;
+        const setting = await PlatformSettings.findOneAndUpdate(
+            { key },
+            { value },
+            { upsert: true, new: true }
+        );
+        res.json({ message: "Setting updated", setting });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// PUT /api/super-admin/settings - Standardize update method
+router.put("/settings", async (req, res) => {
     try {
         const { key, value } = req.body;
         const setting = await PlatformSettings.findOneAndUpdate(

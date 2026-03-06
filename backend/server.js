@@ -16,9 +16,11 @@ const eventRoutes = require("./routes/eventRoutes");
 const institutionRoutes = require("./routes/institutionRoutes");
 const batchRoutes = require("./routes/batchRoutes");
 const superAdminRoutes = require("./routes/superAdminRoutes");
+const superAdminPipeline = require("./routes/superAdminPipeline");
 const hodRoutes = require("./routes/hodRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 const { startCleanupScheduler } = require("./services/cleanupService");
 
@@ -65,18 +67,26 @@ const authLimiter = rateLimit({
 
 /* ================= CORS ================= */
 app.use(cors({
-  origin: [
-    'http://localhost:5000',
-    'https://quiz-app-3e991.web.app',
-    'https://quiz-app-3e991.firebaseapp.com',
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'http://localhost:5500',
-    'http://localhost:5501',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5500',
-    'http://127.0.0.1:5501'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like file://, mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    const allowed = [
+      'http://localhost:3001',
+      'http://localhost:5000',
+      'https://quiz-app-3e991.web.app',
+      'https://quiz-app-3e991.firebaseapp.com',
+      'http://localhost:3000',
+      'http://localhost:5500',
+      'http://localhost:5501',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5000',
+      'http://127.0.0.1:5500',
+      'http://127.0.0.1:5501',
+      'http://10.184.60.26:3000'
+    ];
+    if (allowed.includes(origin)) return callback(null, true);
+    return callback(null, true); // Allow all for development
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
@@ -92,6 +102,9 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(mongoSanitize());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Serve frontend static files from backend so pages work at http://localhost:5000
+app.use(express.static(path.join(__dirname, "..", "frontend")));
+
 /* ================= ROUTES ================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/practice", practiceRoutes);
@@ -99,9 +112,11 @@ app.use("/api/events", eventRoutes);
 app.use("/api/institutions", institutionRoutes);
 app.use("/api/batches", batchRoutes);
 app.use("/api/super-admin", superAdminRoutes);
+app.use("/api/super-admin", superAdminPipeline);
 app.use("/api/hod", hodRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/report", reportRoutes);
 app.use("/api/public", publicRoutes);
 
 /* ================= HEALTH ================= */
@@ -161,11 +176,15 @@ function gracefulShutdown() {
 
   if (!server) return process.exit(0);
 
-  server.close(() => {
-    mongoose.connection.close(false, () => {
+  server.close(async () => {
+    try {
+      await mongoose.connection.close();
       console.log("✅ MongoDB connection closed");
       process.exit(0);
-    });
+    } catch (err) {
+      console.error("❌ Error during MongoDB shutdown:", err);
+      process.exit(1);
+    }
   });
 
   setTimeout(() => {

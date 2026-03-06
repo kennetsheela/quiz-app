@@ -40,7 +40,7 @@ const QuestionSchema = new mongoose.Schema({
       message: "Must have 2-4 options"
     }
   },
-  correctAnswer: {
+  answer: {
     type: String,
     required: true
   },

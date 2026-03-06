@@ -26,34 +26,26 @@ router.get("/institutions/:id/departments", async (req, res) => {
     }
 });
 
-// GET /api/public/departments/:id/batches - List batches for a department (id is instId and code/deptId is in query)
+// GET /api/public/institutions/:id/batches - List batches for an institution (Global)
 router.get("/institutions/:id/batches", async (req, res) => {
     try {
-        const { deptCode, deptId } = req.query;
-        const filter = { institutionId: req.params.id, status: "active" };
+        const instId = req.params.id;
 
-        if (deptId) {
-            // Find the department to get its code, so we can search by both
-            const dept = await Department.findById(deptId);
-            if (dept) {
-                filter.departmentId = { $in: [deptId, dept.code] };
-            } else {
-                filter.departmentId = deptId;
-            }
-        } else if (deptCode) {
-            // If only code is provided, try to find the department ID first
-            const dept = await Department.findOne({ institutionId: req.params.id, code: deptCode });
-            if (dept) {
-                filter.departmentId = { $in: [dept._id, deptCode] };
-            } else {
-                filter.departmentId = deptCode;
-            }
+        // Validate Institution ID
+        if (!/^[0-9a-fA-F]{24}$/.test(instId)) {
+            return res.status(400).json({ error: "Invalid Institution ID" });
         }
 
-        const batches = await Batch.find(filter, "batchID startYear endYear _id name");
-        res.json(batches);
+        // Return ALL active batches for the institution, regardless of department
+        const filter = { institutionId: instId, status: "active" };
+
+        const batches = await Batch.find(filter, "batchID startYear endYear _id name currentYearLevel graduationDate")
+            .sort({ startYear: -1 });
+
+        res.json(batches || []);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Public batch fetch error:", error);
+        res.status(500).json({ error: "Failed to fetch batches: " + error.message });
     }
 });
 

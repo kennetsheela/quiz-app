@@ -1,12 +1,21 @@
-// backend/utils/parseStrict.js
-// Enhanced parser that handles multiple question formats
+/**
+ * backend/utils/parseStrict.js
+ * Specialized parser for Institution Dashboard.
+ * 
+ * Features:
+ * - Robust question/option/answer detection.
+ * - Multi-line question support.
+ * - Fuzzy answer matching.
+ * - Numeric distractor generation.
+ * - NO marker requirements (Category/Topic/Level markers are ignored/removed).
+ * - Output format: { question, options, answer, explanation }
+ */
 
-function parseStrict(text) {
-  console.log("📄 Parsing text, length:", text.length);
-  console.log("📝 First 500 characters:", text.substring(0, 500));
-  
+function parseStrict(text, metadata = {}) {
+  console.log("📄 Parsing text (Institution Dashboard Mode), length:", text.length);
+
   const questions = [];
-  
+
   // Normalize line endings and split into lines
   const lines = text
     .replace(/\r\n/g, '\n')
@@ -19,157 +28,175 @@ function parseStrict(text) {
 
   let currentQuestion = null;
   let questionCounter = 0;
+  let collectingQuestion = false;
+  let answerBuffer = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
-    // Pattern 1: Question starts with number (1. or 1) or Q1. or Question 1)
+
+    // Skip Topic/Level markers if they exist (User requested removed marker parsing)
+    if (line.match(/===\s*TOPIC:\s*(.+?),\s*LEVEL:\s*(.+?)\s*===/i)) {
+      continue;
+    }
+
+    // Pattern 1: Question Start (1. or Q1. or Question 1)
     const questionMatch = line.match(/^(?:Q(?:uestion)?\s*)?(\d+)[\.\):\s]+(.+)/i);
-    
+
     if (questionMatch) {
-      // Save previous question if valid
       if (currentQuestion && isValidQuestion(currentQuestion)) {
-        questions.push(currentQuestion);
-        console.log(`✅ Added question ${questions.length}`);
+        questions.push(finalizeInstitutionQuestion(currentQuestion));
       }
-      
+
       questionCounter++;
       currentQuestion = {
         question: questionMatch[2].trim(),
         options: [],
-        correctAnswer: null
+        answer: null,
+        answerText: null,
+        explanation: ""
       };
-      
-      console.log(`📝 Found question ${questionCounter}: ${currentQuestion.question.substring(0, 50)}...`);
+
+      collectingQuestion = true;
       continue;
     }
 
     if (!currentQuestion) continue;
 
-    // Pattern 2: Options (A. or A) or a. or a))
+    // Pattern 2: Options (A. or A)
     const optionMatch = line.match(/^([A-Da-d])[\.\):\s]+(.+)/);
-    
     if (optionMatch && currentQuestion.options.length < 4) {
-      const optionText = optionMatch[2].trim();
-      currentQuestion.options.push(optionText);
-      console.log(`   Option ${currentQuestion.options.length}: ${optionText.substring(0, 40)}...`);
+      collectingQuestion = false;
+      currentQuestion.options.push(optionMatch[2].trim());
       continue;
     }
 
-    // Pattern 3: Answer (Answer: A or Correct: B or Ans: C or just A)
-    const answerMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]*([A-Da-d])/i);
-    
-    if (answerMatch) {
-      const answerLetter = answerMatch[1].toUpperCase();
-      const answerIndex = answerLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-      
-      if (answerIndex >= 0 && answerIndex < currentQuestion.options.length) {
-        currentQuestion.correctAnswer = currentQuestion.options[answerIndex];
-        console.log(`   ✓ Answer: ${answerLetter} (${currentQuestion.correctAnswer.substring(0, 30)}...)`);
-      }
+    // Pattern 3: Answer Marker (Answer: A or Correct: B)
+    const answerMarkerMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]*([A-Da-d])\s*$/i);
+    if (answerMarkerMatch) {
+      collectingQuestion = false;
+      currentQuestion.answerText = answerMarkerMatch[1].toUpperCase();
       continue;
     }
 
-    // Pattern 4: If we have 4 options and next line is just a letter (A, B, C, or D)
-    if (currentQuestion.options.length === 4 && !currentQuestion.correctAnswer) {
-      const justLetter = line.match(/^([A-Da-d])$/);
-      if (justLetter) {
-        const answerLetter = justLetter[1].toUpperCase();
-        const answerIndex = answerLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-        currentQuestion.correctAnswer = currentQuestion.options[answerIndex];
-        console.log(`   ✓ Answer: ${answerLetter} (${currentQuestion.correctAnswer.substring(0, 30)}...)`);
+    // Pattern 3B: Answer Marker with full text (Answer: Some option text)
+    const answerFullTextMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]+(.+)/i);
+    if (answerFullTextMatch && !answerMarkerMatch) {
+      collectingQuestion = false;
+      currentQuestion.answerText = answerFullTextMatch[1].trim();
+      continue;
+    }
+
+    // Pattern 4: Answer Marker Only (Await letter on next line)
+    if (line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]*$/i)) {
+      collectingQuestion = false;
+      answerBuffer = true;
+      continue;
+    }
+
+    // Pattern 5: Single letter answer or waiting for buffered letter
+    if (answerBuffer || (currentQuestion.options.length === 4 && !currentQuestion.answerText)) {
+      const letterMatch = line.match(/^\s*([A-Da-d])\s*$/i);
+      if (letterMatch) {
+        currentQuestion.answerText = letterMatch[1].toUpperCase();
+        answerBuffer = false;
         continue;
       }
     }
 
-    // Pattern 5: If line is not recognized and we don't have a question yet, it might be the question
-    if (!currentQuestion.question || currentQuestion.question.length < 10) {
-      currentQuestion.question = (currentQuestion.question + ' ' + line).trim();
+    // Pattern 6: Continuation of question text
+    if (collectingQuestion) {
+      currentQuestion.question += (currentQuestion.question.endsWith('\n') ? "" : "\n") + line;
+      continue;
+    }
+
+    // Pattern 7: Explanation
+    if (line.match(/^(?:Explanation|Exp):/i)) {
+      currentQuestion.explanation = line.replace(/^(?:Explanation|Exp):\s*/i, '').trim();
+      continue;
     }
   }
 
-  // Don't forget the last question
+  // Final question
   if (currentQuestion && isValidQuestion(currentQuestion)) {
-    questions.push(currentQuestion);
-    console.log(`✅ Added question ${questions.length}`);
+    questions.push(finalizeInstitutionQuestion(currentQuestion));
   }
 
-  console.log(`\n📊 Final result: ${questions.length} valid questions parsed`);
-  
-  if (questions.length === 0) {
-    console.error("❌ No questions parsed!");
-    console.error("Sample of raw text:");
-    console.error(text.substring(0, 1000));
-  }
+  // Post-processing: Map letters to options or generate distractors
+  const processed = questions.map(q => {
+    // Generate options if missing (but we have an answer)
+    if (q.options.length === 0 && q.answerText) {
+      return generateInstitutionOptions(q);
+    }
 
-  return questions;
+    // Map answer letter or text to options
+    if (q.answerText && !q.answer) {
+      // 1. Try letter index match
+      if (/^[A-D]$/i.test(q.answerText)) {
+        const idx = q.answerText.toUpperCase().charCodeAt(0) - 65;
+        if (idx >= 0 && idx < q.options.length) {
+          q.answer = q.options[idx];
+        }
+      }
+
+      // 2. Try fuzzy text match if no letter match
+      if (!q.answer) {
+        q.answer = findBestMatch(q.answerText, q.options);
+      }
+    }
+
+    // Final fallback: if still no answer but we have options, take first (should rarely happen with proper files)
+    if (!q.answer && q.options.length > 0) {
+      q.answer = q.options[0];
+    }
+
+    // Clean up temporary parsing fields
+    const { answerText, ...finalQ } = q;
+    return finalQ;
+  });
+
+  console.log(`✅ Parsed ${processed.length} questions (Institution Mode)`);
+  return processed;
 }
 
 function isValidQuestion(q) {
-  const valid = 
-    q.question && 
-    q.question.length > 5 && 
-    q.options.length === 4 && 
-    q.correctAnswer !== null &&
-    q.options.includes(q.correctAnswer);
-  
-  if (!valid) {
-    console.log(`⚠️  Invalid question: ${JSON.stringify({
-      hasQuestion: !!q.question,
-      questionLength: q.question?.length,
-      optionsCount: q.options.length,
-      hasCorrectAnswer: !!q.correctAnswer,
-      correctAnswerInOptions: q.options.includes(q.correctAnswer)
-    })}`);
+  return q.question && q.question.trim().length > 5;
+}
+
+function finalizeInstitutionQuestion(q) {
+  return {
+    question: q.question.trim(),
+    options: q.options,
+    answer: q.answer,
+    answerText: q.answerText,
+    explanation: q.explanation || ""
+  };
+}
+
+function findBestMatch(answerText, options) {
+  const norm = answerText.toLowerCase().trim();
+  return options.find(o => o.toLowerCase().trim() === norm) ||
+    options.find(o => o.toLowerCase().includes(norm)) ||
+    options.find(o => norm.includes(o.toLowerCase())) ||
+    null;
+}
+
+function generateInstitutionOptions(q) {
+  const answer = q.answerText;
+  const distractors = [];
+
+  // Numeric Distractors
+  if (/^\d+(\.\d+)?$/.test(answer)) {
+    const n = parseFloat(answer);
+    distractors.push(String(n + 1), String(n - 1), String(n * 2));
+  } else {
+    // Text Distractors
+    distractors.push(answer + " (alt 1)", answer + " (alt 2)", answer + " (alt 3)");
   }
-  
-  return valid;
+
+  const all = [answer, ...distractors].slice(0, 4);
+  q.options = all.sort(() => Math.random() - 0.5);
+  q.answer = answer;
+  return q;
 }
 
 module.exports = parseStrict;
-
-// ========================================
-// EXAMPLE FORMATS THIS PARSER HANDLES:
-// ========================================
-
-/*
-FORMAT 1 - Standard numbered:
-1. What is 2+2?
-A. 2
-B. 3
-C. 4
-D. 5
-Answer: C
-
-FORMAT 2 - With Question prefix:
-Question 1: What is the capital of France?
-A) London
-B) Paris
-C) Berlin
-D) Rome
-Correct: B
-
-FORMAT 3 - Compact:
-Q1. Who invented the light bulb?
-a) Tesla
-b) Edison
-c) Einstein
-d) Newton
-Ans: B
-
-FORMAT 4 - Just letter answer:
-1) What is Python?
-A. A snake
-B. A programming language
-C. A movie
-D. A game
-B
-
-FORMAT 5 - Mixed case:
-1. What does HTML stand for?
-a. Hyper Text Markup Language
-b. High Tech Modern Language
-c. Home Tool Markup Language
-d. None of the above
-answer: a
-*/

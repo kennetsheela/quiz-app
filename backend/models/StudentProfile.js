@@ -48,15 +48,15 @@ const StudentProfileSchema = new mongoose.Schema({
         default: 0
     },
 
-    // Year-wise performance tracking
+    // Year-wise performance tracking (Keep this as it refers to 1st, 2nd year etc)
     yearWisePerformance: [YearPerformanceSchema],
 
     // Rankings
     rankings: {
         departmentRank: { type: Number },
-        batchRank: { type: Number },
+        batchRank: { type: Number }, // Rank within this specific batch cohort
         institutionRank: { type: Number },
-        yearRank: { type: Number }, // Rank within current year level
+        yearLevelRank: { type: Number }, // Rank within current year level (1st, 2nd, etc)
         lastUpdated: { type: Date }
     },
 

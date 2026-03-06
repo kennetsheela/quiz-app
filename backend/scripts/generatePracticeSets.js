@@ -1,141 +1,111 @@
+// scripts/generatePracticeSets.js
+// Usage:  node generatePracticeSets.js <category>
+// Example: node generatePracticeSets.js aptitude
+//          node generatePracticeSets.js coding
+//
+// ⚠️  The category is now taken from the FIRST CLI argument.
+//     Nothing is hard-coded — every run targets the category you specify.
+//
+// The script:
+//   • Finds all unique topic+level combos for the given category
+//   • Deletes stale practice sets for those combos
+//   • Creates new sets of exactly 10 questions each (sequential, stable order)
+
 require("dotenv").config();
 const mongoose = require("mongoose");
+
 const QuestionBank = require("../models/QuestionBank");
-const PracticeSet = require("../models/PracticeSet");
+const PracticeSet  = require("../models/PracticeSet");
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => {
-    console.error("❌ MongoDB Connection Error:", err);
-    process.exit(1);
-  });
+// ── CLI argument validation ───────────────────────────────────────────────────
+const [,, categoryArg] = process.argv;
 
-async function generateAllSets(category) {
-  console.log(`\n🔍 Finding all topics in category: ${category}\n`);
-  
-  // Find all unique topic/level combinations
-  const topics = await QuestionBank.distinct("topic", { category });
-  
-  if (topics.length === 0) {
-    console.log("❌ No topics found! Make sure you've loaded questions first.");
-    process.exit(1);
-  }
-  
-  console.log(`📚 Found ${topics.length} topics: ${topics.join(', ')}\n`);
+const VALID_CATEGORIES = ["aptitude", "reasoning", "coding", "technical"];
 
-  let totalSets = 0;
-
-  for (const topic of topics) {
-    const levels = await QuestionBank.distinct("level", { category, topic });
-    
-    for (const level of levels) {
-      const sets = await generateSets(category, topic, level);
-      totalSets += sets;
-    }
-  }
-  
-  console.log(`\n🎉 Success! Generated ${totalSets} practice sets total!`);
-  process.exit(0);
+if (!categoryArg || !VALID_CATEGORIES.includes(categoryArg.toLowerCase())) {
+  console.error(`\n❌ Usage: node generatePracticeSets.js <category>`);
+  console.error(`   Valid categories: ${VALID_CATEGORIES.join(", ")}`);
+  console.error(`   Example: node generatePracticeSets.js aptitude\n`);
+  process.exit(1);
 }
 
-async function generateSets(category, topic, level) {
-  console.log(`📚 Processing: ${category}/${topic}/${level}`);
-  
-  // Delete existing sets for this combination
-  const deleted = await PracticeSet.deleteMany({ category, topic, level });
-  if (deleted.deletedCount > 0) {
-    console.log(`   🗑️  Deleted ${deleted.deletedCount} old sets`);
+const category = categoryArg.toLowerCase();
+
+// ── Per-combo set generation ──────────────────────────────────────────────────
+async function generateSets(topic, level) {
+  console.log(`\n📚 Processing: ${category} / ${topic} / ${level}`);
+
+  // Remove old sets
+  const { deletedCount } = await PracticeSet.deleteMany({ category, topic, level });
+  if (deletedCount > 0) {
+    console.log(`   🗑️  Deleted ${deletedCount} old set(s)`);
   }
-  
-  // Get all questions in fixed order
+
+  // Fetch questions in stable insertion order
   const questions = await QuestionBank
     .find({ category, topic, level })
-    .sort({ _id: 1 });
+    .sort({ _id: 1 })
+    .select("_id");
 
   if (questions.length < 10) {
-    console.log(`   ⚠️  Only ${questions.length} questions (need 10+), skipping...\n`);
+    console.log(`   ⚠️  Only ${questions.length} question(s) — need at least 10. Skipping.`);
     return 0;
   }
 
+  const ids = questions.map((q) => q._id);
   let setNumber = 1;
-  const setsCreated = [];
 
-  for (let i = 0; i + 10 <= questions.length; i += 10) {
-    const slice = questions.slice(i, i + 10);
-
+  for (let i = 0; i + 10 <= ids.length; i += 10) {
     await PracticeSet.create({
       category,
       topic,
       level,
       setNumber,
-      questions: slice.map(q => q._id)
+      questions: ids.slice(i, i + 10),
     });
-
-    setsCreated.push(setNumber);
     setNumber++;
   }
 
-  console.log(`   ✅ Created ${setsCreated.length} sets: Set ${setsCreated.join(', Set ')}`);
-  console.log(`   📊 Used ${setsCreated.length * 10} out of ${questions.length} questions\n`);
-  
-  return setsCreated.length;
+  const created = setNumber - 1;
+  console.log(`   ✅ Created ${created} set(s)  (${created * 10} of ${questions.length} questions used)`);
+  return created;
 }
 
-// 🔧 Change this to match your loaded category
-generateAllSets("coding");
+// ── Main ──────────────────────────────────────────────────────────────────────
+async function generateAllSets() {
+  await mongoose.connect(process.env.MONGO_URI);
+  console.log("✅ MongoDB Connected");
+  console.log(`\n🔍 Scanning category: "${category}" for topic/level combinations...\n`);
 
-/*```
+  // Discover all distinct topic+level pairs
+  const combos = await QuestionBank.aggregate([
+    { $match: { category } },
+    { $group: { _id: { topic: "$topic", level: "$level" } } },
+    { $sort: { "_id.topic": 1, "_id.level": 1 } },
+  ]);
 
----
+  if (combos.length === 0) {
+    console.error("❌ No questions found for this category.");
+    console.error("   Run loadQuestionBank.js first to populate the question bank.\n");
+    process.exit(1);
+  }
 
-## 📝 PDF Format Required
+  console.log(`📋 Found ${combos.length} topic/level combination(s):`);
+  combos.forEach(({ _id: { topic, level } }) => console.log(`   • ${topic} / ${level}`));
 
-Create your `questions.pdf` with this exact format:
-```
-=== TOPIC: percentages, LEVEL: easy ===
+  let totalSets = 0;
 
-1. What is 50% of 200?
-A. 50
-B. 100
-C. 150
-D. 200
-Answer: B
+  for (const { _id: { topic, level } } of combos) {
+    totalSets += await generateSets(topic, level);
+  }
 
-2. Calculate 25% of 80
-A. 15
-B. 20
-C. 25
-D. 30
-Answer: B
+  console.log(`\n🎉 Done! Generated ${totalSets} practice set(s) for category "${category}".\n`);
 
-3. If 30% of a number is 90, what is the number?
-A. 270
-B. 300
-C. 330
-D. 360
-Answer: B
+  await mongoose.disconnect();
+  process.exit(0);
+}
 
-=== TOPIC: profit-loss, LEVEL: medium ===
-
-1. A shopkeeper buys an item for $100 and sells it for $120. What is the profit percentage?
-A. 10%
-B. 15%
-C. 20%
-D. 25%
-Answer: C
-
-2. An item is sold at a loss of 10%. If the selling price is $450, what was the cost price?
-A. $500
-B. $495
-C. $505
-D. $510
-Answer: A
-
-=== TOPIC: time-work, LEVEL: hard ===
-
-1. A can complete a work in 10 days and B can complete it in 15 days. How long will they take working together?
-A. 5 days
-B. 6 days
-C. 7 days
-D. 8 days
-Answer: B */
+generateAllSets().catch((err) => {
+  console.error("❌ Fatal error:", err.message);
+  process.exit(1);
+});

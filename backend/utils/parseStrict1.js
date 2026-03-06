@@ -22,6 +22,7 @@ function parseStrict(text, metadata = {}) {
   let currentTopic = null;
   let currentLevel = null;
   let collectingQuestion = false;
+  let answerBuffer = false; // Flag to indicate we just saw "Answer:" and expect a letter
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -52,7 +53,7 @@ function parseStrict(text, metadata = {}) {
         level: currentLevel,
         question: questionMatch[2].trim(),
         options: [],
-        correctAnswer: null,
+        answer: null,
         answerText: null // Store raw answer text for verification
       };
 
@@ -76,17 +77,27 @@ function parseStrict(text, metadata = {}) {
     }
 
     // Pattern 3: Answer with letter (Answer: A or Correct: B or Ans: C or just A)
-    const answerLetterMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]*([A-Da-d])/i);
+    const answerLetterMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]*([A-Da-d])\s*$/i);
+    const answerMarkerOnlyMatch = line.match(/^(?:Answer|Correct|Ans|Solution)[\s:]*$/i);
 
     if (answerLetterMatch) {
       collectingQuestion = false;
+      answerBuffer = false;
       const answerLetter = answerLetterMatch[1].toUpperCase();
-      const answerIndex = answerLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+      currentQuestion.answerText = answerLetter;
 
+      const answerIndex = answerLetter.charCodeAt(0) - 'A'.charCodeAt(0);
       if (answerIndex >= 0 && answerIndex < currentQuestion.options.length) {
-        currentQuestion.correctAnswer = currentQuestion.options[answerIndex];
-        console.log(`   ✓ Answer: ${answerLetter} (${currentQuestion.correctAnswer.substring(0, 30)}...)`);
+        currentQuestion.answer = currentQuestion.options[answerIndex];
+        console.log(`   ✓ Answer: ${answerLetter} (${currentQuestion.answer.substring(0, 30)}...)`);
       }
+      continue;
+    }
+
+    if (answerMarkerOnlyMatch) {
+      collectingQuestion = false;
+      answerBuffer = true; // Expect letter on next line
+      console.log(`   ⏳ Found Answer marker, waiting for letter...`);
       continue;
     }
 
@@ -102,7 +113,7 @@ function parseStrict(text, metadata = {}) {
       if (currentQuestion.options.length > 0) {
         const matchedOption = findBestMatchingOption(answerText, currentQuestion.options);
         if (matchedOption) {
-          currentQuestion.correctAnswer = matchedOption;
+          currentQuestion.answer = matchedOption;
           console.log(`   ✓ Matched answer text to option: ${matchedOption.substring(0, 30)}...`);
         }
       } else {
@@ -112,18 +123,31 @@ function parseStrict(text, metadata = {}) {
       continue;
     }
 
-    // Pattern 4: If we have 4 options and next line is just a letter (A, B, C, or D)
-    if (currentQuestion.options.length === 4 && !currentQuestion.correctAnswer) {
-      const justLetter = line.match(/^([A-Da-d])$/);
+    // Pattern 4: If we have options and next line is just a letter (A, B, C, or D)
+    if (currentQuestion.options.length > 0 && !currentQuestion.answer) {
+      const justLetter = line.match(/^\s*([A-Da-d])\s*$/); // Allow trailing/leading spaces
       if (justLetter) {
         collectingQuestion = false;
+        answerBuffer = false;
         const answerLetter = justLetter[1].toUpperCase();
+        currentQuestion.answerText = answerLetter;
         const answerIndex = answerLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-        currentQuestion.correctAnswer = currentQuestion.options[answerIndex];
-        console.log(`   ✓ Answer: ${answerLetter} (${currentQuestion.correctAnswer.substring(0, 30)}...)`);
-        continue;
+
+        if (answerIndex >= 0 && answerIndex < currentQuestion.options.length) {
+          currentQuestion.answer = currentQuestion.options[answerIndex];
+          console.log(`   ✓ Linked single letter "${answerLetter}" to option: ${currentQuestion.answer.substring(0, 30)}...`);
+          continue;
+        }
       }
     }
+
+    // Special case: If we are in answerBuffer mode and find anything else, we might be misaligned
+    if (answerBuffer && line.trim().length > 0) {
+      console.log(`   🔸 answerBuffer active but line is: "${line.substring(0, 20)}..."`);
+    }
+
+    // Reset answerBuffer if current line is not a letter
+    if (answerBuffer) answerBuffer = false;
 
     // Pattern 5: Continue collecting question text if we haven't reached options yet
     if (collectingQuestion && currentQuestion.options.length === 0) {
@@ -135,8 +159,8 @@ function parseStrict(text, metadata = {}) {
         // Add bullet point to question with line break
         currentQuestion.question += '\n• ' + line.replace(/^[-•·*]\s*/, '');
         console.log(`   📌 Added bullet: ${line.substring(0, 40)}...`);
-      } else if (line.length > 10 && !optionMatch && !answerLetterMatch && !answerTextMatch) {
-        // Regular continuation line
+      } else if (line.length >= 1 && !optionMatch && !answerLetterMatch && !answerTextMatch) {
+        // Regular continuation line - reduced length check to 1 to support short code lines
         currentQuestion.question += '\n' + line;
         console.log(`   ➕ Added continuation: ${line.substring(0, 40)}...`);
       }
@@ -144,7 +168,7 @@ function parseStrict(text, metadata = {}) {
     }
 
     // Pattern 6: Handle follow-up questions (lines that end with '?')
-    if (currentQuestion.correctAnswer && line.endsWith('?') && line.length > 20) {
+    if (currentQuestion.answer && line.endsWith('?') && line.length > 20) {
       // Save the current complete question
       if (isValidQuestion(currentQuestion)) {
         questions.push(currentQuestion);
@@ -159,7 +183,7 @@ function parseStrict(text, metadata = {}) {
         level: currentLevel,
         question: line,
         options: [],
-        correctAnswer: null,
+        answer: null,
         answerText: null
       };
 
@@ -169,7 +193,7 @@ function parseStrict(text, metadata = {}) {
     }
 
     // Pattern 7: Explanation (optional)
-    if (line.match(/^(?:Explanation|Exp):/i) && currentQuestion.correctAnswer) {
+    if (line.match(/^(?:Explanation|Exp):/i) && currentQuestion.answer) {
       const explanation = line.replace(/^(?:Explanation|Exp):\s*/i, '').trim();
       currentQuestion.explanation = explanation;
       console.log(`   💡 Explanation: ${explanation.substring(0, 40)}...`);
@@ -183,12 +207,23 @@ function parseStrict(text, metadata = {}) {
     console.log(`✅ Added question ${questions.length}`);
   }
 
-  // POST-PROCESSING: Generate options for questions without them
+  // POST-PROCESSING: Generate options for questions without them, or fix missing answers
   const processedQuestions = questions.map((q, index) => {
+    // Case 1: No options, but has answerText (generate distractors)
     if (q.options.length === 0 && q.answerText) {
       console.log(`\n🔧 Processing question ${index + 1} without options...`);
       return generateOptionsFromAnswer(q);
     }
+
+    // Case 2: Has options and answerText is a letter (A-D), but answer is still null
+    if (q.options.length > 0 && !q.answer && q.answerText && /^[A-D]$/i.test(q.answerText)) {
+      const idx = q.answerText.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
+      if (idx >= 0 && idx < q.options.length) {
+        q.answer = q.options[idx];
+        console.log(`   ✓ Fixed missing answer for question ${index + 1} using letter index ${q.answerText}`);
+      }
+    }
+
     return q;
   });
 
@@ -224,23 +259,23 @@ function generateOptionsFromAnswer(question) {
   console.log(`   📝 Answer text: ${question.answerText}`);
 
   // The correct answer
-  const correctAnswer = question.answerText;
+  const answer = question.answerText;
 
   // Generate plausible distractors based on the answer type
-  const distractors = generateDistractors(correctAnswer, question.question);
+  const distractors = generateDistractors(answer, question.question);
 
   // Combine correct answer with distractors
-  const allOptions = [correctAnswer, ...distractors].slice(0, 4);
+  const allOptions = [answer, ...distractors].slice(0, 4);
 
   // Shuffle options
   const shuffledOptions = shuffleArray(allOptions);
 
   question.options = shuffledOptions;
-  question.correctAnswer = correctAnswer;
+  question.answer = answer;
 
   console.log(`   ✅ Generated ${question.options.length} options`);
   question.options.forEach((opt, idx) => {
-    const marker = opt === correctAnswer ? '✓' : ' ';
+    const marker = opt === answer ? '✓' : ' ';
     console.log(`   ${marker} ${String.fromCharCode(65 + idx)}. ${opt.substring(0, 40)}...`);
   });
 
@@ -248,26 +283,26 @@ function generateOptionsFromAnswer(question) {
 }
 
 // NEW FUNCTION: Generate plausible wrong answers
-function generateDistractors(correctAnswer, questionText) {
+function generateDistractors(answer, questionText) {
   const distractors = [];
 
   // Check if answer is numeric
-  if (/^\d+$/.test(correctAnswer)) {
-    const num = parseInt(correctAnswer);
+  if (/^\d+$/.test(answer)) {
+    const num = parseInt(answer);
     distractors.push(String(num + 1));
     distractors.push(String(num - 1));
     distractors.push(String(num * 2));
   }
   // Check if answer is a year
-  else if (/^\d{4}$/.test(correctAnswer)) {
-    const year = parseInt(correctAnswer);
+  else if (/^\d{4}$/.test(answer)) {
+    const year = parseInt(answer);
     distractors.push(String(year - 1));
     distractors.push(String(year + 1));
     distractors.push(String(year - 10));
   }
   // Check if answer is a percentage
-  else if (correctAnswer.includes('%')) {
-    const num = parseFloat(correctAnswer);
+  else if (answer.includes('%')) {
+    const num = parseFloat(answer);
     distractors.push(`${num + 5}%`);
     distractors.push(`${num - 5}%`);
     distractors.push(`${num * 2}%`);
@@ -275,7 +310,7 @@ function generateDistractors(correctAnswer, questionText) {
   // For text answers, generate related but incorrect options
   else {
     // Split answer into words
-    const words = correctAnswer.split(/\s+/);
+    const words = answer.split(/\s+/);
 
     // Generate variations
     if (words.length > 1) {
@@ -290,9 +325,9 @@ function generateDistractors(correctAnswer, questionText) {
       distractors.push(words.slice(0, -1).join(' '));
     } else {
       // Single word - add common variations
-      distractors.push(correctAnswer + 's');
-      distractors.push('Not ' + correctAnswer);
-      distractors.push(correctAnswer + ' related');
+      distractors.push(answer + 's');
+      distractors.push('Not ' + answer);
+      distractors.push(answer + ' related');
     }
   }
 
@@ -364,7 +399,7 @@ function shuffleArray(array) {
 
 function isValidQuestion(q) {
   // Modified validation - options can be empty if we have answerText
-  const hasValidOptions = q.options.length === 4 && q.correctAnswer !== null && q.options.includes(q.correctAnswer);
+  const hasValidOptions = q.options.length === 4 && q.answer !== null && q.options.includes(q.answer);
   const hasAnswerText = q.answerText !== null && q.answerText.length > 0;
 
   const valid =
@@ -380,8 +415,8 @@ function isValidQuestion(q) {
       hasQuestion: !!q.question,
       questionLength: q.question?.length,
       optionsCount: q.options.length,
-      hasCorrectAnswer: !!q.correctAnswer,
-      correctAnswerInOptions: q.correctAnswer ? q.options.includes(q.correctAnswer) : false,
+      hasAnswer: !!q.answer,
+      answerInOptions: q.answer ? q.options.includes(q.answer) : false,
       hasAnswerText: !!q.answerText,
       hasCategory: !!q.category,
       hasTopic: !!q.topic,

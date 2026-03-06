@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const AnalyticsSchema = new mongoose.Schema({
     type: {
         type: String,
-        enum: ["platform", "institution", "department", "batch", "event"],
+        enum: ["platform", "institution", "department", "year", "event"],
         required: true,
         index: true
     },
@@ -19,9 +19,9 @@ const AnalyticsSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Department"
     },
-    batchId: {
+    yearId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Batch"
+        ref: "Year"
     },
     eventId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -88,7 +88,7 @@ const AnalyticsSchema = new mongoose.Schema({
 
 // Compound indexes for efficient querying
 AnalyticsSchema.index({ type: 1, institutionId: 1, period: 1 });
-AnalyticsSchema.index({ type: 1, batchId: 1, period: 1 });
+AnalyticsSchema.index({ type: 1, yearId: 1, period: 1 });
 AnalyticsSchema.index({ type: 1, departmentId: 1, period: 1 });
 
 // Update timestamp on save

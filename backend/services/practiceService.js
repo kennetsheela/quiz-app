@@ -6,12 +6,12 @@ const QuestionBank = require("../models/QuestionBank");
 async function getSetsWithLock(userId, category, topic, level) {
   const sets = await PracticeSet.find({ category, topic, level })
     .sort({ setNumber: 1 });
-  
-  const progress = await PracticeProgress.find({ 
-    userId, 
-    category, 
-    topic, 
-    level 
+
+  const progress = await PracticeProgress.find({
+    userId,
+    category,
+    topic,
+    level
   });
 
   return sets.map((set, index) => {
@@ -37,11 +37,11 @@ async function getSetsWithLock(userId, category, topic, level) {
 }
 
 async function startSet({ userId, category, topic, level, setNumber }) {
-  const set = await PracticeSet.findOne({ 
-    category, 
-    topic, 
-    level, 
-    setNumber 
+  const set = await PracticeSet.findOne({
+    category,
+    topic,
+    level,
+    setNumber
   });
 
   if (!set) {
@@ -100,11 +100,11 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
     throw new Error("Set already completed");
   }
 
-  const set = await PracticeSet.findOne({ 
-    category, 
-    topic, 
-    level, 
-    setNumber 
+  const set = await PracticeSet.findOne({
+    category,
+    topic,
+    level,
+    setNumber
   }).populate("questions");
 
   if (!set) {
@@ -131,8 +131,8 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
 
   set.questions.forEach((question, index) => {
     const userAnswer = answers[index];
-    const isCorrect = userAnswer === question.correctAnswer;
-    
+    const isCorrect = userAnswer === question.answer;
+
     // Get per-question time with validation
     let timeSpent = null;
     if (timings && timings[index] !== undefined && timings[index] !== null) {
@@ -142,14 +142,14 @@ async function submitSet({ userId, category, topic, level, setNumber, answers, t
         timeSpent = null;
       }
     }
-    
+
     if (isCorrect) score++;
 
     results.push({
       questionId: question._id,
       question: question.question,
       selectedAnswer: userAnswer,
-      correctAnswer: question.correctAnswer,
+      answer: question.answer,
       isCorrect,
       explanation: question.explanation,
       timeSpent: timeSpent

@@ -3,6 +3,11 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 const User = require("../models/User");
+const authController = require("../controllers/authController");
+
+// JWT Login Routes
+router.post("/institution/login", authController.institutionLogin);
+router.post("/student/login", authController.studentLogin);
 
 // Middleware to verify Firebase token
 const verifyToken = async (req, res, next) => {
@@ -44,6 +49,7 @@ router.get("/profile", verifyToken, async (req, res) => {
       department: user.department,
       college: user.college,
       city: user.city,
+      rollNumber: user.rollNumber,
       photoURL: user.photoURL,
       provider: user.provider,
       createdAt: user.createdAt,
@@ -67,7 +73,9 @@ router.post("/profile", verifyToken, async (req, res) => {
       provider,
       role,
       institutionId,
-      batchId
+      yearId,
+      batchId,
+      rollNumber
     } = req.body;
     const { uid, email, picture, firebase } = req.user;
 
@@ -87,26 +95,38 @@ router.post("/profile", verifyToken, async (req, res) => {
     // Use photoURL from request or from Firebase token
     const userPhotoURL = photoURL || picture || null;
 
-    // Update or create user
+    // Use $or to find by either UID or email to avoid duplicates
     const user = await User.findOneAndUpdate(
-      { firebaseUid: uid },
       {
-        firebaseUid: uid,
-        email,
-        username,
-        role: role || "student",
-        institutionId: institutionId || null,
-        batchId: batchId || null,
-        department: department || "",
-        college: college || "",
-        city: city || "",
-        photoURL: userPhotoURL,
-        provider: userProvider,
-        lastLogin: new Date()
+        $or: [
+          { firebaseUid: uid },
+          { email: email.toLowerCase() }
+        ]
       },
       {
-        upsert: true,  // Create if doesn't exist
-        new: true,     // Return updated document
+        $set: {
+          firebaseUid: uid,
+          email: email.toLowerCase(),
+          username,
+          firstName: req.body.firstName || "",
+          lastName: req.body.lastName || "",
+          // Only update role if provided and not already HOD/Admin (to prevent accidental downgrade)
+          // But usually role comes from pendingProfile which is correct.
+          role: role || "student",
+          institutionId: institutionId || null,
+          batchId: batchId || yearId || null,
+          department: department || "",
+          college: college || "",
+          city: city || "",
+          rollNumber: rollNumber || "",
+          photoURL: userPhotoURL,
+          provider: userProvider,
+          lastLogin: new Date()
+        }
+      },
+      {
+        upsert: true,
+        new: true,
         runValidators: true,
         setDefaultsOnInsert: true
       }
@@ -128,6 +148,7 @@ router.post("/profile", verifyToken, async (req, res) => {
         department: user.department,
         college: user.college,
         city: user.city,
+        rollNumber: user.rollNumber,
         photoURL: user.photoURL,
         provider: user.provider,
         createdAt: user.createdAt
@@ -142,7 +163,7 @@ router.post("/profile", verifyToken, async (req, res) => {
 // Update profile (partial updates)
 router.patch("/profile", verifyToken, async (req, res) => {
   try {
-    const { username, department, college, city, photoURL } = req.body;
+    const { username, department, college, city, photoURL, rollNumber } = req.body;
 
     const user = await User.findOne({ firebaseUid: req.user.uid });
 
@@ -155,9 +176,11 @@ router.patch("/profile", verifyToken, async (req, res) => {
     if (role !== undefined) user.role = role;
     if (institutionId !== undefined) user.institutionId = institutionId;
     if (batchId !== undefined) user.batchId = batchId;
+    if (yearId !== undefined) user.batchId = yearId;
     if (department !== undefined) user.department = department;
     if (college !== undefined) user.college = college;
     if (city !== undefined) user.city = city;
+    if (rollNumber !== undefined) user.rollNumber = rollNumber;
     if (photoURL !== undefined) user.photoURL = photoURL;
 
     await user.save();
@@ -174,6 +197,7 @@ router.patch("/profile", verifyToken, async (req, res) => {
         department: user.department,
         college: user.college,
         city: user.city,
+        rollNumber: user.rollNumber,
         photoURL: user.photoURL,
         provider: user.provider
       }
@@ -189,8 +213,13 @@ router.post("/login", verifyToken, async (req, res) => {
   try {
     const { uid, email, picture, name, firebase } = req.user;
 
-    // Find or create user with minimal info
-    let user = await User.findOne({ firebaseUid: uid });
+    // Find by UID or Email
+    let user = await User.findOne({
+      $or: [
+        { firebaseUid: uid },
+        { email: email.toLowerCase() }
+      ]
+    });
 
     if (!user) {
       // Create basic user record on first login
@@ -212,11 +241,18 @@ router.post("/login", verifyToken, async (req, res) => {
 
       console.log("New user created on login:", uid);
     } else {
+      // Link Firebase UID if just found by email
+      if (!user.firebaseUid) {
+        user.firebaseUid = uid;
+        console.log("Existing account linked to Firebase UID:", uid);
+      }
+
       // Update last login
       user.lastLogin = new Date();
+      if (picture && !user.photoURL) user.photoURL = picture;
       await user.save();
 
-      console.log("Login recorded for existing user:", uid);
+      console.log("Login recorded for user:", uid);
     }
 
     res.json({
@@ -257,6 +293,24 @@ const verifyInstAdmin = async (req, res, next) => {
   }
 };
 
+// Middleware to verify if user is staff (hod or admin)
+const verifyStaff = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ firebaseUid: req.user.uid });
+
+    if (!user || (user.role !== "inst-admin" && user.role !== "hod")) {
+      return res.status(403).json({ error: "Access denied. Staff role required." });
+    }
+
+    req.staff = user;
+    next();
+  } catch (error) {
+    console.error("verifyStaff error:", error);
+    res.status(500).json({ error: "Authorization check failed" });
+  }
+};
+
 module.exports = router;
 module.exports.verifyToken = verifyToken;
 module.exports.verifyInstAdmin = verifyInstAdmin;
+module.exports.verifyStaff = verifyStaff;

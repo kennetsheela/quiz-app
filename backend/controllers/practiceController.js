@@ -19,7 +19,7 @@ exports.loadSet = async (req, res) => {
   const { category, topic, level, setNumber } = req.query;
 
   const set = await PracticeSet.findOne({ category, topic, level, setNumber })
-    .populate("questions", "-correctAnswer");
+    .populate("questions", "-answer");
 
   if (!set) return res.status(404).json({ error: "Set not found" });
 

@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const QuestionSchema = new mongoose.Schema({
   question: { type: String, required: true },
   options: [{ type: String, required: true }],
-  correctAnswer: { type: String, required: true },
+  answer: { type: String, required: true },
   category: String,
   topic: String,
   level: String,
@@ -22,6 +22,7 @@ const EventSetSchema = new mongoose.Schema({
 
 const EventSchema = new mongoose.Schema({
   eventName: { type: String, required: true, unique: true },
+  description: { type: String, default: "" },
   eventCode: {
     type: String,
     unique: true,
@@ -60,6 +61,11 @@ const EventSchema = new mongoose.Schema({
     enum: ["public", "institution", "department"],
     default: "institution"
   },
+  resultsVisibility: {
+    type: String,
+    enum: ["scores_only", "rank_and_scores", "full_leaderboard", "hidden"],
+    default: "rank_and_scores"
+  },
   isPublic: {
     type: Boolean,
     default: false
@@ -72,6 +78,8 @@ const EventSchema = new mongoose.Schema({
     enum: ["super-admin", "inst-admin", "hod"],
     required: true
   },
+  createdByDeptName: { type: String }, // For HOD-created events
+  institutionName: { type: String }, // Cache institution name for filtering
 
   // QR Code for easy sharing
   qrCodeUrl: {
@@ -86,17 +94,46 @@ const EventSchema = new mongoose.Schema({
     randomizeOptions: { type: Boolean, default: true }
   },
 
+  category: {
+    type: String,
+    enum: ["Aptitude", "Reasoning", "Coding", "Technical", "General Knowledge", "General"],
+    default: "General"
+  },
+
+  marksPerQuestion: { type: Number, default: 1 },
+  negativeMarking: { type: Number, default: 0 },
+  passPercentage: { type: Number, default: 40 },
+  maxAttempts: { type: Number, default: 1 },
+
+  status: {
+    type: String,
+    enum: ["Active", "Pending", "Completed"],
+    default: "Active"
+  },
+  participantCount: {
+    type: Number,
+    default: 0
+  },
+
   createdAt: { type: Date, default: Date.now }
 });
 
-// Auto-generate eventCode before saving
+// Auto-generate eventCode before saving and sync visibility/isPublic
 EventSchema.pre('save', function (next) {
+  // Sync isPublic and visibility
+  if (this.isPublic) {
+    this.visibility = 'public';
+  } else if (this.visibility === 'public') {
+    this.isPublic = true;
+  }
+
   if (!this.eventCode) {
     const date = new Date(this.startTime);
     const year = date.getFullYear();
     const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
     const day = String(date.getDate()).padStart(2, '0');
-    this.eventCode = `EVT-${year}-${month}-${day}`;
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    this.eventCode = `EVT-${year}-${month}-${day}-${randomSuffix}`;
   }
   next();
 });

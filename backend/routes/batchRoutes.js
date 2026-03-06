@@ -3,15 +3,15 @@ const express = require("express");
 const router = express.Router();
 const Batch = require("../models/Batch");
 const Institution = require("../models/Institution");
-const { verifyToken } = require("./authRoutes");
+const { authenticate } = require("../middleware/authMiddleware");
 
 // Create a new batch
-router.post("/", verifyToken, async (req, res) => {
+router.post("/", authenticate, async (req, res) => {
     try {
         const { batchID, startYear, endYear, currentYearLevel } = req.body;
-        const inst = await Institution.findOne({ adminUID: req.user.uid });
+        const institutionId = req.user.institutionId;
 
-        if (!inst) return res.status(404).json({ error: "Only institutional admins can create batches" });
+        if (!institutionId) return res.status(404).json({ error: "Only institutional admins can create batches" });
 
         const batch = await Batch.create({
             batchID,
@@ -28,12 +28,12 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 // Get all batches for the logged-in institution
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", authenticate, async (req, res) => {
     try {
-        const inst = await Institution.findOne({ adminUID: req.user.uid });
-        if (!inst) return res.status(404).json({ error: "Institution not found" });
+        const institutionId = req.user.institutionId;
+        if (!institutionId) return res.status(404).json({ error: "Institution not found" });
 
-        const batches = await Batch.find({ institutionId: inst._id });
+        const batches = await Batch.find({ institutionId });
         res.json(batches);
     } catch (error) {
         res.status(500).json({ error: error.message });

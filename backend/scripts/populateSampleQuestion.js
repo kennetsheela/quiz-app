@@ -16,7 +16,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is 20% of 500?",
     options: ["50", "100", "150", "200"],
-    correctAnswer: "100",
+    answer: "100",
     explanation: "20% = 20/100 = 0.2, so 0.2 × 500 = 100"
   },
   {
@@ -25,7 +25,7 @@ const sampleQuestions = [
     level: "easy",
     question: "If 25% of a number is 50, what is the number?",
     options: ["100", "150", "200", "250"],
-    correctAnswer: "200",
+    answer: "200",
     explanation: "Let x be the number. 25% of x = 50, so 0.25x = 50, x = 200"
   },
   {
@@ -34,7 +34,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is 10% of 1000?",
     options: ["10", "50", "100", "150"],
-    correctAnswer: "100",
+    answer: "100",
     explanation: "10% of 1000 = (10/100) × 1000 = 100"
   },
   {
@@ -43,7 +43,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Convert 0.75 to percentage",
     options: ["7.5%", "75%", "750%", "0.75%"],
-    correctAnswer: "75%",
+    answer: "75%",
     explanation: "0.75 = 75/100 = 75%"
   },
   {
@@ -52,7 +52,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is 50% of 80?",
     options: ["20", "30", "40", "50"],
-    correctAnswer: "40",
+    answer: "40",
     explanation: "50% of 80 = (50/100) × 80 = 40"
   },
   {
@@ -61,7 +61,7 @@ const sampleQuestions = [
     level: "easy",
     question: "If a shirt costs $40 and is discounted by 25%, what is the new price?",
     options: ["$10", "$20", "$30", "$35"],
-    correctAnswer: "$30",
+    answer: "$30",
     explanation: "Discount = 25% of 40 = $10, New price = 40 - 10 = $30"
   },
   {
@@ -70,7 +70,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What percentage is 30 out of 150?",
     options: ["10%", "15%", "20%", "25%"],
-    correctAnswer: "20%",
+    answer: "20%",
     explanation: "(30/150) × 100 = 20%"
   },
   {
@@ -79,7 +79,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Increase 200 by 10%",
     options: ["210", "220", "230", "240"],
-    correctAnswer: "220",
+    answer: "220",
     explanation: "10% of 200 = 20, New value = 200 + 20 = 220"
   },
   {
@@ -88,7 +88,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is 5% of 2000?",
     options: ["50", "100", "150", "200"],
-    correctAnswer: "100",
+    answer: "100",
     explanation: "5% of 2000 = (5/100) × 2000 = 100"
   },
   {
@@ -97,7 +97,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Convert 1/4 to percentage",
     options: ["20%", "25%", "30%", "40%"],
-    correctAnswer: "25%",
+    answer: "25%",
     explanation: "1/4 = 0.25 = 25%"
   },
 
@@ -110,7 +110,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which of the following is NOT an operating system?",
     options: ["Windows", "Linux", "Oracle", "macOS"],
-    correctAnswer: "Oracle",
+    answer: "Oracle",
     explanation: "Oracle is a database management system, not an OS"
   },
   {
@@ -119,7 +119,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What does OS stand for?",
     options: ["Open Source", "Operating System", "Online Service", "Optical Storage"],
-    correctAnswer: "Operating System",
+    answer: "Operating System",
     explanation: "OS is the abbreviation for Operating System"
   },
   {
@@ -128,7 +128,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which scheduling algorithm allocates CPU first to the process that requests it first?",
     options: ["FCFS", "SJF", "Round Robin", "Priority"],
-    correctAnswer: "FCFS",
+    answer: "FCFS",
     explanation: "First Come First Served (FCFS) processes requests in order of arrival"
   },
   {
@@ -137,7 +137,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is a process?",
     options: ["Program in execution", "Program on disk", "Code only", "Data only"],
-    correctAnswer: "Program in execution",
+    answer: "Program in execution",
     explanation: "A process is a program that is currently being executed"
   },
   {
@@ -146,7 +146,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which is NOT a state of a process?",
     options: ["Ready", "Running", "Waiting", "Compiling"],
-    correctAnswer: "Compiling",
+    answer: "Compiling",
     explanation: "Process states are: New, Ready, Running, Waiting, Terminated"
   },
   {
@@ -155,7 +155,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is virtual memory?",
     options: ["RAM only", "Hard disk used as RAM", "Cache memory", "ROM"],
-    correctAnswer: "Hard disk used as RAM",
+    answer: "Hard disk used as RAM",
     explanation: "Virtual memory uses disk space to extend available RAM"
   },
   {
@@ -164,7 +164,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which is a type of multitasking?",
     options: ["Preemptive", "Destructive", "Constructive", "Selective"],
-    correctAnswer: "Preemptive",
+    answer: "Preemptive",
     explanation: "Preemptive multitasking allows OS to decide when to switch tasks"
   },
   {
@@ -173,7 +173,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is a thread?",
     options: ["Smallest unit of execution", "Type of process", "Memory segment", "CPU core"],
-    correctAnswer: "Smallest unit of execution",
+    answer: "Smallest unit of execution",
     explanation: "A thread is the smallest sequence of programmed instructions"
   },
   {
@@ -182,7 +182,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which command is used to list files in Linux?",
     options: ["dir", "ls", "list", "show"],
-    correctAnswer: "ls",
+    answer: "ls",
     explanation: "ls (list) command displays files and directories in Linux"
   },
   {
@@ -191,7 +191,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What does GUI stand for?",
     options: ["General User Interface", "Graphical User Interface", "Global Utility Interface", "General Utility Integration"],
-    correctAnswer: "Graphical User Interface",
+    answer: "Graphical User Interface",
     explanation: "GUI provides visual interaction with the computer"
   },
 
@@ -204,7 +204,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Choose the word most similar to 'Happy'",
     options: ["Sad", "Joyful", "Angry", "Tired"],
-    correctAnswer: "Joyful",
+    answer: "Joyful",
     explanation: "Joyful is a synonym of Happy"
   },
   {
@@ -213,7 +213,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Complete the series: A, C, E, G, __",
     options: ["H", "I", "J", "K"],
-    correctAnswer: "I",
+    answer: "I",
     explanation: "Pattern: Skip one letter. After G comes I"
   },
   {
@@ -222,7 +222,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Find the odd one out: Dog, Cat, Lion, Table",
     options: ["Dog", "Cat", "Lion", "Table"],
-    correctAnswer: "Table",
+    answer: "Table",
     explanation: "Table is not an animal"
   },
   {
@@ -231,7 +231,7 @@ const sampleQuestions = [
     level: "easy",
     question: "If APPLE is coded as BQQMF, how is MANGO coded?",
     options: ["NBOHP", "LZMFN", "NBOIP", "NAHOP"],
-    correctAnswer: "NBOHP",
+    answer: "NBOHP",
     explanation: "Each letter is shifted by +1 in the alphabet"
   },
   {
@@ -240,7 +240,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Choose the antonym of 'Hot'",
     options: ["Warm", "Cool", "Cold", "Freezing"],
-    correctAnswer: "Cold",
+    answer: "Cold",
     explanation: "Cold is the opposite of Hot"
   },
   {
@@ -249,7 +249,7 @@ const sampleQuestions = [
     level: "easy",
     question: "If all roses are flowers and some flowers fade quickly, which is definitely true?",
     options: ["All roses fade quickly", "Some roses may fade quickly", "No roses fade", "All flowers are roses"],
-    correctAnswer: "Some roses may fade quickly",
+    answer: "Some roses may fade quickly",
     explanation: "Since roses are flowers, some roses could be among the flowers that fade"
   },
   {
@@ -258,7 +258,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Complete: Book is to Reading as Fork is to __",
     options: ["Eating", "Cooking", "Writing", "Driving"],
-    correctAnswer: "Eating",
+    answer: "Eating",
     explanation: "Book is used for reading, fork is used for eating"
   },
   {
@@ -267,7 +267,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which word does NOT belong: Car, Bus, Train, Apple",
     options: ["Car", "Bus", "Train", "Apple"],
-    correctAnswer: "Apple",
+    answer: "Apple",
     explanation: "Apple is not a vehicle"
   },
   {
@@ -276,7 +276,7 @@ const sampleQuestions = [
     level: "easy",
     question: "If CAT = 24, what is DOG?",
     options: ["26", "27", "28", "29"],
-    correctAnswer: "26",
+    answer: "26",
     explanation: "C(3)+A(1)+T(20)=24, D(4)+O(15)+G(7)=26"
   },
   {
@@ -285,7 +285,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Choose the correctly spelled word",
     options: ["Recieve", "Receive", "Receve", "Receave"],
-    correctAnswer: "Receive",
+    answer: "Receive",
     explanation: "Correct spelling follows 'i before e except after c'"
   },
 
@@ -298,7 +298,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is the time complexity of accessing an element in an array by index?",
     options: ["O(1)", "O(n)", "O(log n)", "O(n²)"],
-    correctAnswer: "O(1)",
+    answer: "O(1)",
     explanation: "Array access by index is constant time"
   },
   {
@@ -307,7 +307,7 @@ const sampleQuestions = [
     level: "easy",
     question: "In a zero-indexed array of size 5, what is the last valid index?",
     options: ["3", "4", "5", "6"],
-    correctAnswer: "4",
+    answer: "4",
     explanation: "Indices are 0 to size-1, so 0 to 4"
   },
   {
@@ -316,7 +316,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What will be the output of arr[2] if arr = [10, 20, 30, 40]?",
     options: ["10", "20", "30", "40"],
-    correctAnswer: "30",
+    answer: "30",
     explanation: "Index 2 points to the third element: 30"
   },
   {
@@ -325,7 +325,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which operation is most efficient in an array?",
     options: ["Insert at middle", "Access by index", "Delete from middle", "Search unsorted"],
-    correctAnswer: "Access by index",
+    answer: "Access by index",
     explanation: "Random access is O(1) in arrays"
   },
   {
@@ -334,7 +334,7 @@ const sampleQuestions = [
     level: "easy",
     question: "How do you find the length of an array in Python?",
     options: ["arr.length", "len(arr)", "arr.size()", "size(arr)"],
-    correctAnswer: "len(arr)",
+    answer: "len(arr)",
     explanation: "Python uses len() function for array/list length"
   },
   {
@@ -343,7 +343,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is an array?",
     options: ["Collection of similar data types", "Collection of functions", "Single variable", "Database"],
-    correctAnswer: "Collection of similar data types",
+    answer: "Collection of similar data types",
     explanation: "Arrays store multiple elements of the same type"
   },
   {
@@ -352,7 +352,7 @@ const sampleQuestions = [
     level: "easy",
     question: "Which is true about arrays?",
     options: ["Dynamic size", "Fixed size", "No indexing", "Stores different types"],
-    correctAnswer: "Fixed size",
+    answer: "Fixed size",
     explanation: "Traditional arrays have fixed size (in most languages)"
   },
   {
@@ -361,7 +361,7 @@ const sampleQuestions = [
     level: "easy",
     question: "What is the first index in a zero-indexed array?",
     options: ["-1", "0", "1", "null"],
-    correctAnswer: "0",
+    answer: "0",
     explanation: "Zero-indexed arrays start at index 0"
   },
   {
@@ -370,7 +370,7 @@ const sampleQuestions = [
     level: "easy",
     question: "In arr = [5, 3, 8, 1], what is arr[1]?",
     options: ["5", "3", "8", "1"],
-    correctAnswer: "3",
+    answer: "3",
     explanation: "Index 1 is the second element: 3"
   },
   {
@@ -379,7 +379,7 @@ const sampleQuestions = [
     level: "easy",
     question: "How many elements can an array of size 10 hold?",
     options: ["9", "10", "11", "Unlimited"],
-    correctAnswer: "10",
+    answer: "10",
     explanation: "Size 10 means it can hold 10 elements (indices 0-9)"
   }
 ];
@@ -403,7 +403,7 @@ async function populateQuestions() {
 
     for (const combo of combinations) {
       const [category, topic, level] = combo.split("|");
-      
+
       const questions = await QuestionBank
         .find({ category, topic, level })
         .sort({ _id: 1 });

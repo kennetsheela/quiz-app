@@ -1,17 +1,17 @@
 //PracticeRoutes.js 
 const express = require("express");
 const router = express.Router();
-const { verifyToken } = require("./authRoutes");
+const { authenticate } = require("../middleware/authMiddleware");
 const PracticeService = require("../services/practiceService");
 const PracticeSet = require("../models/PracticeSet");
 const QuestionBank = require("../models/QuestionBank");
 const PracticeProgress = require("../models/PracticeProgress");
 
 // Get all available practice sets with lock status
-router.get("/sets", verifyToken, async (req, res) => {
+router.get("/sets", authenticate, async (req, res) => {
   try {
     const { category, topic, level } = req.query;
-    
+
     if (!category || !topic || !level) {
       return res.status(400).json({ error: "Category, topic, and level are required" });
     }
@@ -31,14 +31,14 @@ router.get("/sets", verifyToken, async (req, res) => {
 });
 
 // Get questions for a specific set
-router.get("/sets/:setId/questions", verifyToken, async (req, res) => {
+router.get("/sets/:setId/questions", authenticate, async (req, res) => {
   try {
     const { setId } = req.params;
-    
+
     if (!setId || setId === 'undefined' || setId === 'null') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: "Invalid set ID provided",
-        receivedId: setId 
+        receivedId: setId
       });
     }
 
@@ -48,32 +48,36 @@ router.get("/sets/:setId/questions", verifyToken, async (req, res) => {
 
     if (!set) {
       console.log("❌ Set not found with ID:", setId);
-      return res.status(404).json({ 
-        error: `Practice set not found with ID: ${setId}` 
+      return res.status(404).json({
+        error: `Practice set not found with ID: ${setId}`
       });
     }
 
-    console.log("✅ Set found with", set.questions.length, "questions");
+    console.log("✅ Set found with", set.questions.length, "total question references");
 
-    // Remove correct answers from questions
-    const questions = set.questions.map(q => ({
-      _id: q._id,
-      question: q.question,
-      options: q.options,
-      category: q.category,
-      topic: q.topic,
-      level: q.level
-    }));
+    // Filter out any questions that failed to populate and remove correct answers
+    const questions = set.questions
+      .filter(q => q != null) // Ensure question exists
+      .map(q => ({
+        _id: q._id,
+        question: q.question || "Question content missing",
+        options: Array.isArray(q.options) ? q.options : [],
+        category: q.category,
+        topic: q.topic,
+        level: q.level
+      }));
+
+    console.log("✅ Returning", questions.length, "valid questions after filtering");
 
     res.json({
       setNumber: set.setNumber,
-      timeLimit: set.timeLimit,
+      timeLimit: set.timeLimit || 10,
       questions,
       totalQuestions: questions.length
     });
   } catch (error) {
     console.error("❌ Get questions error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: error.message,
       details: "Failed to fetch questions for the practice set"
     });
@@ -81,7 +85,7 @@ router.get("/sets/:setId/questions", verifyToken, async (req, res) => {
 });
 
 // Start a practice set
-router.post("/sets/start", verifyToken, async (req, res) => {
+router.post("/sets/start", authenticate, async (req, res) => {
   try {
     const { category, topic, level, setNumber } = req.body;
 
@@ -92,11 +96,11 @@ router.post("/sets/start", verifyToken, async (req, res) => {
     console.log("🎯 Starting set:", { category, topic, level, setNumber });
 
     // First find the practice set
-    const set = await PracticeSet.findOne({ 
-      category, 
-      topic, 
-      level, 
-      setNumber 
+    const set = await PracticeSet.findOne({
+      category,
+      topic,
+      level,
+      setNumber
     });
 
     if (!set) {
@@ -141,7 +145,7 @@ router.post("/sets/start", verifyToken, async (req, res) => {
 
     console.log("✅ Progress created/updated:", progress._id);
 
-    res.json({ 
+    res.json({
       message: "Set started successfully",
       progress: {
         _id: progress._id.toString(),
@@ -158,7 +162,7 @@ router.post("/sets/start", verifyToken, async (req, res) => {
 });
 
 // Submit a practice set with per-question time tracking
-router.post("/sets/submit", verifyToken, async (req, res) => {
+router.post("/sets/submit", authenticate, async (req, res) => {
   try {
     const { category, topic, level, setNumber, answers, timings } = req.body;
 
@@ -166,16 +170,16 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    console.log("📝 [Backend] Submitting set:", { 
-      category, 
-      topic, 
-      level, 
-      setNumber, 
+    console.log("📝 [Backend] Submitting set:", {
+      category,
+      topic,
+      level,
+      setNumber,
       answersCount: answers.length,
       hasTimings: !!timings,
       timingsLength: timings ? timings.length : 0
     });
-    
+
     if (timings && timings.length > 0) {
       console.log("⏱️ [Backend] Received per-question timings:", timings);
       console.log("⏱️ [Backend] Total time:", timings.reduce((a, b) => a + b, 0), "seconds");
@@ -184,11 +188,11 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     }
 
     // Find the practice set to get correct answers
-    const set = await PracticeSet.findOne({ 
-      category, 
-      topic, 
-      level, 
-      setNumber 
+    const set = await PracticeSet.findOne({
+      category,
+      topic,
+      level,
+      setNumber
     }).populate("questions");
 
     if (!set) {
@@ -218,8 +222,8 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
 
     set.questions.forEach((question, index) => {
       const userAnswer = answers[index];
-      const correctAnswer = question.correctAnswer;
-      
+      const answer = question.answer;
+
       // Get per-question time - CRITICAL: Ensure it's a number or null
       let timeSpent = null;
       if (timings && timings[index] !== undefined && timings[index] !== null) {
@@ -229,34 +233,34 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
           timeSpent = null;
         }
       }
-      
-      const isCorrect = userAnswer && 
-                       normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
-      
+
+      const isCorrect = userAnswer &&
+        normalizeAnswer(userAnswer) === normalizeAnswer(answer);
+
       if (isCorrect) {
         score++;
       }
-      
+
       // Build result object with GUARANTEED timeSpent field
       const resultObject = {
         question: question.question,
         questionId: question._id.toString(),
         selectedAnswer: userAnswer || null,
-        correctAnswer: correctAnswer,
+        answer: answer,
         isCorrect: isCorrect,
         explanation: question.explanation || null,
         timeSpent: timeSpent  // Will be null or a number, never undefined
       };
-      
+
       results.push(resultObject);
     });
 
     console.log("📊 [Backend] Final score:", score, "/", set.questions.length);
-    
+
     // Verify timing data in results
     const resultsWithTime = results.filter(r => r.timeSpent !== null && r.timeSpent !== undefined && !isNaN(r.timeSpent));
     console.log(`⏱️ [Backend] ${resultsWithTime.length}/${results.length} results have valid timing data`);
-    
+
     if (resultsWithTime.length > 0) {
       console.log("✅ [Backend] Sample result with time:", {
         question: results[0].question.substring(0, 30) + "...",
@@ -283,16 +287,19 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     console.log("✅ [Backend] Progress saved to database");
 
     // Build response object
+    const totalTimeSpent = timings ? timings.reduce((a, b) => a + (Number(b) || 0), 0) : 0;
+
     const responseObject = {
       success: true,
       message: "Set submitted successfully",
       score,
       totalQuestions: set.questions.length,
       percentage: Math.round((score / set.questions.length) * 100),
+      timeSpent: totalTimeSpent,
       results: results,
       completedAt: progress.completedAt
     };
-    
+
     // FINAL VERIFICATION before sending
     console.log("📤 [Backend] Response summary:");
     console.log("   - Results count:", responseObject.results.length);
@@ -303,7 +310,7 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
     res.json(responseObject);
   } catch (error) {
     console.error("❌ [Backend] Submit set error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: error.message,
       details: "Failed to submit quiz answers"
     });
@@ -311,12 +318,12 @@ router.post("/sets/submit", verifyToken, async (req, res) => {
 });
 
 // Get user's progress history
-router.get("/progress", verifyToken, async (req, res) => {
+router.get("/progress", authenticate, async (req, res) => {
   try {
     console.log(`📊 Fetching progress for user: ${req.user.uid}`);
-    
-    const progress = await PracticeProgress.find({ 
-      userId: req.user.uid 
+
+    const progress = await PracticeProgress.find({
+      userId: req.user.uid
     }).sort({ completedAt: -1, startedAt: -1 });
 
     console.log(`📦 Found ${progress.length} progress records`);
@@ -337,17 +344,17 @@ router.get("/progress", verifyToken, async (req, res) => {
         completedAt: p.completedAt || null,
         timeLimit: p.timeLimit || 10
       };
-      
+
       if (p.completed) {
         console.log(`✅ Completed: ${p.category}-${p.topic} | Score: ${p.score}/${p.totalQuestions}`);
-        
+
         // Check if timing data exists
-        const hasTimings = p.answers && p.answers.some(a => 
+        const hasTimings = p.answers && p.answers.some(a =>
           a.timeSpent !== null && a.timeSpent !== undefined && !isNaN(a.timeSpent)
         );
         console.log(`⏱️ Has timing data: ${hasTimings}`);
       }
-      
+
       return record;
     });
 
@@ -363,8 +370,8 @@ router.get("/progress", verifyToken, async (req, res) => {
 // Get topics for a category
 router.get("/categories/:category/topics", async (req, res) => {
   try {
-    const topics = await QuestionBank.distinct("topic", { 
-      category: req.params.category 
+    const topics = await QuestionBank.distinct("topic", {
+      category: req.params.category
     });
     res.json({ topics });
   } catch (error) {
@@ -377,9 +384,9 @@ router.get("/categories/:category/topics", async (req, res) => {
 router.get("/topics/:topic/levels", async (req, res) => {
   try {
     const { category } = req.query;
-    const levels = await QuestionBank.distinct("level", { 
-      category, 
-      topic: req.params.topic 
+    const levels = await QuestionBank.distinct("level", {
+      category,
+      topic: req.params.topic
     });
     res.json({ levels });
   } catch (error) {
@@ -407,7 +414,7 @@ router.get("/categories", async (req, res) => {
 });
 
 // Get custom questions based on multiple criteria
-router.post("/custom-questions", verifyToken, async (req, res) => {
+router.post("/custom-questions", authenticate, async (req, res) => {
   try {
     const { categories, topics, difficulty, questionCount } = req.body;
 
@@ -426,7 +433,7 @@ router.post("/custom-questions", verifyToken, async (req, res) => {
     console.log(`✅ Found ${questions.length} matching questions`);
 
     if (questions.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: "No questions found matching your criteria",
         details: { categories, topics, difficulty }
       });
@@ -459,7 +466,7 @@ router.post("/custom-questions", verifyToken, async (req, res) => {
 
   } catch (error) {
     console.error("❌ Custom questions error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: error.message,
       details: "Failed to fetch custom questions"
     });
@@ -467,12 +474,12 @@ router.post("/custom-questions", verifyToken, async (req, res) => {
 });
 
 // Submit custom quiz with per-question time tracking
-router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
+router.post("/custom-quiz/submit", authenticate, async (req, res) => {
   try {
     const { questionIds, answers, timeSpent, timings, quizConfig } = req.body;
 
-    console.log("📝 [Backend] Submitting custom quiz:", { 
-      questionCount: questionIds.length, 
+    console.log("📝 [Backend] Submitting custom quiz:", {
+      questionCount: questionIds.length,
       timeSpent,
       hasTimings: !!timings,
       timingsLength: timings ? timings.length : 0
@@ -493,8 +500,8 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
 
     questions.forEach((question, index) => {
       const userAnswer = answers[index];
-      const correctAnswer = question.correctAnswer;
-      
+      const answer = question.answer;
+
       // Get per-question time
       let questionTime = null;
       if (timings && timings[index] !== undefined && timings[index] !== null) {
@@ -503,10 +510,10 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
           questionTime = null;
         }
       }
-      
-      const isCorrect = userAnswer && 
-                       userAnswer.toString().trim().toLowerCase() === 
-                       correctAnswer.toString().trim().toLowerCase();
+
+      const isCorrect = userAnswer &&
+        userAnswer.toString().trim().toLowerCase() ===
+        answer.toString().trim().toLowerCase();
 
       if (isCorrect) score++;
 
@@ -514,7 +521,7 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
         questionId: question._id.toString(),
         question: question.question,
         selectedAnswer: userAnswer || null,
-        correctAnswer: correctAnswer,
+        answer: answer,
         isCorrect: isCorrect,
         category: question.category,
         topic: question.topic,
@@ -528,7 +535,7 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
     const percentage = Math.round((score / totalQuestions) * 100);
 
     console.log("✅ [Backend] Custom quiz submitted. Score:", score, "/", totalQuestions);
-    
+
     const resultsWithTime = results.filter(r => r.timeSpent !== null && !isNaN(r.timeSpent));
     console.log(`⏱️ [Backend] ${resultsWithTime.length}/${results.length} results have timing data`);
 
@@ -544,7 +551,7 @@ router.post("/custom-quiz/submit", verifyToken, async (req, res) => {
 
   } catch (error) {
     console.error("❌ [Backend] Submit custom quiz error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: error.message,
       details: "Failed to submit quiz"
     });

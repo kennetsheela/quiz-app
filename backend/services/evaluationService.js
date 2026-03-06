@@ -1,6 +1,6 @@
-function calculateScore(answers, correctAnswers) {
+function calculateScore(userAnswers, correctAnswers) {
   let score = 0;
-  answers.forEach((ans, i) => {
+  userAnswers.forEach((ans, i) => {
     if (ans === correctAnswers[i]) score++;
   });
   return score;

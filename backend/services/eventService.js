@@ -7,7 +7,7 @@ const mammoth = require("mammoth");
 const parseStrict = require("../utils/parseStrict");
 
 // ✅ Parse questions from file buffer and store in MongoDB
-async function parseQuestionsFromFile(file) {
+async function parseQuestionsFromFile(file, metadata = {}) {
   const ext = file.originalname.toLowerCase().endsWith('.pdf') ? '.pdf' : '.docx';
   let textContent = "";
 
@@ -22,12 +22,12 @@ async function parseQuestionsFromFile(file) {
       console.log(`📄 Extracted ${textContent.length} characters from DOCX`);
     }
 
-    // Parse questions using your existing parser
-    const questions = parseStrict(textContent);
+    // Use robust parser
+    const questions = parseStrict(textContent, metadata);
 
     if (questions.length === 0) {
       console.error("❌ No questions parsed from text:", textContent.substring(0, 500));
-      throw new Error("No valid questions found in file");
+      throw new Error("No valid questions found in file. Please ensure the format matches (e.g., 1. Question... A. Option... Answer: A)");
     }
 
     console.log(`✅ Successfully parsed ${questions.length} questions`);
@@ -52,7 +52,12 @@ async function createEvent(data, files, userId) {
     targetBatches,
     targetDepartments,
     isPublic,
-    proctoringConfig
+    proctoringConfig,
+    marksPerQuestion,
+    negativeMarking,
+    description,
+    passPercentage,
+    maxAttempts
   } = data;
 
   if (!eventName || !adminPassword || !studentPassword || !startTime || !endTime || !sets) {
@@ -120,6 +125,7 @@ async function createEvent(data, files, userId) {
 
   const event = await Event.create({
     eventName,
+    description: description || "",
     adminPassword: hashedAdminPassword,
     studentPassword: hashedStudentPassword,
     startTime: startDate,
@@ -127,9 +133,14 @@ async function createEvent(data, files, userId) {
     timezone: timezone,
     sets: eventSets,
     institutionId: institutionId || null,
-    targetBatches: targetBatches || [],
+    targetBatches: targetBatches || data.targetBatches || [],
     targetDepartments: targetDepartments || [],
     isPublic: isPublic === 'true' || isPublic === true,
+    visibility: (isPublic === 'true' || isPublic === true) ? 'public' : 'institution',
+    marksPerQuestion: parseInt(marksPerQuestion) || 1,
+    negativeMarking: parseFloat(negativeMarking) || 0,
+    passPercentage: parseInt(passPercentage) || 40,
+    maxAttempts: parseInt(maxAttempts) || 1,
     proctoringConfig: proctoringConfig ? (typeof proctoringConfig === 'string' ? JSON.parse(proctoringConfig) : proctoringConfig) : {
       fullscreen: true,
       tabSwitch: true,
@@ -137,7 +148,8 @@ async function createEvent(data, files, userId) {
       randomizeQuestions: true,
       randomizeOptions: true
     },
-    createdBy: userId
+    createdBy: userId,
+    createdByRole: data.createdByRole || "inst-admin" // Fallback if not provided
   });
 
   console.log(`✅ Event created successfully!`);
@@ -220,8 +232,9 @@ async function studentLogin({
 
     // Check Batch
     if (event.targetBatches && event.targetBatches.length > 0) {
-      if (!batchId || !event.targetBatches.some(b => b.toString() === batchId.toString())) {
-        throw new Error("This event is restricted to specific student batches.");
+      const studentBatchId = data.batchId || data.yearId;
+      if (!studentBatchId || !event.targetBatches.some(b => b.toString() === studentBatchId.toString())) {
+        throw new Error("This event is restricted to specific student batch cohorts.");
       }
     }
   }
@@ -233,6 +246,11 @@ async function studentLogin({
   });
 
   if (!participant) {
+    // Fetch student's batch info from User model
+    const studentUser = await User.findOne({ firebaseUid: userId }).populate('batchId');
+    const batchId = studentUser ? studentUser.batchId?._id : null;
+    const batchName = studentUser ? studentUser.batchId?.batchID : "N/A";
+
     // Create new participant with all fields
     participant = await EventParticipant.create({
       eventId: event._id,
@@ -244,6 +262,8 @@ async function studentLogin({
       department, // Department name (string)
       departmentCode, // Department code (e.g., "CSE")
       rollNo,
+      batchId,
+      batchName,
       setResults: []
     });
 
@@ -386,19 +406,19 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
   const questions = await getSetQuestions(setId, participant.eventId);
 
   let score = 0;
-  let correctAnswers = 0;
+  let correctCount = 0;
   let wrongAnswers = 0;
   let skipped = 0;
   const results = [];
 
   questions.forEach((question, index) => {
     const userAnswer = answers[index] || null;
-    const isCorrect = userAnswer === question.correctAnswer;
+    const isCorrect = userAnswer === question.answer;
 
     if (userAnswer === null) {
       skipped++;
     } else if (isCorrect) {
-      correctAnswers++;
+      correctCount++;
       score++;
     } else {
       wrongAnswers++;
@@ -407,7 +427,7 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
     results.push({
       question: question.question,
       selectedAnswer: userAnswer,
-      correctAnswer: question.correctAnswer,
+      answer: question.answer,
       isCorrect
     });
   });
@@ -421,7 +441,7 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
   participant.setResults[resultIndex].totalQuestions = questions.length;
   participant.setResults[resultIndex].answers = answers;
   participant.setResults[resultIndex].timeTaken = actualTimeTaken;
-  participant.setResults[resultIndex].correctAnswers = correctAnswers;
+  participant.setResults[resultIndex].correctAnswers = correctCount;
   participant.setResults[resultIndex].wrongAnswers = wrongAnswers;
   participant.setResults[resultIndex].skipped = skipped;
   participant.setResults[resultIndex].percentage = percentage;
@@ -436,7 +456,7 @@ async function submitSet({ participantId, setId, userId, answers, timeTaken }) {
   return {
     score,
     totalQuestions: questions.length,
-    correctAnswers,
+    correctAnswers: correctCount,
     wrongAnswers,
     skipped,
     results,
@@ -588,6 +608,17 @@ async function checkRemainingTime(participantId, setId, userId) {
   };
 }
 
+async function getEventsByCreator(creatorId, institutionId = null) {
+  const query = { createdBy: creatorId };
+  if (institutionId) {
+    query.institutionId = institutionId;
+  }
+
+  return await Event.find(query)
+    .select("-adminPassword -studentPassword")
+    .sort({ createdAt: -1 });
+}
+
 module.exports = {
   createEvent,
   studentLogin,
@@ -597,5 +628,7 @@ module.exports = {
   deleteEvent,
   getEventStats,
   getSetQuestions,
-  checkRemainingTime
+  checkRemainingTime,
+  parseQuestionsFromFile,
+  getEventsByCreator
 };

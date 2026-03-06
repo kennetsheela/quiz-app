@@ -10,36 +10,36 @@ const mongoose = require("mongoose");
  */
 async function getEventAnalytics(eventId, filters = {}) {
   const { collegeId, department } = filters;
-  
+
   console.log(`📊 Generating analytics for event: ${eventId}`);
   console.log(`   Filters:`, { collegeId, department });
-  
+
   // Build query
   const query = { eventId };
   if (collegeId) query.college = collegeId;
   if (department) query.department = department;
-  
+
   // Fetch participants with college data
   const participants = await EventParticipant.find(query)
     .populate('college', 'name code location')
     .sort({ createdAt: -1 });
-  
+
   console.log(`   Found ${participants.length} participants`);
-  
+
   // Get event details
   const event = await Event.findById(eventId);
-  
+
   if (!event) {
     throw new Error("Event not found");
   }
-  
+
   // Filter only completed participants
-  const completedParticipants = participants.filter(p => 
+  const completedParticipants = participants.filter(p =>
     p.setResults.some(r => r.completedAt)
   );
-  
+
   console.log(`   ${completedParticipants.length} completed participants`);
-  
+
   // Compute analytics
   const analytics = {
     eventInfo: {
@@ -49,19 +49,20 @@ async function getEventAnalytics(eventId, filters = {}) {
       endTime: event.endTime,
       totalSets: event.sets.length
     },
-    
+
     overview: computeOverview(participants, completedParticipants),
     topPerformer: findTopPerformer(completedParticipants),
     fastestFinisher: findFastestFinisher(completedParticipants),
     collegePerformance: await computeCollegePerformance(completedParticipants),
     departmentComparison: computeDepartmentComparison(completedParticipants),
+    batchBreakdown: computeBatchBreakdown(completedParticipants),
     leaderboard: computeLeaderboard(completedParticipants),
     scoreDistribution: computeScoreDistribution(completedParticipants),
     timeAnalysis: computeTimeAnalysis(completedParticipants)
   };
-  
+
   console.log(`✅ Analytics generated successfully`);
-  
+
   return analytics;
 }
 
@@ -71,15 +72,15 @@ async function getEventAnalytics(eventId, filters = {}) {
 function computeOverview(allParticipants, completedParticipants) {
   const totalParticipants = allParticipants.length;
   const totalCompleted = completedParticipants.length;
-  const completionRate = totalParticipants > 0 
-    ? Math.round((totalCompleted / totalParticipants) * 100) 
+  const completionRate = totalParticipants > 0
+    ? Math.round((totalCompleted / totalParticipants) * 100)
     : 0;
-  
+
   // Calculate average score
   let totalScore = 0;
   let totalMaxScore = 0;
   let totalPercentage = 0;
-  
+
   completedParticipants.forEach(p => {
     p.setResults.forEach(r => {
       if (r.completedAt && r.score !== null) {
@@ -89,12 +90,12 @@ function computeOverview(allParticipants, completedParticipants) {
       }
     });
   });
-  
+
   const avgScore = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
-  const avgPercentage = completedParticipants.length > 0 
-    ? totalPercentage / completedParticipants.length 
+  const avgPercentage = completedParticipants.length > 0
+    ? totalPercentage / completedParticipants.length
     : 0;
-  
+
   return {
     totalParticipants,
     totalCompleted,
@@ -109,24 +110,24 @@ function computeOverview(allParticipants, completedParticipants) {
  */
 function findTopPerformer(participants) {
   if (participants.length === 0) return null;
-  
+
   let topPerformer = null;
   let highestScore = -1;
   let highestPercentage = -1;
-  
+
   participants.forEach(p => {
-    const totalScore = p.setResults.reduce((sum, r) => 
+    const totalScore = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.score || 0) : sum, 0
     );
-    
-    const totalQuestions = p.setResults.reduce((sum, r) => 
+
+    const totalQuestions = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.totalQuestions || 0) : sum, 0
     );
-    
+
     const percentage = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
-    
-    if (percentage > highestPercentage || 
-        (percentage === highestPercentage && totalScore > highestScore)) {
+
+    if (percentage > highestPercentage ||
+      (percentage === highestPercentage && totalScore > highestScore)) {
       highestScore = totalScore;
       highestPercentage = percentage;
       topPerformer = {
@@ -143,7 +144,7 @@ function findTopPerformer(participants) {
       };
     }
   });
-  
+
   return topPerformer;
 }
 
@@ -152,28 +153,28 @@ function findTopPerformer(participants) {
  */
 function findFastestFinisher(participants) {
   if (participants.length === 0) return null;
-  
+
   let fastestFinisher = null;
   let shortestTime = Infinity;
-  
+
   participants.forEach(p => {
-    const totalTime = p.setResults.reduce((sum, r) => 
+    const totalTime = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.timeTaken || 0) : sum, 0
     );
-    
+
     const completedSets = p.setResults.filter(r => r.completedAt).length;
-    
+
     if (completedSets > 0 && totalTime < shortestTime) {
       shortestTime = totalTime;
-      
-      const totalScore = p.setResults.reduce((sum, r) => 
+
+      const totalScore = p.setResults.reduce((sum, r) =>
         r.completedAt ? sum + (r.score || 0) : sum, 0
       );
-      
-      const totalQuestions = p.setResults.reduce((sum, r) => 
+
+      const totalQuestions = p.setResults.reduce((sum, r) =>
         r.completedAt ? sum + (r.totalQuestions || 0) : sum, 0
       );
-      
+
       fastestFinisher = {
         participantId: p._id,
         name: `${p.firstName} ${p.lastName}`,
@@ -190,7 +191,7 @@ function findFastestFinisher(participants) {
       };
     }
   });
-  
+
   return fastestFinisher;
 }
 
@@ -199,12 +200,12 @@ function findFastestFinisher(participants) {
  */
 async function computeCollegePerformance(participants) {
   const collegeMap = new Map();
-  
+
   participants.forEach(p => {
     if (!p.college) return;
-    
+
     const collegeId = p.college._id.toString();
-    
+
     if (!collegeMap.has(collegeId)) {
       collegeMap.set(collegeId, {
         collegeId,
@@ -218,10 +219,10 @@ async function computeCollegePerformance(participants) {
         completedCount: 0
       });
     }
-    
+
     const college = collegeMap.get(collegeId);
     college.participants.push(p);
-    
+
     p.setResults.forEach(r => {
       if (r.completedAt) {
         college.totalScore += r.score || 0;
@@ -231,7 +232,7 @@ async function computeCollegePerformance(participants) {
       }
     });
   });
-  
+
   // Calculate averages and format
   const collegePerformance = Array.from(collegeMap.values()).map(college => ({
     collegeId: college.collegeId,
@@ -239,20 +240,20 @@ async function computeCollegePerformance(participants) {
     collegeCode: college.collegeCode,
     location: college.location,
     totalParticipants: college.participants.length,
-    completedParticipants: college.participants.filter(p => 
+    completedParticipants: college.participants.filter(p =>
       p.setResults.some(r => r.completedAt)
     ).length,
-    averageScore: college.totalQuestions > 0 
-      ? Math.round((college.totalScore / college.totalQuestions) * 100 * 10) / 10 
+    averageScore: college.totalQuestions > 0
+      ? Math.round((college.totalScore / college.totalQuestions) * 100 * 10) / 10
       : 0,
-    averageTime: college.completedCount > 0 
-      ? Math.round(college.totalTime / college.completedCount) 
+    averageTime: college.completedCount > 0
+      ? Math.round(college.totalTime / college.completedCount)
       : 0,
-    averageTimeFormatted: college.completedCount > 0 
-      ? formatTime(Math.round(college.totalTime / college.completedCount)) 
+    averageTimeFormatted: college.completedCount > 0
+      ? formatTime(Math.round(college.totalTime / college.completedCount))
       : '0m 0s'
   }));
-  
+
   // Sort by average score descending
   return collegePerformance.sort((a, b) => b.averageScore - a.averageScore);
 }
@@ -262,10 +263,10 @@ async function computeCollegePerformance(participants) {
  */
 function computeDepartmentComparison(participants) {
   const deptMap = new Map();
-  
+
   participants.forEach(p => {
     const deptKey = p.department;
-    
+
     if (!deptMap.has(deptKey)) {
       deptMap.set(deptKey, {
         department: deptKey,
@@ -277,10 +278,10 @@ function computeDepartmentComparison(participants) {
         completedCount: 0
       });
     }
-    
+
     const dept = deptMap.get(deptKey);
     dept.participants.push(p);
-    
+
     p.setResults.forEach(r => {
       if (r.completedAt) {
         dept.totalScore += r.score || 0;
@@ -290,29 +291,29 @@ function computeDepartmentComparison(participants) {
       }
     });
   });
-  
+
   // Calculate averages and rank
   const departments = Array.from(deptMap.values()).map(dept => ({
     department: dept.department,
     departmentCode: dept.departmentCode,
     totalParticipants: dept.participants.length,
-    completedParticipants: dept.participants.filter(p => 
+    completedParticipants: dept.participants.filter(p =>
       p.setResults.some(r => r.completedAt)
     ).length,
-    averageScore: dept.totalQuestions > 0 
-      ? Math.round((dept.totalScore / dept.totalQuestions) * 100 * 10) / 10 
+    averageScore: dept.totalQuestions > 0
+      ? Math.round((dept.totalScore / dept.totalQuestions) * 100 * 10) / 10
       : 0,
-    averageTime: dept.completedCount > 0 
-      ? Math.round(dept.totalTime / dept.completedCount) 
+    averageTime: dept.completedCount > 0
+      ? Math.round(dept.totalTime / dept.completedCount)
       : 0,
-    averageTimeFormatted: dept.completedCount > 0 
-      ? formatTime(Math.round(dept.totalTime / dept.completedCount)) 
+    averageTimeFormatted: dept.completedCount > 0
+      ? formatTime(Math.round(dept.totalTime / dept.completedCount))
       : '0m 0s'
   }));
-  
+
   // Sort by average score descending
   const sorted = departments.sort((a, b) => b.averageScore - a.averageScore);
-  
+
   // Add rank
   return sorted.map((dept, index) => ({
     rank: index + 1,
@@ -321,25 +322,78 @@ function computeDepartmentComparison(participants) {
 }
 
 /**
+ * Compute batch-wise breakdown
+ */
+function computeBatchBreakdown(participants) {
+  const batchMap = new Map();
+
+  participants.forEach(p => {
+    const batchKey = p.batchName || p.batchId?.toString() || 'General';
+
+    if (!batchMap.has(batchKey)) {
+      batchMap.set(batchKey, {
+        batch: batchKey,
+        participants: [],
+        totalScore: 0,
+        totalQuestions: 0,
+        totalTime: 0,
+        completedCount: 0
+      });
+    }
+
+    const batch = batchMap.get(batchKey);
+    batch.participants.push(p);
+
+    p.setResults.forEach(r => {
+      if (r.completedAt) {
+        batch.totalScore += r.score || 0;
+        batch.totalQuestions += r.totalQuestions || 0;
+        batch.totalTime += r.timeTaken || 0;
+        batch.completedCount++;
+      }
+    });
+  });
+
+  const batches = Array.from(batchMap.values()).map(batch => ({
+    batch: batch.batch,
+    totalParticipants: batch.participants.length,
+    completedParticipants: batch.participants.filter(p =>
+      p.setResults.some(r => r.completedAt)
+    ).length,
+    averageScore: batch.totalQuestions > 0
+      ? Math.round((batch.totalScore / batch.totalQuestions) * 100 * 10) / 10
+      : 0,
+    averageTime: batch.completedCount > 0
+      ? Math.round(batch.totalTime / batch.completedCount)
+      : 0,
+    averageTimeFormatted: batch.completedCount > 0
+      ? formatTime(Math.round(batch.totalTime / batch.completedCount))
+      : '0m 0s'
+  }));
+
+  return batches.sort((a, b) => b.averageScore - a.averageScore);
+}
+
+/**
  * Compute leaderboard with tie-breaking
  * Ranking criteria: Score (descending), Time (ascending)
  */
 function computeLeaderboard(participants, limit = 50) {
   const leaderboard = participants.map(p => {
-    const totalScore = p.setResults.reduce((sum, r) => 
+    const totalScore = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.score || 0) : sum, 0
     );
-    
-    const totalQuestions = p.setResults.reduce((sum, r) => 
+
+    const totalQuestions = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.totalQuestions || 0) : sum, 0
     );
-    
-    const totalTime = p.setResults.reduce((sum, r) => 
+
+    const totalTime = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.timeTaken || 0) : sum, 0
     );
-    
+
     const percentage = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
-    
+
     return {
       participantId: p._id,
       name: `${p.firstName} ${p.lastName}`,
@@ -355,7 +409,7 @@ function computeLeaderboard(participants, limit = 50) {
       completedSets: p.setResults.filter(r => r.completedAt).length
     };
   });
-  
+
   // Sort by:
   // 1. Percentage (descending)
   // 2. Total Score (descending)
@@ -369,7 +423,7 @@ function computeLeaderboard(participants, limit = 50) {
     }
     return a.timeTaken - b.timeTaken;
   });
-  
+
   // Add rank
   return leaderboard.slice(0, limit).map((entry, index) => ({
     rank: index + 1,
@@ -387,26 +441,26 @@ function computeScoreDistribution(participants) {
     average: 0,    // 50-69%
     poor: 0        // <50%
   };
-  
+
   participants.forEach(p => {
-    const totalScore = p.setResults.reduce((sum, r) => 
+    const totalScore = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.score || 0) : sum, 0
     );
-    
-    const totalQuestions = p.setResults.reduce((sum, r) => 
+
+    const totalQuestions = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.totalQuestions || 0) : sum, 0
     );
-    
+
     if (totalQuestions > 0) {
       const percentage = (totalScore / totalQuestions) * 100;
-      
+
       if (percentage >= 90) distribution.excellent++;
       else if (percentage >= 70) distribution.good++;
       else if (percentage >= 50) distribution.average++;
       else distribution.poor++;
     }
   });
-  
+
   return distribution;
 }
 
@@ -415,19 +469,19 @@ function computeScoreDistribution(participants) {
  */
 function computeTimeAnalysis(participants) {
   const times = [];
-  
+
   participants.forEach(p => {
-    const totalTime = p.setResults.reduce((sum, r) => 
+    const totalTime = p.setResults.reduce((sum, r) =>
       r.completedAt ? sum + (r.timeTaken || 0) : sum, 0
     );
-    
+
     const completedSets = p.setResults.filter(r => r.completedAt).length;
-    
+
     if (completedSets > 0) {
       times.push(totalTime);
     }
   });
-  
+
   if (times.length === 0) {
     return {
       averageTime: 0,
@@ -438,11 +492,11 @@ function computeTimeAnalysis(participants) {
       maxTimeFormatted: '0m 0s'
     };
   }
-  
+
   const avgTime = Math.round(times.reduce((sum, t) => sum + t, 0) / times.length);
   const minTime = Math.min(...times);
   const maxTime = Math.max(...times);
-  
+
   return {
     averageTime: avgTime,
     minTime,
@@ -479,7 +533,7 @@ async function getDepartmentsByCollege(collegeId) {
   if (!college) {
     throw new Error("College not found");
   }
-  
+
   return college.departments.filter(d => d.isActive);
 }
 
@@ -488,14 +542,14 @@ async function getDepartmentsByCollege(collegeId) {
  */
 async function createCollege(data) {
   const { name, code, location, departments } = data;
-  
+
   const college = await College.create({
     name,
     code,
     location,
     departments: departments || []
   });
-  
+
   console.log(`✅ College created: ${name} (${code})`);
   return college;
 }
@@ -505,14 +559,14 @@ async function createCollege(data) {
  */
 async function addDepartment(collegeId, departmentData) {
   const college = await College.findById(collegeId);
-  
+
   if (!college) {
     throw new Error("College not found");
   }
-  
+
   college.departments.push(departmentData);
   await college.save();
-  
+
   console.log(`✅ Department added to ${college.name}: ${departmentData.name}`);
   return college;
 }
@@ -522,7 +576,7 @@ async function addDepartment(collegeId, departmentData) {
  */
 function exportToCSV(leaderboard) {
   const headers = ['Rank', 'Name', 'Email', 'Roll No', 'College', 'Department', 'Score', 'Total Questions', 'Percentage', 'Time Taken'];
-  
+
   const rows = leaderboard.map(entry => [
     entry.rank,
     entry.name,
@@ -535,12 +589,12 @@ function exportToCSV(leaderboard) {
     entry.percentage,
     entry.timeTakenFormatted
   ]);
-  
+
   const csvContent = [
     headers.join(','),
     ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
   ].join('\n');
-  
+
   return csvContent;
 }
 

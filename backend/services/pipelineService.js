@@ -38,13 +38,33 @@ const pipelineService = {
      * Phase 2: Load questions into the database
      */
     async loadToQuestionBank(questions, creatorId) {
-        // Add creator ID to each question
-        const questionsToInsert = questions.map(q => ({
-            ...q,
-            createdBy: creatorId
-        }));
+        // Get the current document count once
+        let currentCount = await QuestionBank.countDocuments();
 
-        const results = await QuestionBank.insertMany(questionsToInsert);
+        // Add creator ID and manual questionID to each question
+        const fresh = questions
+            .filter(q => {
+                const hasAnswer = q.answer !== null && q.answer !== undefined && String(q.answer).trim() !== "";
+                if (!hasAnswer && q.question) {
+                    console.warn(`⚠️ Skipping question without valid answer in pipelineService: "${q.question.substring(0, 50)}..."`);
+                }
+                return hasAnswer;
+            })
+            .map((q, index) => {
+                const nextCount = currentCount + index + 1;
+                return {
+                    ...q,
+                    questionID: `Q${String(nextCount).padStart(3, '0')}`,
+                    createdBy: creatorId || "super-admin"
+                };
+            });
+
+        if (fresh.length === 0) {
+            console.error("❌ No valid questions (with non-empty answers) to insert in pipelineService.");
+            return [];
+        }
+
+        const results = await QuestionBank.insertMany(fresh, { ordered: false });
         return results;
     },
 

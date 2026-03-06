@@ -13,49 +13,60 @@ const EventParticipantSchema = new mongoose.Schema({
     required: true,
     index: true // Firebase UID
   },
-  
+
   // ✅ NEW: Student Information Fields
   firstName: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   lastName: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   email: {
     type: String,
-    required: true,
+    required: false,
     lowercase: true,
     trim: true,
     index: true
   },
   rollNo: {
     type: String,
-    required: true,
+    required: false,
+    default: "N/A",
     trim: true
   },
-  
-  // ✅ NEW: College and Department References
+
+  // College and Department References
   college: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "College",
-    required: true,
+    ref: "Institution",
+    required: false,
     index: true
   },
   department: {
-    type: String, // Keep as string for backward compatibility
-    required: true,
+    type: String,
+    required: false,
+    default: "General",
     index: true
   },
   departmentCode: {
-    type: String, // e.g., "CSE", "ECE"
+    type: String,
     trim: true,
     uppercase: true
   },
-  
+  batchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Batch",
+    index: true
+  },
+  batchName: {
+    type: String,
+    trim: true
+  },
+
   // Quiz Results
   setResults: [
     {
@@ -107,46 +118,55 @@ const EventParticipantSchema = new mongoose.Schema({
         type: Date,
         default: null
       },
+      passed: {
+        type: Boolean,
+        default: false
+      },
+      remarks: {
+        type: String,
+        default: ""
+      },
       answers: [String] // Array of user's answers
     }
   ]
-}, { 
-  timestamps: true 
+}, {
+  timestamps: true
 });
 
 // ✅ Compound Indexes for Analytics Queries
 EventParticipantSchema.index({ eventId: 1, userId: 1 }, { unique: true });
 EventParticipantSchema.index({ eventId: 1, college: 1 });
 EventParticipantSchema.index({ eventId: 1, department: 1 });
+EventParticipantSchema.index({ eventId: 1, batchId: 1 });
 EventParticipantSchema.index({ eventId: 1, college: 1, department: 1 });
 EventParticipantSchema.index({ email: 1 });
 
 // ✅ Virtual for full name
-EventParticipantSchema.virtual('fullName').get(function() {
+EventParticipantSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
 // ✅ Virtual for total score across all sets
-EventParticipantSchema.virtual('totalScore').get(function() {
-  return this.setResults.reduce((sum, result) => 
+EventParticipantSchema.virtual('totalScore').get(function () {
+  return this.setResults.reduce((sum, result) =>
     sum + (result.score || 0), 0
   );
 });
 
 // ✅ Virtual for average percentage
-EventParticipantSchema.virtual('averagePercentage').get(function() {
+EventParticipantSchema.virtual('averagePercentage').get(function () {
   const completed = this.setResults.filter(r => r.completedAt);
   if (completed.length === 0) return 0;
-  
-  const totalPercentage = completed.reduce((sum, result) => 
+
+  const totalPercentage = completed.reduce((sum, result) =>
     sum + (result.percentage || 0), 0
   );
   return Math.round(totalPercentage / completed.length);
 });
 
 // ✅ Virtual for total time taken
-EventParticipantSchema.virtual('totalTimeTaken').get(function() {
-  return this.setResults.reduce((sum, result) => 
+EventParticipantSchema.virtual('totalTimeTaken').get(function () {
+  return this.setResults.reduce((sum, result) =>
     sum + (result.timeTaken || 0), 0
   );
 });
