@@ -1,793 +1,669 @@
-<!--event-quiz.html-->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AptioGen - Event Quiz</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/components.css">
-  <style>
-    body {
-      padding: 20px;
-      background: var(--bg-primary);
-    }
-    
-    .quiz-container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    
-    .quiz-header {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    
-    .timer {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: var(--accent-primary);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .timer.warning {
-      color: var(--error);
-      animation: pulse 1s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .progress-bar {
-      background: var(--bg-tertiary);
-      height: 8px;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-      transition: width 0.3s ease;
-    }
-    
-    .question-card {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 30px;
-      margin-bottom: 20px;
-      min-height: 400px;
-    }
-    
-    .question-number {
-      color: var(--accent-primary);
-      font-weight: 600;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .question-text {
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin-bottom: 25px;
-      line-height: 1.8;
-      color: var(--text-primary);
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      min-height: 50px;
-      max-width: 100%;
-      display: block;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    
-    .options-container {
-      display: grid;
-      gap: 12px;
-    }
-    
-    .option {
-      background: var(--bg-tertiary);
-      padding: 15px 20px;
-      border-radius: 10px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      min-height: 50px;
-    }
-    
-    .option:hover {
-      border-color: var(--accent-primary);
-      background: var(--card-bg);
-      transform: translateX(5px);
-    }
-    
-    .option.selected {
-      border-color: var(--accent-primary);
-      background: var(--accent-primary);
-      color: white;
-    }
-    
-    .option-label {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    
-    .option.selected .option-label {
-      background: white;
-      color: var(--accent-primary);
-    }
-    
-    .option-text {
-      flex: 1;
-      line-height: 1.6;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      white-space: pre-wrap;
-    }
-    
-    .navigation {
-      display: flex;
-      gap: 10px;
-      justify-content: space-between;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-    
-    .question-nav {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-      gap: 8px;
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 20px;
-    }
-    
-    .question-nav-btn {
-      aspect-ratio: 1;
-      border: 2px solid var(--border-color);
-      background: var(--bg-tertiary);
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      min-height: 45px;
-    }
-    
-    .question-nav-btn:hover {
-      border-color: var(--accent-primary);
-      transform: scale(1.05);
-    }
-    
-    .question-nav-btn.answered {
-      background: var(--success);
-      color: white;
-      border-color: var(--success);
-    }
-    
-    .question-nav-btn.current {
-      background: var(--accent-primary);
-      color: white;
-      border-color: var(--accent-primary);
-      transform: scale(1.1);
-    }
-    
-    .submit-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--overlay);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    
-    .submit-modal.active {
-      display: flex;
-    }
-    
-    .modal-content {
-      background: var(--card-bg);
-      padding: 40px;
-      border-radius: 20px;
-      max-width: 500px;
-      text-align: center;
-      margin: 20px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Quiz - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        :root {
+            --quiz-bg: #f3f4f6;
+            --sidebar-width: 320px;
+        }
 
-    .error-screen {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 40px;
-      text-align: center;
-      max-width: 600px;
-      margin: 50px auto;
-    }
+        body {
+            background: var(--quiz-bg);
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
 
-    .error-screen i {
-      font-size: 4rem;
-      color: var(--error);
-      margin-bottom: 20px;
-    }
+        .quiz-layout {
+            display: grid;
+            grid-template-columns: 1fr var(--sidebar-width);
+            height: calc(100vh - 70px);
+        }
 
-    .already-completed-screen {
-      background: var(--card-bg);
-      border-radius: 15px;
-      padding: 40px;
-      text-align: center;
-      max-width: 600px;
-      margin: 50px auto;
-    }
+        .question-area {
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
 
-    .already-completed-screen i {
-      font-size: 4rem;
-      color: var(--success);
-      margin-bottom: 20px;
-    }
+        .sidebar-area {
+            background: white;
+            border-left: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
 
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .quiz-header {
-        flex-direction: column;
-        text-align: center;
-      }
+        .question-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
-      .question-text {
-        font-size: 1rem;
-      }
+        .question-text {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            white-space: pre-wrap;
+        }
 
-      .question-nav {
-        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-      }
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-      .navigation {
-        flex-direction: column;
-      }
+        .option-btn {
+            padding: 16px 24px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+        }
 
-      .navigation button {
-        width: 100%;
-      }
-    }
-  </style>
+        .option-btn:hover {
+            border-color: var(--accent-primary);
+            background: #f0f7ff;
+        }
+
+        .option-btn.selected {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .option-letter {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .option-btn.selected .option-letter {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .quiz-footer {
+            height: 70px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .timer-badge {
+            background: #1e293b;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .question-nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .nav-dot {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-dot.answered {
+            background: #10b981;
+            /* Green */
+            color: white;
+            border-color: #10b981;
+        }
+
+        .nav-dot.current {
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 700;
+        }
+
+        .nav-dot.marked {
+            background: #f59e0b;
+            /* Amber */
+            color: white;
+            border-color: #f59e0b;
+        }
+
+        .nav-dot.unanswered {
+            background: #fff;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+
+        /* Proctored Mode Overlays */
+        #warningOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #warningOverlay i {
+            font-size: 80px;
+            color: #ef4444;
+            margin-bottom: 24px;
+        }
+
+        .proctor-cam {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .proctor-status {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #10b981;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #fullscreenBtnOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--quiz-bg);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="quiz-container">
-    <div class="quiz-header">
-      <div>
-        <h2 id="quizTitle">Loading Quiz...</h2>
-        <p id="quizInfo" style="color: var(--text-secondary); margin: 5px 0 0 0;"></p>
-      </div>
-      <div class="timer" id="timer">
-        <i class="fas fa-clock"></i>
-        <span id="timeDisplay">00:00</span>
-      </div>
-    </div>
 
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-    </div>
-
-    <div class="question-nav" id="questionNav"></div>
-
-    <div class="question-card" id="questionCard">
-      <div class="loading">
-        <div class="spinner"></div>
-        <p>Loading questions...</p>
-      </div>
-    </div>
-
-    <div class="navigation">
-      <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>
-        <i class="fas fa-arrow-left"></i> Previous
-      </button>
-      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
-        Next <i class="fas fa-arrow-right"></i>
-      </button>
-      <button class="btn btn-success" id="submitBtn" onclick="confirmSubmit()" style="display: none;">
-        <i class="fas fa-check"></i> Submit Quiz
-      </button>
-    </div>
-  </div>
-
-  <div class="submit-modal" id="submitModal">
-    <div class="modal-content">
-      <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--warning); margin-bottom: 20px;"></i>
-      <h2>Submit Quiz?</h2>
-      <p id="submitWarning" style="margin: 20px 0;"></p>
-      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
-        <button class="btn btn-secondary" onclick="closeSubmitModal()">Cancel</button>
-        <button class="btn btn-success" onclick="submitQuiz()">Confirm Submit</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { requireAuth } from "./js/auth.js";
-    import { eventAPI } from "./js/api.js";
-
-    let currentUser = null;
-    let questions = [];
-    let currentQuestion = 0;
-    let answers = [];
-    let timeRemaining = 0;
-    let timerInterval = null;
-    let setId = null;
-    let eventId = null;
-    let participantId = null;
-    let startTime = null;
-    let isSubmitting = false;
-    let quizStartTime = null;
-    
-    // Per-question time tracking
-    let questionTimings = [];
-    let questionStartTime = null;
-
-    const TAB_KEY = `EVENT_QUIZ_TAB_${window.location.pathname}`;
-    const TAB_ID = Date.now().toString();
-
-    // Get URL parameters
-    const params = new URLSearchParams(window.location.search);
-    eventId = params.get('eventId');
-    participantId = params.get('participantId');
-    setId = params.get('setId');
-
-    if (localStorage.getItem(TAB_KEY)) {
-      alert("Quiz already open in another tab. Close it to continue.");
-      window.location.href = `event-dashboard.html?eventId=${eventId}&participantId=${participantId}`;
-    } else {
-      localStorage.setItem(TAB_KEY, TAB_ID);
-    }
-
-    window.addEventListener("beforeunload", () => {
-      if (localStorage.getItem(TAB_KEY) === TAB_ID) {
-        localStorage.removeItem(TAB_KEY);
-      }
-    });
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && !isSubmitting) {
-        alert("Tab switching is not allowed! Quiz will be auto-submitted.");
-        submitQuiz();
-      }
-    });
-
-    // ⭐ Show error screen
-    function showError(message, showReturnButton = true) {
-      const questionCard = document.getElementById("questionCard");
-      questionCard.innerHTML = `
-        <div class="error-screen">
-          <i class="fas fa-exclamation-circle"></i>
-          <h2>Unable to Start Quiz</h2>
-          <p style="margin: 20px 0; color: var(--text-secondary);">${message}</p>
-          ${showReturnButton ? `
-            <button class="btn btn-primary" onclick="window.location.href='challenge.html?eventId=${eventId}&participantId=${participantId}'">
-              <i class="fas fa-home"></i> Return to Dashboard
-            </button>
-          ` : ''}
+    <!-- Start Overlay (To trigger full screen) -->
+    <div id="fullscreenBtnOverlay">
+        <div class="card p-5 text-center" style="max-width: 500px">
+            <i class="fa-solid fa-shield-halved fa-4x mb-4 text-primary"></i>
+            <h2>Ready to Start?</h2>
+            <p class="text-secondary mb-4">This event is proctored. You must enter full-screen mode to begin. Any
+                attempt to switch tabs or exit full-screen will be recorded.</p>
+            <button class="btn btn-primary w-100 py-3" onclick="startQuizFullscreen()">Enter Full Screen &
+                Start</button>
         </div>
-      `;
-      
-      // Hide timer and navigation
-      document.getElementById("timer").style.display = "none";
-      document.querySelector(".progress-bar").style.display = "none";
-      document.getElementById("questionNav").style.display = "none";
-      document.querySelector(".navigation").style.display = "none";
-    }
+    </div>
 
-    // ⭐ Show already completed screen
-    function showAlreadyCompleted(result) {
-      const questionCard = document.getElementById("questionCard");
-      questionCard.innerHTML = `
-        <div class="already-completed-screen">
-          <i class="fas fa-check-circle"></i>
-          <h2>Quiz Already Completed!</h2>
-          <p style="margin: 20px 0; color: var(--text-secondary);">
-            You have already completed this quiz.
-          </p>
-          ${result ? `
-            <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 10px; margin: 20px 0;">
-              <h3 style="margin-bottom: 15px;">Your Score</h3>
-              <p style="font-size: 2rem; font-weight: bold; color: var(--accent-primary);">
-                ${result.score} / ${result.totalQuestions}
-              </p>
-              <p style="color: var(--text-secondary); margin-top: 10px;">
-                ${Math.round((result.score / result.totalQuestions) * 100)}% Correct
-              </p>
+    <!-- Warning Overlay -->
+    <div id="warningOverlay">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <h1 class="mb-3">PROCTORING VIOLATION</h1>
+        <p class="fs-20 mb-4" id="warningTitle">You have switched tabs or exited full-screen mode.</p>
+        <p class="text-secondary mb-5">This incident has been logged. Continuous violations will lead to automatic
+            submission.</p>
+        <button class="btn btn-primary btn-lg px-5" onclick="resumeQuiz()">Resume Quiz</button>
+    </div>
+
+    <header class="appbar">
+        <div class="flex align-center gap-3">
+            <h2 class="mb-0">AptioGen</h2>
+            <div class="badge badge-orange" id="eventBadge">Live Event</div>
+        </div>
+        <div class="timer-badge">
+            <i class="fa-solid fa-clock"></i>
+            <span id="quizTimer">00:00:00</span>
+        </div>
+        <div class="right-icons">
+            <span id="userName" class="fw-600 mr-3"></span>
+            <div class="badge badge-success">Proctored</div>
+        </div>
+    </header>
+
+    <div class="quiz-layout">
+        <section class="question-area">
+            <div id="questionContainer">
+                <div class="question-card">
+                    <div class="flex justify-between align-center mb-3">
+                        <span class="text-secondary fw-600" id="questionNumber">Question 0 of 0</span>
+                        <div class="badge badge-blue" id="marksBadge">0 Marks</div>
+                    </div>
+                    <div class="question-text" id="questionText">Loading question...</div>
+                    <div class="options-grid" id="optionsGrid">
+                        <!-- Options injected here -->
+                    </div>
+                </div>
             </div>
-          ` : ''}
-          <button class="btn btn-primary" onclick="window.location.href='event-dashboard.html?eventId=${eventId}&participantId=${participantId}'">
-            <i class="fas fa-home"></i> Return to Dashboard
-          </button>
+        </section>
+
+        <aside class="sidebar-area">
+            <div>
+                <h4 class="mb-3">Monitor</h4>
+                <div class="proctor-cam">
+                    <div class="proctor-status">
+                        <i class="fa-solid fa-circle"></i> LIVE
+                    </div>
+                    <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#333">
+                        <i class="fa-solid fa-user fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow">
+                <h4 class="mb-3">Question Navigator</h4>
+                <div class="question-nav" id="questionNav">
+                    <!-- Nav dots injected here -->
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <div class="flex align-center gap-1 small">
+                    <div class="nav-dot answered" style="width:12px; height:12px"></div> Answered
+                </div>
+                <div class="flex align-center gap-1 small">
+                    <div class="nav-dot marked" style="width:12px; height:12px"></div> Tagged
+                </div>
+                <div class="flex align-center gap-1 small">
+                    <div class="nav-dot unanswered" style="width:12px; height:12px"></div> Unanswered
+                </div>
+            </div>
+
+            <button class="btn btn-outline-warning w-100" id="btnMarkForReview">
+                <i class="fa-solid fa-bookmark"></i> Mark for Review
+            </button>
+            <button class="btn w-100" id="btnSubmitQuiz"
+                style="background: #10b981; border-color: #10b981; color: white; font-weight: 600;">
+                <i class="fa-solid fa-check-double"></i> Submit Quiz
+            </button>
+        </aside>
+    </div>
+
+    <footer class="quiz-footer">
+        <button class="btn btn-outline-secondary" id="btnPrev">
+            <i class="fa-solid fa-chevron-left"></i> Previous
+        </button>
+        <div class="flex gap-4">
+            <div class="text-center">
+                <div class="small text-secondary">Correct Answer</div>
+                <div class="fw-700">+<span id="posMarks">0</span></div>
+            </div>
+            <div class="text-center">
+                <div class="small text-secondary">Negative Mark</div>
+                <div class="fw-700 text-danger"><span id="negMarks">0</span></div>
+            </div>
         </div>
-      `;
-      
-      // Hide timer and navigation
-      document.getElementById("timer").style.display = "none";
-      document.querySelector(".progress-bar").style.display = "none";
-      document.getElementById("questionNav").style.display = "none";
-      document.querySelector(".navigation").style.display = "none";
-    }
+        <button class="btn btn-primary" id="btnNext">
+            Next <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </footer>
 
-    // ⭐ Initialize quiz with completion check
-    async function init() {
-      try {
-        currentUser = await requireAuth();
-        console.log("✅ User authenticated:", currentUser.uid);
-        console.log("🎯 Quiz params:", { eventId, participantId, setId });
+    <script type="module">
+        import { BASE_URL } from './js/config.js';
+        import { auth } from './js/firebase.js';
 
-        if (!eventId || !participantId || !setId) {
-          showError("Missing required parameters. Please start from the dashboard.");
-          return;
-        }
+        const API_BASE = `${BASE_URL}/api`;
+        const urlParams = new URLSearchParams(window.location.search);
+        let eventId = urlParams.get('eventId');
 
-        // ⭐ CHECK IF ALREADY COMPLETED FIRST
-        try {
-          console.log("🔍 Checking if quiz already completed...");
-          const participant = await eventAPI.getParticipant(participantId);
-          
-          if (participant && participant.setResults) {
-            const alreadyCompleted = participant.setResults.find(r => 
-              r.setId.toString() === setId
-            );
-            
-            if (alreadyCompleted) {
-              console.log("⚠️ Quiz already completed:", alreadyCompleted);
-              showAlreadyCompleted(alreadyCompleted);
-              return; // Stop initialization
+        console.log('[QUIZ] URL eventId:', eventId);
+
+        // FALLBACK: If URL param is missing, check sessionStorage
+        if (!eventId || eventId === 'undefined' || eventId === 'null') {
+            const savedId = sessionStorage.getItem('pendingEventId');
+            if (savedId && savedId !== 'undefined' && savedId !== 'null') {
+                console.log('[QUIZ] Recovered eventId from sessionStorage:', savedId);
+                eventId = savedId;
+                // Optional: Clean up to avoid stale ID reuse
+                // sessionStorage.removeItem('pendingEventId');
             }
-          }
-          
-          console.log("✅ Quiz not yet completed, proceeding...");
-        } catch (checkError) {
-          console.warn("⚠️ Could not check completion status:", checkError);
-          // Continue anyway - the startSet call will handle it
         }
 
-        // Continue with normal quiz initialization
-        await startQuiz();
-        
-      } catch (error) {
-        console.error("❌ Initialization error:", error);
-        showError(error.message || "Failed to initialize quiz");
-      }
-    }
+        console.log('[QUIZ] Final eventId being used:', eventId);
 
-    // ⭐ Start quiz with better error handling
-    async function startQuiz() {
-      try {
-        console.log("🚀 Starting quiz...");
-        
-        const startResult = await eventAPI.startSet({
-          participantId,
-          setId,
-          eventId
-        });
+        let quizData = null;
+        let currentIdx = 0;
+        let answers = {};
+        let markedForReview = new Set();
+        let timerInterval = null;
+        let secondsRemaining = 0;
+        let violations = 0;
 
-        console.log("✅ Quiz started:", startResult);
-
-        if (!startResult || !startResult.questions || startResult.questions.length === 0) {
-          throw new Error("No questions found in this set");
+        if (!eventId || eventId === 'undefined' || eventId === 'null') {
+            console.error('[QUIZ] Invalid or missing eventId after fallback check. URL:', window.location.href);
+            alert('Error: Invalid event identification. Please go back to the dashboard and try again.\n\nDebug Info: eventId=' + eventId);
+            window.location.href = 'student-dashboard.html';
         }
 
-        questions = startResult.questions;
-        answers = new Array(questions.length).fill(null);
-        questionTimings = new Array(questions.length).fill(0);
-        
-        startTime = new Date();
-        quizStartTime = Date.now();
-        timeRemaining = (startResult.timeLimit || 10) * 60;
+        // Ensure we clean up if we had a valid ID to prevent accidental reuse later
+        if (eventId) {
+            // sessionStorage.removeItem('pendingEventId'); 
+            // Wait, maybe keep it until quiz actually starts or finishes?
+            // Let's keep it for now and clear on dashboard load.
+        }
 
-        console.log("⏱️ Quiz start time:", new Date(quizStartTime).toISOString());
-        console.log("📝 Questions loaded:", questions.length);
+        // --- Initialization ---
 
-        // Get event details for title
-        const eventData = await eventAPI.getEvent(eventId);
-        const setData = eventData.event.sets.find(s => s._id.toString() === setId);
+        window.startQuizFullscreen = async () => {
+            const doc = document.documentElement;
+            try {
+                if (doc.requestFullscreen) await doc.requestFullscreen();
+                else if (doc.webkitRequestFullscreen) await doc.webkitRequestFullscreen();
+                else if (doc.msRequestFullscreen) await doc.msRequestFullscreen();
 
-        document.getElementById("quizTitle").textContent = 
-          eventData.event.eventName || "Event Quiz";
-        document.getElementById("quizInfo").textContent = 
-          `${setData?.setName || 'Quiz'} | ${questions.length} Questions`;
-
-        renderQuestionNav();
-        renderQuestion();
-        startTimer();
-        startQuestionTimer();
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-      } catch (error) {
-        console.error("❌ Error starting quiz:", error);
-        
-        // ⭐ Check if this is an "already completed" error
-        if (error.message && error.message.includes("already completed")) {
-          console.log("✅ Quiz already completed - fetching results...");
-          
-          try {
-            const participant = await eventAPI.getParticipant(participantId);
-            
-            if (participant && participant.setResults) {
-              const setResult = participant.setResults.find(r => 
-                r.setId.toString() === setId
-              );
-              
-              if (setResult) {
-                showAlreadyCompleted(setResult);
-                return;
-              }
+                document.getElementById('fullscreenBtnOverlay').style.display = 'none';
+                loadQuiz();
+            } catch (err) {
+                alert('Fullscreen mode is required to start the quiz.');
             }
-          } catch (fetchError) {
-            console.error("Failed to fetch results:", fetchError);
-          }
-          
-          // Fallback: just show message and redirect
-          showError(
-            "You have already completed this quiz. Redirecting to dashboard...",
-            true
-          );
-          setTimeout(() => {
-            window.location.href = `event-dashboard.html?eventId=${eventId}&participantId=${participantId}`;
-          }, 2000);
-          return;
-        }
-        
-        // Show other errors normally
-        showError(error.message || "Failed to start quiz");
-      }
-    }
-
-    function startTimer() {
-      updateTimerDisplay();
-      timerInterval = setInterval(() => {
-        timeRemaining--;
-        updateTimerDisplay();
-
-        if (timeRemaining <= 60) {
-          document.getElementById("timer").classList.add("warning");
-        }
-
-        if (timeRemaining <= 0) {
-          clearInterval(timerInterval);
-          alert("Time's up! Auto-submitting quiz...");
-          submitQuiz();
-        }
-      }, 1000);
-    }
-
-    function updateTimerDisplay() {
-      const minutes = Math.floor(timeRemaining / 60);
-      const seconds = timeRemaining % 60;
-      document.getElementById("timeDisplay").textContent =
-        `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-    }
-
-    function startQuestionTimer() {
-      questionStartTime = Date.now();
-      console.log(`⏱️ [Q${currentQuestion + 1}] Timer started`);
-    }
-
-    function stopQuestionTimer() {
-      if (questionStartTime) {
-        const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
-        questionTimings[currentQuestion] += timeSpent;
-        console.log(`⏱️ [Q${currentQuestion + 1}] Time: ${timeSpent}s (Total: ${questionTimings[currentQuestion]}s)`);
-        questionStartTime = null;
-      }
-    }
-
-    window.selectOption = function(option) {
-      answers[currentQuestion] = option;
-      renderQuestion();
-    };
-
-    window.nextQuestion = function() {
-      if (currentQuestion < questions.length - 1) {
-        stopQuestionTimer();
-        currentQuestion++;
-        renderQuestion();
-        startQuestionTimer();
-      }
-    };
-
-    window.prevQuestion = function() {
-      if (currentQuestion > 0) {
-        stopQuestionTimer();
-        currentQuestion--;
-        renderQuestion();
-        startQuestionTimer();
-      }
-    };
-
-    window.goToQuestion = function(index) {
-      if (index === currentQuestion) return;
-      
-      stopQuestionTimer();
-      currentQuestion = index;
-      renderQuestion();
-      startQuestionTimer();
-    };
-
-    window.confirmSubmit = function() {
-      const unanswered = answers.filter(a => a === null).length;
-      const message = unanswered > 0 
-        ? `You have ${unanswered} unanswered question(s). Are you sure you want to submit?`
-        : "Are you sure you want to submit your quiz?";
-      
-      document.getElementById("submitWarning").textContent = message;
-      document.getElementById("submitModal").classList.add("active");
-    };
-
-    window.closeSubmitModal = function() {
-      document.getElementById("submitModal").classList.remove("active");
-    };
-
-    function renderQuestionNav() {
-      const navHTML = questions.map((_, i) => `
-        <button class="question-nav-btn ${i===0?'current':''}" onclick="goToQuestion(${i})">${i+1}</button>
-      `).join('');
-      document.getElementById("questionNav").innerHTML = navHTML;
-    }
-
-    function renderQuestion() {
-      const q = questions[currentQuestion];
-      
-      const optionLabels = ['A','B','C','D'];
-      
-      const questionCard = document.getElementById("questionCard");
-      questionCard.innerHTML = '';
-      
-      const questionNumber = document.createElement('div');
-      questionNumber.className = 'question-number';
-      questionNumber.innerHTML = `
-        <i class="fas fa-question-circle"></i>
-        Question ${currentQuestion+1} of ${questions.length}
-      `;
-      
-      const questionText = document.createElement('div');
-      questionText.className = 'question-text';
-      const cleanQuestion = (q.question || '')
-        .replace(/<br\s*\/?>/gi, ' ')
-        .replace(/\n/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      questionText.textContent = cleanQuestion;
-      
-      const optionsContainer = document.createElement('div');
-      optionsContainer.className = 'options-container';
-      
-      q.options.forEach((opt, i) => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = `option ${answers[currentQuestion]===opt?'selected':''}`;
-        optionDiv.onclick = () => selectOption(opt);
-        
-        const optionLabel = document.createElement('div');
-        optionLabel.className = 'option-label';
-        optionLabel.textContent = optionLabels[i];
-        
-        const optionText = document.createElement('div');
-        optionText.className = 'option-text';
-        optionText.textContent = opt;
-        
-        optionDiv.appendChild(optionLabel);
-        optionDiv.appendChild(optionText);
-        optionsContainer.appendChild(optionDiv);
-      });
-      
-      questionCard.appendChild(questionNumber);
-      questionCard.appendChild(questionText);
-      questionCard.appendChild(optionsContainer);
-
-      document.getElementById("prevBtn").disabled = currentQuestion === 0;
-      document.getElementById("nextBtn").style.display = 
-        currentQuestion === questions.length-1 ? "none" : "block";
-      document.getElementById("submitBtn").style.display = 
-        currentQuestion === questions.length-1 ? "block" : "none";
-
-      const progress = ((currentQuestion+1)/questions.length)*100;
-      document.getElementById("progressFill").style.width = progress + "%";
-
-      document.querySelectorAll(".question-nav-btn").forEach((btn,i)=>{
-        btn.classList.remove("current","answered");
-        if (i===currentQuestion) btn.classList.add("current");
-        if (answers[i]!==null) btn.classList.add("answered");
-      });
-    }
-
-    window.submitQuiz = async function() {
-      if (isSubmitting) return;
-      
-      isSubmitting = true;
-      stopQuestionTimer();
-      
-      document.getElementById("submitModal").classList.remove("active");
-
-      try {
-        clearInterval(timerInterval);
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-        localStorage.removeItem(TAB_KEY);
-
-        console.log("📤 Submitting quiz...");
-        console.log("📋 Answers:", answers);
-        console.log("⏱️ Per-question timings:", questionTimings);
-
-        const currentTime = Date.now();
-        const timeSpentSeconds = Math.floor((currentTime - quizStartTime) / 1000);
-
-        const result = await eventAPI.submitSet({
-          participantId,
-          setId,
-          eventId,
-          answers,
-          timeTaken: timeSpentSeconds
-        });
-
-        console.log("✅ Quiz submitted successfully:", result);
-
-        // Store results for results page
-        const resultsToStore = {
-          score: result.score,
-          totalQuestions: result.totalQuestions,
-          results: result.results,
-          timeSpent: timeSpentSeconds,
-          completedAt: result.completedAt
         };
 
-        sessionStorage.setItem('eventQuizResults', JSON.stringify(resultsToStore));
-        
-        // Redirect to results page
-        window.location.href = 
-          `event-results.html?eventId=${eventId}&participantId=${participantId}&setId=${setId}`;
-        
-      } catch (err) {
-        isSubmitting = false;
-        console.error("❌ Submit error:", err);
-        alert("Error submitting quiz: " + err.message);
-      }
-    };
+        async function loadQuiz() {
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const res = await fetch(`${API_BASE}/events/${eventId}/take`, {
+                    headers: { 'Authorization': `Bearer ${idToken}` }
+                });
 
-    function handleBeforeUnload(e) {
-      if (!isSubmitting) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    }
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.message || data.error || 'Failed to start quiz');
+                }
 
-    // Start quiz
-    init();
-  </script>
+                quizData = await res.json();
 
-  <script src="js/theme.js" type="module"></script>
+                // Advanced safety check:
+                if (!quizData || !quizData.questions || quizData.questions.length === 0) {
+                    throw new Error('This event exists but contains no questions. Please notify the HOD.');
+                }
+
+                secondsRemaining = quizData.duration * 60;
+
+                renderNav();
+                renderQuestion();
+                startTimer();
+                setupProctoring();
+
+                document.getElementById('userName').textContent = auth.currentUser.displayName || 'Student';
+                document.getElementById('posMarks').textContent = quizData.marksPerQuestion;
+                document.getElementById('negMarks').textContent = quizData.negativeMarking;
+            } catch (err) {
+                console.error('[QUIZ] Load Error:', err);
+                alert('QUIZ ERROR: ' + err.message);
+                window.location.href = 'student-dashboard.html';
+            }
+        }
+
+        // --- Core UI Logic ---
+
+        function renderNav() {
+            const nav = document.getElementById('questionNav');
+            nav.innerHTML = quizData.questions.map((q, i) => {
+                const isAnswered = answers[q._id] !== undefined;
+                const isMarked = markedForReview.has(i);
+                let classes = 'nav-dot';
+                if (i === currentIdx) classes += ' current';
+                if (isMarked) classes += ' marked';
+                else if (isAnswered) classes += ' answered';
+                else classes += ' unanswered';
+
+                return `
+                    <div class="${classes}" onclick="goToQuestion(${i})" id="navDot_${i}">
+                        ${i + 1}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderQuestion() {
+            const q = quizData.questions[currentIdx];
+            document.getElementById('questionNumber').textContent = `Question ${currentIdx + 1} of ${quizData.questions.length}`;
+            document.getElementById('marksBadge').textContent = `${quizData.marksPerQuestion} Marks`;
+            document.getElementById('questionText').textContent = q.questionText;
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = q.options.map((opt, i) => {
+                const letter = String.fromCharCode(65 + i);
+                const isSelected = answers[q._id] === opt;
+                return `
+                    <button class="option-btn ${isSelected ? 'selected' : ''}" onclick="selectOption('${q._id}', '${letter}', '${opt.replace(/'/g, "\\'")}')">
+                        <div class="option-letter">${letter}</div>
+                        <div class="option-text">${opt}</div>
+                    </button>
+                `;
+            }).join('');
+
+            // Update nav dots (visual state sync)
+            renderNav();
+
+            // Footer buttons
+            document.getElementById('btnPrev').disabled = currentIdx === 0;
+            document.getElementById('btnNext').textContent = currentIdx === quizData.questions.length - 1 ? 'Finish' : 'Next';
+        }
+
+        window.goToQuestion = (idx) => {
+            currentIdx = idx;
+            renderQuestion();
+        };
+
+        window.selectOption = (qId, letter, optText) => {
+            answers[qId] = optText;
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            const dot = document.getElementById(`navDot_${currentIdx}`);
+            dot.classList.add('answered');
+        };
+
+        document.getElementById('btnNext').onclick = () => {
+            if (currentIdx < quizData.questions.length - 1) {
+                currentIdx++;
+                renderQuestion();
+            } else {
+                confirmSubmit();
+            }
+        };
+
+        document.getElementById('btnPrev').onclick = () => {
+            if (currentIdx > 0) {
+                currentIdx--;
+                renderQuestion();
+            }
+        };
+
+        document.getElementById('btnMarkForReview').onclick = () => {
+            const dot = document.getElementById(`navDot_${currentIdx}`);
+            if (markedForReview.has(currentIdx)) {
+                markedForReview.delete(currentIdx);
+                dot.classList.remove('marked');
+            } else {
+                markedForReview.add(currentIdx);
+                dot.classList.add('marked');
+            }
+        };
+
+        // --- Proctoring Logic ---
+
+        function setupProctoring() {
+            if (quizData.proctoringConfig?.tabSwitch) {
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) triggerViolation('Tab Switch Detected');
+                });
+                window.addEventListener('blur', () => triggerViolation('Focus Lost'));
+            }
+
+            if (quizData.proctoringConfig?.fullscreen) {
+                document.addEventListener('fullscreenchange', () => {
+                    if (!document.fullscreenElement) triggerViolation('Exited Full Screen');
+                });
+            }
+
+            // Disable copy-paste if configured
+            document.addEventListener('copy', (e) => e.preventDefault());
+            document.addEventListener('paste', (e) => e.preventDefault());
+            document.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+
+        function triggerViolation(reason) {
+            violations++;
+            document.getElementById('warningTitle').textContent = reason;
+            document.getElementById('warningOverlay').style.display = 'flex';
+
+            // Log violation to backend (fire and forget)
+            logViolationAPI(reason);
+        }
+
+        window.resumeQuiz = async () => {
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) await doc.requestFullscreen();
+            document.getElementById('warningOverlay').style.display = 'none';
+        };
+
+        async function logViolationAPI(reason) {
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                fetch(`${API_BASE}/events/${eventId}/violation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ reason, timestamp: new Date() })
+                });
+            } catch (e) { }
+        }
+
+        // --- Timer & Submission ---
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                secondsRemaining--;
+                updateTimerDisplay();
+                if (secondsRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmit();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const h = Math.floor(secondsRemaining / 3600);
+            const m = Math.floor((secondsRemaining % 3600) / 60);
+            const s = secondsRemaining % 60;
+            document.getElementById('quizTimer').textContent =
+                `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+            if (secondsRemaining < 300) { // < 5 mins
+                document.getElementById('quizTimer').style.color = '#ef4444';
+            }
+        }
+
+        function confirmSubmit() {
+            const unanswered = quizData.questions.length - Object.keys(answers).length;
+            let msg = 'Are you sure you want to submit your quiz?';
+            if (unanswered > 0) msg += `\n\nYou have ${unanswered} unanswered questions.`;
+
+            if (confirm(msg)) submitQuiz();
+        }
+
+        async function submitQuiz() {
+            clearInterval(timerInterval);
+            const btn = document.getElementById('btnSubmitQuiz');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const res = await fetch(`${API_BASE}/events/${eventId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ answers, violations, timeSpent: (quizData.duration * 60) - secondsRemaining })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    // Redirect to dedicated event results page
+                    window.location.href = `event-results.html?eventId=${eventId}&attemptId=${data.attemptId}`;
+                } else {
+                    const errData = await res.json();
+                    throw new Error(errData.error || 'Submission failed');
+                }
+            } catch (err) {
+                alert('Critical Error: ' + err.message + '\nYour progress has been saved locally. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Retry Submission';
+            }
+        }
+
+        function autoSubmit() {
+            alert('Time is up! Your quiz will be submitted automatically.');
+            submitQuiz();
+        }
+
+        document.getElementById('btnSubmitQuiz').onclick = confirmSubmit;
+
+    </script>
 </body>
+
 </html>

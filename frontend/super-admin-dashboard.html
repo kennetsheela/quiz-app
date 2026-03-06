@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AptioGen – Super Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -14,34 +17,43 @@
       --sidebar-bg: #0f172a;
       --sidebar-text: #94a3b8;
       --sidebar-active: #3b82f6;
-      --sidebar-active-bg: rgba(59,130,246,0.12);
-      --sidebar-hover: rgba(255,255,255,0.05);
+      --sidebar-active-bg: rgba(59, 130, 246, 0.12);
+      --sidebar-hover: rgba(255, 255, 255, 0.05);
       --card-bg: #ffffff;
       --border: #e2e8f0;
       --text-primary: #0f172a;
       --text-secondary: #64748b;
-      --shadow: rgba(0,0,0,0.06);
+      --shadow: rgba(0, 0, 0, 0.06);
       --input-bg: #ffffff;
       --input-border: #cbd5e1;
       --badge-bg: #f1f5f9;
-      --topbar-bg: rgba(240,244,255,0.85);
+      --topbar-bg: rgba(240, 244, 255, 0.85);
       --scrollbar: #cbd5e1;
     }
+
     html.dark {
       --bg: #0a0f1e;
       --card-bg: #111827;
       --border: #1e293b;
       --text-primary: #f1f5f9;
       --text-secondary: #64748b;
-      --shadow: rgba(0,0,0,0.3);
+      --shadow: rgba(0, 0, 0, 0.3);
       --input-bg: #1e293b;
       --input-border: #334155;
       --badge-bg: #1e293b;
-      --topbar-bg: rgba(10,15,30,0.85);
+      --topbar-bg: rgba(10, 15, 30, 0.85);
       --scrollbar: #334155;
     }
+
     /* ─── Reset ─────────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
@@ -51,12 +63,36 @@
       overflow: hidden;
       transition: background 0.3s, color 0.3s;
     }
-    h1,h2,h3,h4 { font-family: 'Space Grotesk', sans-serif; }
-    a { text-decoration: none; color: inherit; }
-    button { font-family: inherit; }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 10px; }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar);
+      border-radius: 10px;
+    }
 
     /* ─── Sidebar ────────────────────────────────────────────────── */
     .sidebar {
@@ -69,60 +105,102 @@
       z-index: 100;
       overflow: hidden;
     }
-    .sidebar.collapsed { width: 68px; }
+
+    .sidebar.collapsed {
+      width: 68px;
+    }
+
     .sidebar-logo {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 22px 18px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       min-height: 70px;
     }
+
     .sidebar-logo .logo-icon {
-      width: 36px; height: 36px; flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
       background: linear-gradient(135deg, #3b82f6, #6366f1);
       border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; color: white; font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: white;
+      font-weight: 800;
       font-family: 'Space Grotesk', sans-serif;
     }
+
     .sidebar-logo .logo-text {
       font-family: 'Space Grotesk', sans-serif;
-      font-weight: 800; font-size: 17px;
+      font-weight: 800;
+      font-size: 17px;
       color: #f1f5f9;
       white-space: nowrap;
       transition: opacity 0.2s;
     }
-    .sidebar.collapsed .logo-text { opacity: 0; pointer-events: none; }
+
+    .sidebar.collapsed .logo-text {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .sidebar-toggle {
       position: absolute;
-      top: 22px; left: 213px;
+      top: 22px;
+      left: 213px;
       background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: #94a3b8;
-      width: 26px; height: 26px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       font-size: 11px;
       transition: left 0.3s, background 0.2s;
       z-index: 101;
       flex-shrink: 0;
     }
-    .sidebar-toggle:hover { background: #2d3f55; color: #f1f5f9; }
-    .sidebar.collapsed ~ .sidebar-toggle,
-    .sidebar.collapsed + * .sidebar-toggle { left: 51px; }
-    .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; overflow-x: hidden; }
+
+    .sidebar-toggle:hover {
+      background: #2d3f55;
+      color: #f1f5f9;
+    }
+
+    .sidebar.collapsed~.sidebar-toggle,
+    .sidebar.collapsed+* .sidebar-toggle {
+      left: 51px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
     .nav-section-label {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: rgba(148,163,184,0.4);
+      color: rgba(148, 163, 184, 0.4);
       padding: 14px 18px 6px;
       white-space: nowrap;
       transition: opacity 0.2s;
     }
-    .sidebar.collapsed .nav-section-label { opacity: 0; height: 0; padding: 0; }
+
+    .sidebar.collapsed .nav-section-label {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+    }
+
     .nav-item {
       display: flex;
       align-items: center;
@@ -137,17 +215,45 @@
       border-left: 3px solid transparent;
       margin: 1px 0;
     }
-    .nav-item:hover { background: var(--sidebar-hover); color: #cbd5e1; }
+
+    .nav-item:hover {
+      background: var(--sidebar-hover);
+      color: #cbd5e1;
+    }
+
     .nav-item.active {
       background: var(--sidebar-active-bg);
       color: #60a5fa;
       border-left-color: #3b82f6;
     }
-    .nav-item i { width: 20px; text-align: center; font-size: 15px; flex-shrink: 0; }
-    .nav-item span { font-size: 14px; font-weight: 500; transition: opacity 0.2s; }
-    .sidebar.collapsed .nav-item span { opacity: 0; pointer-events: none; }
-    .sidebar.collapsed .nav-item { padding: 12px; justify-content: center; }
-    .sidebar.collapsed .nav-item i { margin: 0; }
+
+    .nav-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .nav-item span {
+      font-size: 14px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .sidebar.collapsed .nav-item span {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar.collapsed .nav-item {
+      padding: 12px;
+      justify-content: center;
+    }
+
+    .sidebar.collapsed .nav-item i {
+      margin: 0;
+    }
+
     .nav-tooltip {
       display: none;
       position: absolute;
@@ -160,16 +266,30 @@
       white-space: nowrap;
       z-index: 200;
       pointer-events: none;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .sidebar.collapsed .nav-item:hover .nav-tooltip { display: block; }
+
+    .sidebar.collapsed .nav-item:hover .nav-tooltip {
+      display: block;
+    }
+
     .sidebar-bottom {
       padding: 14px 10px;
-      border-top: 1px solid rgba(255,255,255,0.06);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .sidebar-bottom .nav-item { border-radius: 8px; border-left: none; }
-    .sidebar-bottom .nav-item.logout { color: #f87171; }
-    .sidebar-bottom .nav-item.logout:hover { background: rgba(239,68,68,0.1); }
+
+    .sidebar-bottom .nav-item {
+      border-radius: 8px;
+      border-left: none;
+    }
+
+    .sidebar-bottom .nav-item.logout {
+      color: #f87171;
+    }
+
+    .sidebar-bottom .nav-item.logout:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
 
     /* ─── Main Area ──────────────────────────────────────────────── */
     .main-wrapper {
@@ -179,6 +299,7 @@
       overflow: hidden;
       position: relative;
     }
+
     .topbar {
       height: 60px;
       background: var(--topbar-bg);
@@ -193,23 +314,44 @@
       top: 0;
       z-index: 50;
     }
+
     .topbar-left h2 {
-      font-size: 16px; font-weight: 700;
+      font-size: 16px;
+      font-weight: 700;
       color: var(--text-primary);
     }
-    .topbar-left p { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
-    .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+    .topbar-left p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .theme-toggle {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
       font-size: 14px;
       transition: background 0.2s;
     }
-    .theme-toggle:hover { background: var(--badge-bg); }
+
+    .theme-toggle:hover {
+      background: var(--badge-bg);
+    }
+
     .page-content {
       flex: 1;
       overflow-y: auto;
@@ -217,9 +359,26 @@
     }
 
     /* ─── Page Sections ──────────────────────────────────────────── */
-    .page-section { display: none; }
-    .page-section.active { display: block; animation: fadeIn 0.25s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     /* ─── Cards ──────────────────────────────────────────────────── */
     .card {
@@ -229,27 +388,69 @@
       padding: 22px;
       box-shadow: 0 2px 10px var(--shadow);
     }
-    .card + .card, .card.mt { margin-top: 20px; }
+
+    .card+.card,
+    .card.mt {
+      margin-top: 20px;
+    }
 
     /* ─── Buttons ────────────────────────────────────────────────── */
     .btn {
-      display: inline-flex; align-items: center; gap: 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
       padding: 9px 18px;
       border-radius: 9px;
-      font-size: 13px; font-weight: 600;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
       border: none;
       transition: all 0.2s;
     }
-    .btn-primary { background: #3b82f6; color: white; }
-    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
-    .btn-secondary { background: var(--badge-bg); color: var(--text-primary); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--border); }
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-danger:hover { background: #dc2626; }
-    .btn-success { background: #10b981; color: white; }
-    .btn-success:hover { background: #059669; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--badge-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
 
     /* ─── Badges ─────────────────────────────────────────────────── */
     .badge {
@@ -260,15 +461,41 @@
       font-weight: 700;
       letter-spacing: 0.3px;
     }
-    .badge-primary  { background: rgba(59,130,246,0.12);  color: #2563eb; }
-    .badge-success  { background: rgba(16,185,129,0.12);  color: #059669; }
-    .badge-warning  { background: rgba(245,158,11,0.12);  color: #d97706; }
-    .badge-error    { background: rgba(239,68,68,0.12);   color: #dc2626; }
-    .badge-purple   { background: rgba(139,92,246,0.12);  color: #7c3aed; }
-    .badge-neutral  { background: var(--badge-bg);        color: var(--text-secondary); }
+
+    .badge-primary {
+      background: rgba(59, 130, 246, 0.12);
+      color: #2563eb;
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+    }
+
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: #d97706;
+    }
+
+    .badge-error {
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+    }
+
+    .badge-purple {
+      background: rgba(139, 92, 246, 0.12);
+      color: #7c3aed;
+    }
+
+    .badge-neutral {
+      background: var(--badge-bg);
+      color: var(--text-secondary);
+    }
 
     /* ─── Form elements ──────────────────────────────────────────── */
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
       padding: 10px 13px;
       border: 1px solid var(--input-border);
@@ -280,9 +507,25 @@
       transition: border-color 0.2s;
       outline: none;
     }
-    input:focus, select:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; }
-    .form-group { margin-bottom: 18px; }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
 
     /* ─── Page Headers ───────────────────────────────────────────── */
     .page-header {
@@ -293,14 +536,43 @@
       gap: 14px;
       margin-bottom: 24px;
     }
-    .page-header h1 { font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
-    .page-header p { font-size: 14px; color: var(--text-secondary); }
-    .page-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .page-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
 
     /* ─── Filters bar ────────────────────────────────────────────── */
-    .filters { display: flex; gap: 10px; flex-wrap: wrap; }
-    .filters select, .filters input { width: auto; min-width: 140px; padding: 9px 12px; }
-    .filters input { flex: 1; }
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filters select,
+    .filters input {
+      width: auto;
+      min-width: 140px;
+      padding: 9px 12px;
+    }
+
+    .filters input {
+      flex: 1;
+    }
 
     /* ─── Stat Cards ─────────────────────────────────────────────── */
     .stats-grid {
@@ -309,22 +581,61 @@
       gap: 18px;
       margin-bottom: 24px;
     }
+
     .stat-card {
       background: linear-gradient(135deg, #3b82f6, #2563eb);
       color: white;
       padding: 22px;
       border-radius: 14px;
-      box-shadow: 0 4px 16px rgba(59,130,246,0.25);
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.3); }
-    .stat-card h3 { font-size: 12px; font-weight: 500; opacity: 0.85; margin-bottom: 10px; color: white; font-family: 'DM Sans', sans-serif; }
-    .stat-card .stat-value { font-size: 34px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
-    .stat-card .stat-label { font-size: 12px; opacity: 0.75; }
-    .stat-card.green  { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 16px rgba(16,185,129,0.25); }
-    .stat-card.amber  { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 16px rgba(245,158,11,0.25); }
-    .stat-card.red    { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 16px rgba(239,68,68,0.25); }
-    .stat-card.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); box-shadow: 0 4px 16px rgba(139,92,246,0.25); }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    }
+
+    .stat-card h3 {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.85;
+      margin-bottom: 10px;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .stat-card .stat-value {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 12px;
+      opacity: 0.75;
+    }
+
+    .stat-card.green {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .stat-card.amber {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+    }
+
+    .stat-card.red {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);
+    }
+
+    .stat-card.purple {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.25);
+    }
 
     /* ─── Mini stats ─────────────────────────────────────────────── */
     .mini-stats-row {
@@ -333,6 +644,7 @@
       gap: 14px;
       margin-bottom: 20px;
     }
+
     .mini-stat {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -343,18 +655,49 @@
       gap: 13px;
       box-shadow: 0 2px 8px var(--shadow);
     }
+
     .mini-stat-icon {
-      width: 42px; height: 42px;
+      width: 42px;
+      height: 42px;
       border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
     }
-    .msi-blue   { background: rgba(59,130,246,0.12);  color: #3b82f6; }
-    .msi-green  { background: rgba(16,185,129,0.12);  color: #10b981; }
-    .msi-orange { background: rgba(245,158,11,0.12);  color: #f59e0b; }
-    .msi-red    { background: rgba(239,68,68,0.12);   color: #ef4444; }
-    .mini-stat-info h4 { font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 1px; }
-    .mini-stat-info p  { font-size: 11px; color: var(--text-secondary); }
+
+    .msi-blue {
+      background: rgba(59, 130, 246, 0.12);
+      color: #3b82f6;
+    }
+
+    .msi-green {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+    }
+
+    .msi-orange {
+      background: rgba(245, 158, 11, 0.12);
+      color: #f59e0b;
+    }
+
+    .msi-red {
+      background: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+    }
+
+    .mini-stat-info h4 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 1px;
+    }
+
+    .mini-stat-info p {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
 
     /* ─── Quick Actions ──────────────────────────────────────────── */
     .quick-actions {
@@ -362,6 +705,7 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 14px;
     }
+
     .qa-card {
       background: var(--card-bg);
       border: 2px solid var(--border);
@@ -373,13 +717,36 @@
       align-items: center;
       gap: 14px;
     }
-    .qa-card:hover { border-color: #3b82f6; background: rgba(59,130,246,0.04); transform: translateY(-2px); }
-    .qa-card i { font-size: 22px; color: #3b82f6; }
-    .qa-card h4 { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
-    .qa-card p  { font-size: 12px; color: var(--text-secondary); }
+
+    .qa-card:hover {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.04);
+      transform: translateY(-2px);
+    }
+
+    .qa-card i {
+      font-size: 22px;
+      color: #3b82f6;
+    }
+
+    .qa-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .qa-card p {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
 
     /* ─── Tables ─────────────────────────────────────────────────── */
-    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
     .data-table th {
       background: var(--badge-bg);
       padding: 11px 14px;
@@ -391,6 +758,7 @@
       letter-spacing: 0.5px;
       border-bottom: 2px solid var(--border);
     }
+
     .data-table td {
       padding: 12px 14px;
       border-bottom: 1px solid var(--border);
@@ -398,9 +766,21 @@
       color: var(--text-primary);
       vertical-align: middle;
     }
-    .data-table tr:last-child td { border-bottom: none; }
-    .data-table tr:hover td { background: rgba(59,130,246,0.03); }
-    .q-text { max-width: 380px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(59, 130, 246, 0.03);
+    }
+
+    .q-text {
+      max-width: 380px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     /* ─── Pagination ─────────────────────────────────────────────── */
     .pagination {
@@ -410,6 +790,7 @@
       margin-top: 18px;
       flex-wrap: wrap;
     }
+
     .pagination button {
       padding: 7px 11px;
       border: 1px solid var(--border);
@@ -421,9 +802,21 @@
       transition: all 0.2s;
       width: auto;
     }
-    .pagination button.active { background: #3b82f6; color: white; border-color: #3b82f6; }
-    .pagination button:hover:not(.active):not(:disabled) { background: var(--badge-bg); }
-    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .pagination button.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+
+    .pagination button:hover:not(.active):not(:disabled) {
+      background: var(--badge-bg);
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
 
     /* ─── Institutions grid ──────────────────────────────────────── */
     .inst-grid {
@@ -431,6 +824,7 @@
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: 18px;
     }
+
     .inst-card {
       background: var(--card-bg);
       border: 2px solid var(--border);
@@ -439,10 +833,31 @@
       box-shadow: 0 2px 8px var(--shadow);
       transition: border-color 0.25s, box-shadow 0.25s;
     }
-    .inst-card:hover { border-color: #3b82f6; box-shadow: 0 6px 20px rgba(59,130,246,0.12); }
-    .inst-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-    .inst-card-name { font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
-    .inst-card-type { font-size: 12px; color: var(--text-secondary); }
+
+    .inst-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+    }
+
+    .inst-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .inst-card-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .inst-card-type {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
     .detail-row {
       display: flex;
       justify-content: space-between;
@@ -451,10 +866,27 @@
       border-bottom: 1px solid var(--border);
       font-size: 13px;
     }
-    .detail-row:last-of-type { border-bottom: none; }
-    .detail-label { font-weight: 600; color: var(--text-secondary); font-size: 12px; }
-    .inst-actions { display: flex; gap: 8px; margin-top: 14px; }
-    .inst-actions .btn { flex: 1; justify-content: center; }
+
+    .detail-row:last-of-type {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .inst-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .inst-actions .btn {
+      flex: 1;
+      justify-content: center;
+    }
 
     /* ─── Analytics ──────────────────────────────────────────────── */
     .analytics-grid {
@@ -463,7 +895,13 @@
       gap: 18px;
       margin-bottom: 20px;
     }
-    @media (max-width: 900px) { .analytics-grid { grid-template-columns: 1fr; } }
+
+    @media (max-width: 900px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .chart-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -471,6 +909,7 @@
       padding: 22px;
       box-shadow: 0 2px 8px var(--shadow);
     }
+
     .chart-card h4 {
       font-size: 12px;
       font-weight: 700;
@@ -479,8 +918,15 @@
       color: var(--text-secondary);
       margin-bottom: 18px;
     }
-    .chart-card.full-width { grid-column: 1 / -1; }
-    canvas { max-height: 260px; }
+
+    .chart-card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    canvas {
+      max-height: 260px;
+    }
+
     .stat-row {
       display: flex;
       justify-content: space-between;
@@ -489,17 +935,71 @@
       border-bottom: 1px solid var(--border);
       font-size: 14px;
     }
-    .stat-row:last-child { border-bottom: none; }
-    .stat-row-label { color: var(--text-secondary); font-size: 13px; }
-    .stat-row-value { font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
-    .badge-pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-    .badge-pill.up      { background: rgba(16,185,129,0.12); color: #059669; }
-    .badge-pill.down    { background: rgba(239,68,68,0.12);  color: #dc2626; }
-    .badge-pill.neutral { background: var(--badge-bg);       color: var(--text-secondary); }
-    .rank-num { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; font-weight: 700; color: white; background: #3b82f6; }
-    .rank-num.gold   { background: #f59e0b; }
-    .rank-num.silver { background: #94a3b8; }
-    .rank-num.bronze { background: #b45309; }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-row-label {
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .stat-row-value {
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-pill.up {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+    }
+
+    .badge-pill.down {
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+    }
+
+    .badge-pill.neutral {
+      background: var(--badge-bg);
+      color: var(--text-secondary);
+    }
+
+    .rank-num {
+      display: inline-flex;
+      width: 26px;
+      height: 26px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      background: #3b82f6;
+    }
+
+    .rank-num.gold {
+      background: #f59e0b;
+    }
+
+    .rank-num.silver {
+      background: #94a3b8;
+    }
+
+    .rank-num.bronze {
+      background: #b45309;
+    }
 
     /* ─── Content Tabs ───────────────────────────────────────────── */
     .content-tabs {
@@ -509,6 +1009,7 @@
       margin-bottom: 20px;
       overflow-x: auto;
     }
+
     .content-tab {
       padding: 10px 18px;
       background: none;
@@ -522,24 +1023,42 @@
       white-space: nowrap;
       transition: color 0.2s;
     }
-    .content-tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
-    .content-panel { display: none; }
-    .content-panel.active { display: block; }
-    textarea { min-height: 380px; resize: vertical; }
+
+    .content-tab.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+    }
+
+    .content-panel {
+      display: none;
+    }
+
+    .content-panel.active {
+      display: block;
+    }
+
+    textarea {
+      min-height: 380px;
+      resize: vertical;
+    }
 
     /* ─── Modal ──────────────────────────────────────────────────── */
     .modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0, 0, 0, 0.55);
       backdrop-filter: blur(4px);
       z-index: 500;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
-    .modal.active { display: flex; }
+
+    .modal.active {
+      display: flex;
+    }
+
     .modal-box {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -549,30 +1068,59 @@
       max-width: 580px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
       animation: slideUp 0.3s ease;
     }
-    .modal-box.wide { max-width: 780px; }
-    @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal-box.wide {
+      max-width: 780px;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(16px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 22px;
     }
-    .modal-header h2 { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
     .close-modal {
       background: var(--badge-bg);
       border: none;
-      width: 32px; height: 32px;
+      width: 32px;
+      height: 32px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 18px;
       color: var(--text-secondary);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background 0.2s;
     }
-    .close-modal:hover { background: var(--border); color: var(--text-primary); }
+
+    .close-modal:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
     .modal-detail-row {
       display: flex;
       justify-content: space-between;
@@ -581,8 +1129,16 @@
       border-bottom: 1px solid var(--border);
       font-size: 14px;
     }
-    .modal-detail-row:last-child { border-bottom: none; }
-    .modal-detail-label { font-weight: 600; color: var(--text-secondary); font-size: 13px; }
+
+    .modal-detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .modal-detail-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
 
     /* ─── Upload drop zone ───────────────────────────────────────── */
     #dropZone {
@@ -593,9 +1149,23 @@
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
     }
-    #dropZone:hover { border-color: #3b82f6; background: rgba(59,130,246,0.04); }
-    #dropZone i { font-size: 36px; color: var(--text-secondary); display: block; margin-bottom: 12px; }
-    #dropZone p { color: var(--text-secondary); font-size: 14px; }
+
+    #dropZone:hover {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.04);
+    }
+
+    #dropZone i {
+      font-size: 36px;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    #dropZone p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
 
     /* ─── Skeleton ───────────────────────────────────────────────── */
     .skeleton {
@@ -604,17 +1174,47 @@
       animation: shimmer 1.4s infinite;
       border-radius: 8px;
     }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .sk-stat  { height: 100px; border-radius: 14px; }
-    .sk-card  { height: 200px; border-radius: 14px; }
-    .sk-chart { height: 240px; }
-    .sk-row   { height: 20px; border-radius: 6px; margin-bottom: 14px; }
-    .sk-mini  { height: 74px; border-radius: 12px; }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .sk-stat {
+      height: 100px;
+      border-radius: 14px;
+    }
+
+    .sk-card {
+      height: 200px;
+      border-radius: 14px;
+    }
+
+    .sk-chart {
+      height: 240px;
+    }
+
+    .sk-row {
+      height: 20px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+    }
+
+    .sk-mini {
+      height: 74px;
+      border-radius: 12px;
+    }
 
     /* ─── Spinner ────────────────────────────────────────────────── */
     .spinner {
       display: inline-block;
-      width: 18px; height: 18px;
+      width: 18px;
+      height: 18px;
       border: 2px solid var(--border);
       border-top-color: #3b82f6;
       border-radius: 50%;
@@ -622,31 +1222,72 @@
       vertical-align: middle;
       margin-right: 6px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ─── Utilities ──────────────────────────────────────────────── */
-    .flex { display: flex; }
-    .items-center { align-items: center; }
-    .gap-2 { gap: 10px; }
-    .mt-3 { margin-top: 16px; }
-    .mb-3 { margin-bottom: 16px; }
-    .text-center { text-align: center; }
-    .option-input { margin-bottom: 9px; }
-    .state-box { text-align: center; padding: 50px 20px; color: var(--text-secondary); }
-    .state-box i { font-size: 36px; opacity: 0.2; display: block; margin-bottom: 10px; }
+    .flex {
+      display: flex;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .gap-2 {
+      gap: 10px;
+    }
+
+    .mt-3 {
+      margin-top: 16px;
+    }
+
+    .mb-3 {
+      margin-bottom: 16px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .option-input {
+      margin-bottom: 9px;
+    }
+
+    .state-box {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-secondary);
+    }
+
+    .state-box i {
+      font-size: 36px;
+      opacity: 0.2;
+      display: block;
+      margin-bottom: 10px;
+    }
+
     .error-banner {
       display: none;
       align-items: center;
       gap: 10px;
-      background: rgba(239,68,68,0.08);
-      border: 1px solid rgba(239,68,68,0.25);
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
       color: #ef4444;
       padding: 13px 16px;
       border-radius: 10px;
       margin-bottom: 18px;
       font-size: 14px;
     }
-    .error-banner.show { display: flex; }
+
+    .error-banner.show {
+      display: flex;
+    }
+
     .period-select {
       padding: 8px 12px;
       border: 1px solid var(--border);
@@ -658,18 +1299,40 @@
     }
 
     /* ─── Loading text ───────────────────────────────────────────── */
-    .loading-text { text-align: center; padding: 30px; color: var(--text-secondary); }
+    .loading-text {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-secondary);
+    }
 
     /* Mobile */
     @media (max-width: 640px) {
-      .sidebar { position: fixed; transform: translateX(-100%); height: 100vh; }
-      .sidebar.mobile-open { transform: translateX(0); width: 260px; }
-      .page-content { padding: 16px; }
-      .topbar { padding: 0 16px; }
-      .analytics-grid { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        transform: translateX(-100%);
+        height: 100vh;
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+        width: 260px;
+      }
+
+      .page-content {
+        padding: 16px;
+      }
+
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- ═══ SIDEBAR ═══════════════════════════════════════════════════ -->
@@ -753,7 +1416,10 @@
       <!-- ══ DASHBOARD ══════════════════════════════════════════════ -->
       <section class="page-section active" id="pg-dashboard">
         <div class="page-header">
-          <div><h1>Platform Overview</h1><p>Live metrics across the AptioGen platform</p></div>
+          <div>
+            <h1>Platform Overview</h1>
+            <p>Live metrics across the AptioGen platform</p>
+          </div>
         </div>
 
         <div class="stats-grid" id="dashStats">
@@ -769,19 +1435,31 @@
         <div class="quick-actions">
           <div class="qa-card" onclick="navigate('questions')">
             <i class="fa-solid fa-circle-question"></i>
-            <div><h4>Question Bank</h4><p>Add & manage questions</p></div>
+            <div>
+              <h4>Question Bank</h4>
+              <p>Add & manage questions</p>
+            </div>
           </div>
           <div class="qa-card" onclick="navigate('institutions')">
             <i class="fa-solid fa-building-columns"></i>
-            <div><h4>Institutions</h4><p>View & manage</p></div>
+            <div>
+              <h4>Institutions</h4>
+              <p>View & manage</p>
+            </div>
           </div>
           <div class="qa-card" onclick="navigate('analytics')">
             <i class="fa-solid fa-chart-line"></i>
-            <div><h4>Analytics</h4><p>Platform insights</p></div>
+            <div>
+              <h4>Analytics</h4>
+              <p>Platform insights</p>
+            </div>
           </div>
           <div class="qa-card" onclick="navigate('content')">
             <i class="fa-solid fa-file-lines"></i>
-            <div><h4>Content</h4><p>T&C, Privacy, FAQs</p></div>
+            <div>
+              <h4>Content</h4>
+              <p>T&C, Privacy, FAQs</p>
+            </div>
           </div>
         </div>
       </section>
@@ -789,7 +1467,10 @@
       <!-- ══ QUESTIONS ══════════════════════════════════════════════ -->
       <section class="page-section" id="pg-questions">
         <div class="page-header">
-          <div><h1>Question Bank</h1><p>Add, edit, and manage platform questions</p></div>
+          <div>
+            <h1>Question Bank</h1>
+            <p>Add, edit, and manage platform questions</p>
+          </div>
           <div class="page-actions">
             <button class="btn btn-secondary" onclick="openUploadModal()">
               <i class="fa-solid fa-file-upload"></i> Bulk Upload
@@ -844,7 +1525,10 @@
       <!-- ══ INSTITUTIONS ══════════════════════════════════════════ -->
       <section class="page-section" id="pg-institutions">
         <div class="page-header">
-          <div><h1>Institution Management</h1><p>View and manage all registered institutions</p></div>
+          <div>
+            <h1>Institution Management</h1>
+            <p>View and manage all registered institutions</p>
+          </div>
         </div>
 
         <div class="mini-stats-row" id="instStats">
@@ -879,7 +1563,10 @@
       <!-- ══ ANALYTICS ═════════════════════════════════════════════ -->
       <section class="page-section" id="pg-analytics">
         <div class="page-header">
-          <div><h1>Platform Analytics</h1><p>Growth trends and insights</p></div>
+          <div>
+            <h1>Platform Analytics</h1>
+            <p>Growth trends and insights</p>
+          </div>
           <div class="page-actions">
             <label style="font-size:13px;color:var(--text-secondary);margin-bottom:0;">Period:</label>
             <select class="period-select" id="periodFilter" onchange="loadAnalytics()">
@@ -927,14 +1614,18 @@
           <div class="chart-card">
             <h4><i class="fa fa-heart-pulse" style="color:#ef4444;margin-right:6px;"></i>Platform Health</h4>
             <div id="healthRows">
-              <div class="skeleton sk-row"></div><div class="skeleton sk-row"></div>
-              <div class="skeleton sk-row"></div><div class="skeleton sk-row"></div>
+              <div class="skeleton sk-row"></div>
+              <div class="skeleton sk-row"></div>
+              <div class="skeleton sk-row"></div>
+              <div class="skeleton sk-row"></div>
               <div class="skeleton sk-row" style="margin-bottom:0;"></div>
             </div>
           </div>
           <div class="chart-card full-width">
             <h4><i class="fa fa-ranking-star" style="color:#f59e0b;margin-right:6px;"></i>Top Institutions</h4>
-            <div id="topInstTable"><div class="skeleton" style="height:180px;border-radius:8px;"></div></div>
+            <div id="topInstTable">
+              <div class="skeleton" style="height:180px;border-radius:8px;"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -942,7 +1633,10 @@
       <!-- ══ CONTENT ════════════════════════════════════════════════ -->
       <section class="page-section" id="pg-content">
         <div class="page-header">
-          <div><h1>Content Management</h1><p>Manage Terms & Conditions, Privacy Policy, and FAQs</p></div>
+          <div>
+            <h1>Content Management</h1>
+            <p>Manage Terms & Conditions, Privacy Policy, and FAQs</p>
+          </div>
         </div>
 
         <div class="card">
@@ -1124,36 +1818,83 @@ A: Contact support@aptiogen.com with details.</textarea>
   </div>
 
   <!-- Bulk Upload Modal -->
+  <!-- Bulk Upload Modal -->
   <div class="modal" id="uploadModal">
     <div class="modal-box wide">
       <div class="modal-header">
         <h2>Bulk Upload Questions</h2>
         <button class="close-modal" onclick="closeModal('uploadModal')">×</button>
       </div>
+
       <p style="color:var(--text-secondary);font-size:14px;margin-bottom:18px;">
-        Upload a PDF or DOCX file. The system will attempt to extract questions and options automatically.
+        Upload a <strong>PDF</strong> or <strong>DOCX</strong> file. The pipeline will:
+        <strong>parse questions → load into database → auto-generate practice sets.</strong>
+        <br>
+        Your file must contain topic markers in this format:<br>
+        <code style="background:var(--badge-bg);padding:2px 6px;border-radius:4px;font-size:12px;">
+        === TOPIC: topic-name, LEVEL: easy|medium|hard ===
+      </code>
       </p>
-      <div id="dropZone" onclick="document.getElementById('fileInput').click()">
+
+      <!-- Category selector -->
+      <div class="form-group" style="margin-bottom:16px;">
+        <label style="font-weight:600;margin-bottom:8px;display:block;">
+          Target Category <span style="color:#ef4444;">*</span>
+        </label>
+        <select id="uploadCategory"
+          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--text-primary);font-size:14px;">
+          <option value="">— Select a category —</option>
+          <option value="aptitude">Aptitude</option>
+          <option value="reasoning">Reasoning</option>
+          <option value="coding">Coding</option>
+          <option value="technical">Technical</option>
+        </select>
+      </div>
+
+      <!-- Drop zone -->
+      <div id="dropZone" onclick="document.getElementById('fileInput').click()" style="cursor:pointer;">
         <i class="fa-solid fa-cloud-arrow-up"></i>
-        <p id="dropText">Click to select or drag and drop your file</p>
-        <p style="font-size:12px;margin-top:6px;">Supported: .pdf, .docx (Max 10MB)</p>
+        <p id="dropText">Click to select or drag &amp; drop your file</p>
+        <p style="font-size:12px;margin-top:6px;color:var(--text-secondary);">Supported: .pdf, .docx (Max 10 MB)</p>
         <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none;">
       </div>
-      <div id="uploadStatus" style="display:none;text-align:center;padding:14px;">
-        <span class="spinner"></span> Processing file… Please wait.
+
+      <!-- Pipeline status (hidden until pipeline starts) -->
+      <div id="uploadStatus"
+        style="display:none;margin-top:15px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span class="spinner"></span>
+          <span id="pipelineStatusText" style="font-weight:600;font-size:14px;">Starting pipeline…</span>
+        </div>
+        <!-- Step indicators -->
+        <div style="display:flex;flex-direction:column;gap:6px;" id="pipelineSteps">
+          <div class="pipeline-step" id="step1"
+            style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);">
+            <i class="fa-regular fa-circle" id="step1Icon"></i>
+            <span>Step 1 / 3 — Parse questions from file</span>
+          </div>
+          <div class="pipeline-step" id="step2"
+            style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);">
+            <i class="fa-regular fa-circle" id="step2Icon"></i>
+            <span>Step 2 / 3 — Load questions into database</span>
+          </div>
+          <div class="pipeline-step" id="step3"
+            style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);">
+            <i class="fa-regular fa-circle" id="step3Icon"></i>
+            <span>Step 3 / 3 — Generate practice sets</span>
+          </div>
+        </div>
       </div>
+
+      <!-- Error message -->
+      <div id="uploadError"
+        style="display:none;margin-top:12px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:12px;color:#ef4444;font-size:13px;white-space:pre-wrap;">
+      </div>
+
       <div class="flex gap-2 mt-3" style="justify-content:flex-end;">
-        <button class="btn btn-secondary" onclick="closeModal('uploadModal')">Cancel</button>
+        <button class="btn btn-secondary" id="btnCancelUpload" onclick="closeModal('uploadModal')">Cancel</button>
         <button class="btn btn-primary" id="btnProcess" disabled onclick="processUpload()">
-          <i class="fa-solid fa-gears"></i> Process File
-        </button>
-      </div>
-      <div id="reviewSection" style="display:none;" class="mt-3">
-        <hr style="border:none;border-top:1px solid var(--border);margin-bottom:18px;">
-        <h3 style="margin-bottom:12px;">Review Extracted Questions (<span id="extractedCount">0</span>)</h3>
-        <div id="extractedList" style="max-height:320px;overflow-y:auto;padding:8px;background:var(--badge-bg);border-radius:10px;"></div>
-        <button class="btn btn-success mt-3" style="width:100%;" onclick="confirmBulkImport()">
-          <i class="fa-solid fa-check-double"></i> Confirm & Import All
+          <i class="fa-solid fa-bolt"></i> Run Pipeline
         </button>
       </div>
     </div>
@@ -1173,8 +1914,8 @@ A: Contact support@aptiogen.com with details.</textarea>
   <!-- ═══ JAVASCRIPT ════════════════════════════════════════════════ -->
   <script>
     /* ── Config ───────────────────────────────────────────────────── */
-    const API_BASE   = 'http://localhost:5000/api';
-    const authToken  = sessionStorage.getItem('superAdminAuth') || '';
+    const API_BASE = 'http://localhost:5000/api';
+    const authToken = sessionStorage.getItem('superAdminAuth') || '';
 
     /* ── Auth guard ───────────────────────────────────────────────── */
     if (!authToken) {
@@ -1212,11 +1953,11 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     /* ── Navigation ───────────────────────────────────────────────── */
     const pageInfo = {
-      dashboard:    { title: 'Platform Dashboard',       sub: 'Monitor and manage the entire AptioGen platform' },
-      questions:    { title: 'Question Bank',             sub: 'Add, edit, and manage platform questions' },
-      institutions: { title: 'Institution Management',   sub: 'View and manage all registered institutions' },
-      analytics:    { title: 'Platform Analytics',       sub: 'Growth trends and insights across the platform' },
-      content:      { title: 'Content Management',       sub: 'Manage Terms & Conditions, Privacy Policy, and FAQs' },
+      dashboard: { title: 'Platform Dashboard', sub: 'Monitor and manage the entire AptioGen platform' },
+      questions: { title: 'Question Bank', sub: 'Add, edit, and manage platform questions' },
+      institutions: { title: 'Institution Management', sub: 'View and manage all registered institutions' },
+      analytics: { title: 'Platform Analytics', sub: 'Growth trends and insights across the platform' },
+      content: { title: 'Content Management', sub: 'Manage Terms & Conditions, Privacy Policy, and FAQs' },
     };
     const pageLoaded = {};
 
@@ -1231,15 +1972,15 @@ A: Contact support@aptiogen.com with details.</textarea>
       });
       // Update topbar
       document.getElementById('topbarTitle').textContent = pageInfo[pageId]?.title || '';
-      document.getElementById('topbarSub').textContent   = pageInfo[pageId]?.sub   || '';
+      document.getElementById('topbarSub').textContent = pageInfo[pageId]?.sub || '';
       // Lazy load data once
       if (!pageLoaded[pageId]) {
         pageLoaded[pageId] = true;
-        if (pageId === 'dashboard')    loadDashboard();
-        if (pageId === 'questions')    loadQuestions();
+        if (pageId === 'dashboard') loadDashboard();
+        if (pageId === 'questions') loadQuestions();
         if (pageId === 'institutions') loadInstitutions();
-        if (pageId === 'analytics')    loadAnalytics();
-        if (pageId === 'content')      loadAllContent();
+        if (pageId === 'analytics') loadAnalytics();
+        if (pageId === 'content') loadAllContent();
       }
     }
 
@@ -1256,7 +1997,7 @@ A: Contact support@aptiogen.com with details.</textarea>
     }
 
     /* ── Modal Helpers ────────────────────────────────────────────── */
-    function openModal(id)  { document.getElementById(id).classList.add('active'); }
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
     // Close on backdrop click
@@ -1269,10 +2010,10 @@ A: Contact support@aptiogen.com with details.</textarea>
     ════════════════════════════════════════════════════════════════ */
     async function loadDashboard() {
       try {
-        const r    = await fetch(`${API_BASE}/super-admin/dashboard`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/dashboard`, { headers: authHeaders() });
         const data = await r.json();
         if (!r.ok) throw new Error(data.error || 'Failed');
-        const ov   = data.overview;
+        const ov = data.overview;
         document.getElementById('dashStats').innerHTML = `
           <div class="stat-card">
             <h3><i class="fa fa-building-columns"></i> Total Institutions</h3>
@@ -1318,22 +2059,22 @@ A: Contact support@aptiogen.com with details.</textarea>
     async function loadQuestions(page = 1) {
       qPage = page;
       const category = document.getElementById('qCategoryFilter').value;
-      const level    = document.getElementById('qLevelFilter').value;
-      const search   = document.getElementById('qSearch').value;
-      const params   = new URLSearchParams({ page, limit: 10, ...(category && { category }), ...(level && { level }), ...(search && { search }) });
+      const level = document.getElementById('qLevelFilter').value;
+      const search = document.getElementById('qSearch').value;
+      const params = new URLSearchParams({ page, limit: 10, ...(category && { category }), ...(level && { level }), ...(search && { search }) });
 
       document.getElementById('qLoading').style.display = 'block';
       document.getElementById('questionsTable').style.display = 'none';
 
       try {
-        const r    = await fetch(`${API_BASE}/super-admin/questions?${params}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/questions?${params}`, { headers: authHeaders() });
         const data = await r.json();
         if (!r.ok) throw new Error(data.error);
         renderQuestions(data.questions);
         renderQPagination(data.pagination);
         document.getElementById('qLoading').style.display = 'none';
         document.getElementById('questionsTable').style.display = 'table';
-      } catch(e) {
+      } catch (e) {
         document.getElementById('qLoading').textContent = 'Failed to load questions: ' + e.message;
       }
     }
@@ -1344,7 +2085,7 @@ A: Contact support@aptiogen.com with details.</textarea>
           <td style="font-size:12px;color:var(--text-secondary);">${q.questionID || '—'}</td>
           <td class="q-text" title="${q.question}">${q.question}</td>
           <td><span class="badge badge-primary">${q.category}</span></td>
-          <td><span class="badge ${q.level==='easy'?'badge-success':q.level==='medium'?'badge-warning':'badge-error'}">${q.level}</span></td>
+          <td><span class="badge ${q.level === 'easy' ? 'badge-success' : q.level === 'medium' ? 'badge-warning' : 'badge-error'}">${q.level}</span></td>
           <td style="font-size:13px;">${q.topic}</td>
           <td>${q.usageCount || 0}</td>
           <td>
@@ -1356,9 +2097,9 @@ A: Contact support@aptiogen.com with details.</textarea>
     }
 
     function renderQPagination(p) {
-      let html = `<button ${p.page===1?'disabled':''} onclick="loadQuestions(${p.page-1})"><i class="fa-solid fa-chevron-left"></i></button>`;
-      for (let i = 1; i <= p.pages; i++) html += `<button class="${i===p.page?'active':''}" onclick="loadQuestions(${i})">${i}</button>`;
-      html += `<button ${p.page===p.pages?'disabled':''} onclick="loadQuestions(${p.page+1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+      let html = `<button ${p.page === 1 ? 'disabled' : ''} onclick="loadQuestions(${p.page - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+      for (let i = 1; i <= p.pages; i++) html += `<button class="${i === p.page ? 'active' : ''}" onclick="loadQuestions(${i})">${i}</button>`;
+      html += `<button ${p.page === p.pages ? 'disabled' : ''} onclick="loadQuestions(${p.page + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
       document.getElementById('qPagination').innerHTML = html;
     }
 
@@ -1376,26 +2117,26 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     async function editQuestion(id) {
       try {
-        const r    = await fetch(`${API_BASE}/super-admin/questions?search=${id}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/questions?search=${id}`, { headers: authHeaders() });
         const data = await r.json();
         if (r.ok && data.questions.length) {
           const q = data.questions[0];
           document.getElementById('qModalTitle').textContent = 'Edit Question';
-          document.getElementById('questionId').value   = q._id;
-          document.getElementById('qCategory').value    = q.category;
-          document.getElementById('qTopic').value       = q.topic;
-          document.getElementById('qLevel').value       = q.level;
-          document.getElementById('qText').value        = q.question;
-          document.getElementById('opt1').value         = q.options[0] || '';
-          document.getElementById('opt2').value         = q.options[1] || '';
-          document.getElementById('opt3').value         = q.options[2] || '';
-          document.getElementById('opt4').value         = q.options[3] || '';
-          document.getElementById('qCorrect').value     = q.correctAnswer;
+          document.getElementById('questionId').value = q._id;
+          document.getElementById('qCategory').value = q.category;
+          document.getElementById('qTopic').value = q.topic;
+          document.getElementById('qLevel').value = q.level;
+          document.getElementById('qText').value = q.question;
+          document.getElementById('opt1').value = q.options[0] || '';
+          document.getElementById('opt2').value = q.options[1] || '';
+          document.getElementById('opt3').value = q.options[2] || '';
+          document.getElementById('opt4').value = q.options[3] || '';
+          document.getElementById('qCorrect').value = q.answer;
           document.getElementById('qExplanation').value = q.explanation || '';
-          document.getElementById('qTags').value        = q.tags ? q.tags.join(', ') : '';
+          document.getElementById('qTags').value = q.tags ? q.tags.join(', ') : '';
           openModal('questionModal');
         }
-      } catch(e) { alert('Failed to load question: ' + e.message); }
+      } catch (e) { alert('Failed to load question: ' + e.message); }
     }
 
     async function deleteQuestion(id) {
@@ -1403,7 +2144,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       try {
         const r = await fetch(`${API_BASE}/super-admin/questions/${id}`, { method: 'DELETE', headers: authHeaders() });
         r.ok ? (alert('Deleted.'), loadQuestions(qPage)) : alert('Failed to delete.');
-      } catch(e) { alert('Error: ' + e.message); }
+      } catch (e) { alert('Error: ' + e.message); }
     }
 
     document.getElementById('questionForm').addEventListener('submit', async e => {
@@ -1416,19 +2157,19 @@ A: Contact support@aptiogen.com with details.</textarea>
       ].filter(o => o.trim());
 
       const payload = {
-        category:      document.getElementById('qCategory').value,
-        topic:         document.getElementById('qTopic').value,
-        level:         document.getElementById('qLevel').value,
-        question:      document.getElementById('qText').value,
+        category: document.getElementById('qCategory').value,
+        topic: document.getElementById('qTopic').value,
+        level: document.getElementById('qLevel').value,
+        question: document.getElementById('qText').value,
         options,
-        correctAnswer: document.getElementById('qCorrect').value,
-        explanation:   document.getElementById('qExplanation').value,
-        tags:          document.getElementById('qTags').value.split(',').map(t => t.trim()).filter(Boolean),
-        createdBy:     'super-admin',
+        answer: document.getElementById('qCorrect').value,
+        explanation: document.getElementById('qExplanation').value,
+        tags: document.getElementById('qTags').value.split(',').map(t => t.trim()).filter(Boolean),
+        createdBy: 'super-admin',
       };
 
-      const qId   = document.getElementById('questionId').value;
-      const url   = qId ? `${API_BASE}/super-admin/questions/${qId}` : `${API_BASE}/super-admin/questions`;
+      const qId = document.getElementById('questionId').value;
+      const url = qId ? `${API_BASE}/super-admin/questions/${qId}` : `${API_BASE}/super-admin/questions`;
       const method = qId ? 'PUT' : 'POST';
 
       try {
@@ -1441,72 +2182,247 @@ A: Contact support@aptiogen.com with details.</textarea>
           const d = await r.json();
           alert('Error: ' + (d.error || 'Save failed'));
         }
-      } catch(e) { alert('Error: ' + e.message); }
+      } catch (e) { alert('Error: ' + e.message); }
     });
 
-    // Bulk upload
+    // ─── Bulk Upload ─────────────────────────────────────────────────────────────
+
     function openUploadModal() {
-      document.getElementById('uploadModal').classList.add('active');
-      document.getElementById('reviewSection').style.display = 'none';
-      document.getElementById('uploadStatus').style.display  = 'none';
+      // Reset all state
+      document.getElementById('uploadStatus').style.display = 'none';
+      document.getElementById('uploadError').style.display = 'none';
+      document.getElementById('uploadCategory').value = '';
       document.getElementById('btnProcess').disabled = true;
+      document.getElementById('btnCancelUpload').textContent = 'Cancel';
       document.getElementById('fileInput').value = '';
-      document.getElementById('dropText').textContent = 'Click to select or drag and drop your file';
-      extractedQuestions = [];
+      document.getElementById('dropText').textContent = 'Click to select or drag & drop your file';
+
+      // Reset step icons
+      ['step1Icon', 'step2Icon', 'step3Icon'].forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'fa-regular fa-circle';
+        el.style.color = '';
+      });
+
+      document.getElementById('uploadModal').classList.add('active');
     }
 
+    // Re-check whether Run Pipeline can be enabled
+    function checkPipelineReady() {
+      const hasFile = !!document.getElementById('fileInput').files[0];
+      const hasCategory = !!document.getElementById('uploadCategory').value;
+      document.getElementById('btnProcess').disabled = !(hasFile && hasCategory);
+    }
+
+    // Wire up file input
     document.getElementById('fileInput').addEventListener('change', () => {
       const f = document.getElementById('fileInput').files[0];
       if (f) {
-        document.getElementById('dropText').textContent = f.name;
-        document.getElementById('btnProcess').disabled = false;
+        document.getElementById('dropText').textContent = `📄 ${f.name}`;
+        document.getElementById('uploadError').style.display = 'none';
       }
+      checkPipelineReady();
     });
+
+    // Wire up category selector
+    document.getElementById('uploadCategory').addEventListener('change', checkPipelineReady);
+
+    // Step helper functions
+    function stepActive(stepNum) {
+      const icon = document.getElementById(`step${stepNum}Icon`);
+      if (icon) {
+        icon.className = 'fa-solid fa-spinner fa-spin';
+        icon.style.color = '#3b82f6';
+      }
+      const stepEl = document.getElementById(`step${stepNum}`);
+      if (stepEl) stepEl.style.color = 'var(--text-primary)';
+    }
+
+    function stepDone(stepNum, detail) {
+      const icon = document.getElementById(`step${stepNum}Icon`);
+      if (icon) {
+        icon.className = 'fa-solid fa-circle-check';
+        icon.style.color = '#10b981';
+      }
+
+      const stepEl = document.getElementById(`step${stepNum}`);
+      if (stepEl) {
+        stepEl.style.color = '#10b981';
+        if (detail) {
+          const spans = stepEl.querySelectorAll('span');
+          if (spans.length) spans[0].textContent += `  →  ${detail}`;
+        }
+      }
+    }
+
+    function stepError(stepNum) {
+      const icon = document.getElementById(`step${stepNum}Icon`);
+      if (icon) {
+        icon.className = 'fa-solid fa-circle-xmark';
+        icon.style.color = '#ef4444';
+      }
+      const stepEl = document.getElementById(`step${stepNum}`);
+      if (stepEl) stepEl.style.color = '#ef4444';
+    }
 
     async function processUpload() {
       const file = document.getElementById('fileInput').files[0];
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
+      const category = document.getElementById('uploadCategory').value;
+
+      // ── Client-side validation ────────────────────────────────────────────────
+      if (!file) {
+        showUploadError('Please select a PDF or DOCX file.');
+        return;
+      }
+      if (!category) {
+        showUploadError('Please select a category before running the pipeline.');
+        return;
+      }
+
+      // ── UI: running state ─────────────────────────────────────────────────────
+      document.getElementById('uploadError').style.display = 'none';
       document.getElementById('uploadStatus').style.display = 'block';
       document.getElementById('btnProcess').disabled = true;
-      try {
-        const r    = await fetch(`${API_BASE}/super-admin/questions/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` }, body: formData });
-        const data = await r.json();
-        if (r.ok && data.success) {
-          extractedQuestions = data.questions;
-          document.getElementById('extractedCount').textContent = data.count;
-          document.getElementById('extractedList').innerHTML = extractedQuestions.map((q, i) => `
-            <div style="background:var(--card-bg);border-radius:8px;padding:12px;margin-bottom:8px;font-size:13px;">
-              <strong>Q${i+1}:</strong> ${q.question}
-              <div style="color:var(--text-secondary);margin-top:4px;">Options: ${q.options.join(', ')}</div>
-              <div style="color:#059669;margin-top:4px;">Answer: ${q.correctAnswer}</div>
-            </div>
-          `).join('');
-          document.getElementById('reviewSection').style.display = 'block';
-          document.getElementById('uploadStatus').style.display  = 'none';
-        } else {
-          throw new Error(data.error || 'Processing failed');
+      document.getElementById('btnCancelUpload').disabled = true;
+      document.getElementById('pipelineStatusText').textContent = `Running pipeline for "${category}"…`;
+
+      // Reset step icons before starting
+      ['step1Icon', 'step2Icon', 'step3Icon'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.className = 'fa-regular fa-circle';
+          el.style.color = '';
         }
-      } catch(e) {
-        alert('Upload failed: ' + e.message);
-        document.getElementById('uploadStatus').style.display = 'none';
+      });
+      ['step1', 'step2', 'step3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.color = 'var(--text-secondary)';
+          // Reset any appended detail text
+          const span = el.querySelector('span');
+          if (span) {
+            if (id === 'step1') span.textContent = 'Step 1 / 3 — Parse questions from file';
+            if (id === 'step2') span.textContent = 'Step 2 / 3 — Load questions into database';
+            if (id === 'step3') span.textContent = 'Step 3 / 3 — Generate practice sets';
+          }
+        }
+      });
+
+      // Show step 1 as active immediately
+      stepActive(1);
+
+      // ── Build FormData ────────────────────────────────────────────────────────
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('category', category);
+      formData.append('creatorId', 'super-admin');
+
+      try {
+        // Simulate step progression visually while the server processes
+        const stepTimer1 = setTimeout(() => { stepDone(1); stepActive(2); }, 1500);
+        const stepTimer2 = setTimeout(() => { stepDone(2); stepActive(3); }, 3000);
+
+        const response = await fetch(`${API_BASE}/super-admin/questions/pipeline`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` },
+          body: formData
+        });
+
+        clearTimeout(stepTimer1);
+        clearTimeout(stepTimer2);
+
+        const result = await response.json();
+
+        if (!response.ok || result.status !== 'success') {
+          stepError(1);
+          throw new Error(result.error || `Server returned ${response.status}`);
+        }
+
+        // Mark all steps done with counts from server response
+        stepDone(1, `${result.parsedCount} question(s) parsed`);
+        stepDone(2, `${result.loadedCount} question(s) inserted`);
+        stepDone(3, `${result.setsGenerated} practice set(s) created`);
+
+        document.getElementById('pipelineStatusText').textContent = '✅ Pipeline complete!';
+        document.getElementById('btnCancelUpload').disabled = false;
+        document.getElementById('btnCancelUpload').textContent = 'Close';
+
+        // Success alert
+        setTimeout(() => {
+          alert(
+            `🎉 Pipeline completed successfully!\n\n` +
+            `  • Category          : ${result.category}\n` +
+            `  • Questions parsed  : ${result.parsedCount}\n` +
+            `  • Questions loaded  : ${result.loadedCount}\n` +
+            `  • Practice sets     : ${result.setsGenerated}\n` +
+            `  • Time taken        : ${result.elapsed}\n\n` +
+            `Questions are now live in Explore and Quiz pages.`
+          );
+          closeModal('uploadModal');
+          loadQuestions();
+        }, 600);
+
+      } catch (err) {
+        console.error('Pipeline error:', err);
+        document.getElementById('pipelineStatusText').textContent = 'Pipeline failed';
+        showUploadError(err.message || 'Pipeline execution failed. Check the console for details.');
         document.getElementById('btnProcess').disabled = false;
+        document.getElementById('btnCancelUpload').disabled = false;
       }
     }
 
-    async function confirmBulkImport() {
-      if (!confirm(`Import ${extractedQuestions.length} questions?`)) return;
-      try {
-        const r = await fetch(`${API_BASE}/super-admin/questions/bulk`, {
-          method: 'POST',
-          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ questions: extractedQuestions })
-        });
-        if (r.ok) { alert('Imported successfully!'); closeModal('uploadModal'); loadQuestions(); }
-        else       alert('Import failed.');
-      } catch(e) { alert('Error: ' + e.message); }
+    function showUploadError(msg) {
+      const el = document.getElementById('uploadError');
+      if (el) {
+        el.textContent = '⚠️  ' + msg;
+        el.style.display = 'block';
+      }
     }
+
+    // ─── Drop-zone drag-and-drop support ─────────────────────────────────────────
+    (function attachDropZone() {
+      // Use polling or window event to wait for DOM if needed, but since this 
+      // is at the end of the script in an HTML file, it should find the element.
+      const zone = document.getElementById('dropZone');
+      if (!zone) return;
+
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.style.borderColor = '#3b82f6';
+        zone.style.background = 'rgba(59,130,246,0.05)';
+      });
+
+      zone.addEventListener('dragleave', () => {
+        zone.style.borderColor = '';
+        zone.style.background = '';
+      });
+
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.style.borderColor = '';
+        zone.style.background = '';
+
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+          const file = files[0];
+          const allowed = ['application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+          if (!allowed.includes(file.type) && !file.name.match(/\.(pdf|docx)$/i)) {
+            showUploadError('Only PDF and DOCX files are supported.');
+            return;
+          }
+
+          // Assign to the hidden input
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          document.getElementById('fileInput').files = dt.files;
+          document.getElementById('dropText').textContent = `📄 ${file.name}`;
+          document.getElementById('uploadError').style.display = 'none';
+          checkPipelineReady();
+        }
+      });
+    })();
 
     /* ════════════════════════════════════════════════════════════════
        INSTITUTIONS
@@ -1515,28 +2431,28 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     async function loadInstitutions() {
       const status = document.getElementById('instStatusFilter').value;
-      const plan   = document.getElementById('instPlanFilter').value;
+      const plan = document.getElementById('instPlanFilter').value;
       const search = document.getElementById('instSearch').value;
-      const params = new URLSearchParams({ page:1, limit:50, ...(status&&{status}), ...(plan&&{plan}), ...(search&&{search}) });
+      const params = new URLSearchParams({ page: 1, limit: 50, ...(status && { status }), ...(plan && { plan }), ...(search && { search }) });
 
       try {
-        const r    = await fetch(`${API_BASE}/super-admin/institutions?${params}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions?${params}`, { headers: authHeaders() });
         if (!r.ok) throw new Error(`Server error ${r.status}`);
         const data = await r.json();
         const list = data.institutions ?? [];
         renderInstStats(list);
         renderInstCards(list);
-      } catch(e) {
+      } catch (e) {
         document.getElementById('instContent').innerHTML = `<div class="state-box"><i class="fa fa-triangle-exclamation" style="opacity:1;color:#ef4444;"></i><p style="color:#ef4444;">Failed: ${e.message}</p></div>`;
         document.getElementById('instStats').innerHTML = '<p style="color:#ef4444;font-size:13px;">Could not load stats.</p>';
       }
     }
 
     function renderInstStats(list) {
-      const total     = list.length;
-      const active    = list.filter(i => i.subscription?.status === 'active').length;
+      const total = list.length;
+      const active = list.filter(i => i.subscription?.status === 'active').length;
       const suspended = list.filter(i => i.subscription?.status === 'suspended').length;
-      const expired   = list.filter(i => i.subscription?.status === 'expired').length;
+      const expired = list.filter(i => i.subscription?.status === 'expired').length;
       document.getElementById('instStats').innerHTML = `
         <div class="mini-stat"><div class="mini-stat-icon msi-blue"><i class="fa fa-building-columns"></i></div><div class="mini-stat-info"><h4>${total}</h4><p>Total</p></div></div>
         <div class="mini-stat"><div class="mini-stat-icon msi-green"><i class="fa fa-circle-check"></i></div><div class="mini-stat-info"><h4>${active}</h4><p>Active</p></div></div>
@@ -1549,8 +2465,8 @@ A: Contact support@aptiogen.com with details.</textarea>
       const el = document.getElementById('instContent');
       if (!list.length) { el.innerHTML = `<div class="state-box"><i class="fa fa-building-columns"></i><p>No institutions found.</p></div>`; return; }
       el.innerHTML = `<div class="inst-grid">${list.map(inst => {
-        const status     = inst.subscription?.status ?? 'unknown';
-        const badgeClass = status==='active'?'badge-success':status==='suspended'?'badge-error':'badge-warning';
+        const status = inst.subscription?.status ?? 'unknown';
+        const badgeClass = status === 'active' ? 'badge-success' : status === 'suspended' ? 'badge-error' : 'badge-warning';
         return `<div class="inst-card">
           <div class="inst-card-header">
             <div>
@@ -1564,10 +2480,10 @@ A: Contact support@aptiogen.com with details.</textarea>
           <div class="detail-row"><span class="detail-label">Email</span><span style="word-break:break-all;font-size:13px;">${inst.email ?? '—'}</span></div>
           <div class="inst-actions">
             <button class="btn btn-primary btn-sm" onclick="viewInstDetails('${inst._id}')"><i class="fa-solid fa-eye"></i> View</button>
-            ${status==='active'
-              ? `<button class="btn btn-danger btn-sm" onclick="suspendInst('${inst._id}')"><i class="fa-solid fa-ban"></i> Suspend</button>`
-              : `<button class="btn btn-success btn-sm" onclick="activateInst('${inst._id}')"><i class="fa-solid fa-check"></i> Activate</button>`
-            }
+            ${status === 'active'
+            ? `<button class="btn btn-danger btn-sm" onclick="suspendInst('${inst._id}')"><i class="fa-solid fa-ban"></i> Suspend</button>`
+            : `<button class="btn btn-success btn-sm" onclick="activateInst('${inst._id}')"><i class="fa-solid fa-check"></i> Activate</button>`
+          }
           </div>
         </div>`;
       }).join('')}</div>`;
@@ -1582,7 +2498,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       document.getElementById('instModalBody').innerHTML = '<div style="text-align:center;padding:30px;"><span class="spinner"></span> Loading…</div>';
       openModal('instModal');
       try {
-        const r    = await fetch(`${API_BASE}/super-admin/institutions/${id}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}`, { headers: authHeaders() });
         if (!r.ok) throw new Error(`Server error ${r.status}`);
         const data = await r.json();
         const inst = data.institution, stats = data.stats;
@@ -1593,12 +2509,12 @@ A: Contact support@aptiogen.com with details.</textarea>
           <div class="modal-detail-row"><span class="modal-detail-label">Phone</span><span>${inst.phone ?? '—'}</span></div>
           <div class="modal-detail-row"><span class="modal-detail-label">Location</span><span>${inst.location?.fullAddress ?? `${inst.location?.district}, ${inst.location?.state}`}</span></div>
           <div class="modal-detail-row"><span class="modal-detail-label">Plan</span><span class="badge badge-primary">${inst.subscription?.plan ?? '—'}</span></div>
-          <div class="modal-detail-row"><span class="modal-detail-label">Status</span><span class="badge ${inst.subscription?.status==='active'?'badge-success':'badge-error'}">${inst.subscription?.status ?? '—'}</span></div>
+          <div class="modal-detail-row"><span class="modal-detail-label">Status</span><span class="badge ${inst.subscription?.status === 'active' ? 'badge-success' : 'badge-error'}">${inst.subscription?.status ?? '—'}</span></div>
           <div class="modal-detail-row"><span class="modal-detail-label">Total Students</span><span>${stats?.totalStudents ?? '—'}</span></div>
           <div class="modal-detail-row"><span class="modal-detail-label">Total Events</span><span>${stats?.totalEvents ?? '—'}</span></div>
-          <div class="modal-detail-row"><span class="modal-detail-label">Registered</span><span>${inst.createdAt ? new Date(inst.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '—'}</span></div>
+          <div class="modal-detail-row"><span class="modal-detail-label">Registered</span><span>${inst.createdAt ? new Date(inst.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}</span></div>
         `;
-      } catch(e) {
+      } catch (e) {
         document.getElementById('instModalBody').innerHTML = `<p style="color:#ef4444;padding:20px;text-align:center;">Could not load: ${e.message}</p>`;
       }
     }
@@ -1606,17 +2522,17 @@ A: Contact support@aptiogen.com with details.</textarea>
     async function suspendInst(id) {
       if (!confirm('Suspend this institution?')) return;
       try {
-        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, { method:'PUT', headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, { method: 'PUT', headers: authHeaders() });
         r.ok ? (alert('Suspended.'), loadInstitutions()) : alert('Failed.');
-      } catch(e) { alert(e.message); }
+      } catch (e) { alert(e.message); }
     }
 
     async function activateInst(id) {
       if (!confirm('Activate this institution?')) return;
       try {
-        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, { method:'PUT', headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, { method: 'PUT', headers: authHeaders() });
         r.ok ? (alert('Activated.'), loadInstitutions()) : alert('Failed.');
-      } catch(e) { alert(e.message); }
+      } catch (e) { alert(e.message); }
     }
 
     /* ════════════════════════════════════════════════════════════════
@@ -1628,16 +2544,16 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     function chartDefaults() {
       const text = cssVar('--text-secondary') || '#64748b';
-      const grid = cssVar('--border')         || '#e2e8f0';
+      const grid = cssVar('--border') || '#e2e8f0';
       return {
         responsive: true,
         plugins: { legend: { labels: { color: text } } },
-        scales: { x: { ticks:{color:text}, grid:{color:grid} }, y: { ticks:{color:text}, grid:{color:grid} } }
+        scales: { x: { ticks: { color: text }, grid: { color: grid } }, y: { ticks: { color: text }, grid: { color: grid } } }
       };
     }
 
     function revealChart(skId, canvasId) {
-      document.getElementById(skId).style.display    = 'none';
+      document.getElementById(skId).style.display = 'none';
       document.getElementById(canvasId).style.display = 'block';
     }
     function killChart(key) {
@@ -1646,13 +2562,13 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     async function loadAnalytics() {
       document.getElementById('analyticsBanner').classList.remove('show');
-      ['Inst','Stu','Cat','Diff'].forEach(id => {
-        document.getElementById('sk'+id).style.display = 'block';
-        document.getElementById(id.charAt(0).toLowerCase()+id.slice(1)+'Chart').style.display = 'none';
+      ['Inst', 'Stu', 'Cat', 'Diff'].forEach(id => {
+        document.getElementById('sk' + id).style.display = 'block';
+        document.getElementById(id.charAt(0).toLowerCase() + id.slice(1) + 'Chart').style.display = 'none';
       });
 
       try {
-        const r    = await fetch(`${API_BASE}/super-admin/analytics`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/analytics`, { headers: authHeaders() });
         if (!r.ok) throw new Error(`Server error ${r.status}`);
         const data = await r.json();
         const defs = chartDefaults();
@@ -1685,14 +2601,14 @@ A: Contact support@aptiogen.com with details.</textarea>
           `;
           // Health
           const active = ov.activeInstitutions ?? 0;
-          const total  = ov.totalInstitutions  ?? 1;
-          const pct    = total ? Math.round((active/total)*100) : 0;
+          const total = ov.totalInstitutions ?? 1;
+          const pct = total ? Math.round((active / total) * 100) : 0;
           document.getElementById('healthRows').innerHTML = `
             <div class="stat-row"><span class="stat-row-label">Active rate</span><span class="stat-row-value">${pct}% <span class="badge-pill up">${active} active</span></span></div>
-            <div class="stat-row"><span class="stat-row-label">Suspended</span><span class="stat-row-value">${ov.suspendedInstitutions??0} <span class="badge-pill ${(ov.suspendedInstitutions??0)>0?'down':'up'}">${(ov.suspendedInstitutions??0)>0?'needs review':'all clear'}</span></span></div>
-            <div class="stat-row"><span class="stat-row-label">Total students</span><span class="stat-row-value">${(ov.totalStudents??0).toLocaleString()}</span></div>
-            <div class="stat-row"><span class="stat-row-label">Total questions</span><span class="stat-row-value">${(ov.totalQuestions??0).toLocaleString()}</span></div>
-            <div class="stat-row"><span class="stat-row-label">Total events</span><span class="stat-row-value">${(ov.totalEvents??0).toLocaleString()}</span></div>
+            <div class="stat-row"><span class="stat-row-label">Suspended</span><span class="stat-row-value">${ov.suspendedInstitutions ?? 0} <span class="badge-pill ${(ov.suspendedInstitutions ?? 0) > 0 ? 'down' : 'up'}">${(ov.suspendedInstitutions ?? 0) > 0 ? 'needs review' : 'all clear'}</span></span></div>
+            <div class="stat-row"><span class="stat-row-label">Total students</span><span class="stat-row-value">${(ov.totalStudents ?? 0).toLocaleString()}</span></div>
+            <div class="stat-row"><span class="stat-row-label">Total questions</span><span class="stat-row-value">${(ov.totalQuestions ?? 0).toLocaleString()}</span></div>
+            <div class="stat-row"><span class="stat-row-label">Total events</span><span class="stat-row-value">${(ov.totalEvents ?? 0).toLocaleString()}</span></div>
           `;
         }
 
@@ -1708,7 +2624,7 @@ A: Contact support@aptiogen.com with details.</textarea>
             type: 'line',
             data: {
               labels: instRows.map(d => d._id),
-              datasets: [{ label:'Institutions', data: instRows.map(d => d.count), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.1)', tension:0.4, fill:true, pointBackgroundColor:'#3b82f6', pointRadius:4 }]
+              datasets: [{ label: 'Institutions', data: instRows.map(d => d.count), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#3b82f6', pointRadius: 4 }]
             },
             options: defs
           });
@@ -1722,7 +2638,7 @@ A: Contact support@aptiogen.com with details.</textarea>
             type: 'line',
             data: {
               labels: stuRows.map(d => d._id),
-              datasets: [{ label:'Students', data: stuRows.map(d => d.count), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', tension:0.4, fill:true, pointBackgroundColor:'#10b981', pointRadius:4 }]
+              datasets: [{ label: 'Students', data: stuRows.map(d => d.count), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#10b981', pointRadius: 4 }]
             },
             options: defs
           });
@@ -1736,9 +2652,9 @@ A: Contact support@aptiogen.com with details.</textarea>
             type: 'doughnut',
             data: {
               labels: catRows.map(d => d._id),
-              datasets: [{ data: catRows.map(d => d.count), backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'], borderWidth:0 }]
+              datasets: [{ data: catRows.map(d => d.count), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'], borderWidth: 0 }]
             },
-            options: { responsive:true, plugins:{ legend:{ labels:{ color:text } } } }
+            options: { responsive: true, plugins: { legend: { labels: { color: text } } } }
           });
         }
 
@@ -1750,23 +2666,23 @@ A: Contact support@aptiogen.com with details.</textarea>
             type: 'bar',
             data: {
               labels: diffRows.map(d => d._id),
-              datasets: [{ label:'Questions', data: diffRows.map(d => d.count), backgroundColor:['#10b981','#f59e0b','#ef4444'], borderRadius:6 }]
+              datasets: [{ label: 'Questions', data: diffRows.map(d => d.count), backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderRadius: 6 }]
             },
             options: defs
           });
         }
 
-      } catch(e) {
+      } catch (e) {
         document.getElementById('analyticsErr').textContent = 'Failed to load analytics: ' + e.message;
         document.getElementById('analyticsBanner').classList.add('show');
-        ['Inst','Stu','Cat','Diff'].forEach(id => document.getElementById('sk'+id).style.display = 'none');
+        ['Inst', 'Stu', 'Cat', 'Diff'].forEach(id => document.getElementById('sk' + id).style.display = 'none');
       }
     }
 
     function renderTopTable(institutions) {
       const el = document.getElementById('topInstTable');
       if (!institutions?.length) { el.innerHTML = '<p style="text-align:center;padding:24px;color:var(--text-secondary);">No data available.</p>'; return; }
-      const rankClass = i => ['gold','silver','bronze'][i] ?? '';
+      const rankClass = i => ['gold', 'silver', 'bronze'][i] ?? '';
       el.innerHTML = `
         <div style="overflow-x:auto;">
         <table class="data-table">
@@ -1780,16 +2696,16 @@ A: Contact support@aptiogen.com with details.</textarea>
             </tr>
           </thead>
           <tbody>
-            ${institutions.slice(0,10).map((inst,i) => `
+            ${institutions.slice(0, 10).map((inst, i) => `
             <tr>
-              <td><span class="rank-num ${rankClass(i)}">${i+1}</span></td>
+              <td><span class="rank-num ${rankClass(i)}">${i + 1}</span></td>
               <td>
                 <div style="font-weight:700;">${inst.name}</div>
-                <div style="font-size:12px;color:var(--text-secondary);">${inst.email??''}</div>
+                <div style="font-size:12px;color:var(--text-secondary);">${inst.email ?? ''}</div>
               </td>
-              <td><span class="badge-pill neutral">${inst.subscription?.plan??'—'}</span></td>
-              <td><span class="badge ${inst.subscription?.status==='active'?'badge-success':'badge-error'}">${inst.subscription?.status??'—'}</span></td>
-              <td style="font-size:13px;">${inst.createdAt ? new Date(inst.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '—'}</td>
+              <td><span class="badge-pill neutral">${inst.subscription?.plan ?? '—'}</span></td>
+              <td><span class="badge ${inst.subscription?.status === 'active' ? 'badge-success' : 'badge-error'}">${inst.subscription?.status ?? '—'}</span></td>
+              <td style="font-size:13px;">${inst.createdAt ? new Date(inst.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</td>
             </tr>`).join('')}
           </tbody>
         </table>
@@ -1810,16 +2726,16 @@ A: Contact support@aptiogen.com with details.</textarea>
     });
 
     async function saveContent(type) {
-      const idMap = { studentTerms:'studentTermsContent', instituteTerms:'instituteTermsContent', privacy:'privacyContent', faqs:'faqsContent' };
+      const idMap = { studentTerms: 'studentTermsContent', instituteTerms: 'instituteTermsContent', privacy: 'privacyContent', faqs: 'faqsContent' };
       const content = document.getElementById(idMap[type]).value;
       try {
         const r = await fetch(`${API_BASE}/super-admin/settings`, {
           method: 'PUT',
-          headers: { ...authHeaders(), 'Content-Type':'application/json' },
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
           body: JSON.stringify({ key: type, value: content })
         });
         r.ok ? alert(`${type} saved successfully!`) : alert('Failed to save.');
-      } catch(e) { alert('Error: ' + e.message); }
+      } catch (e) { alert('Error: ' + e.message); }
     }
 
     async function loadAllContent() {
@@ -1827,12 +2743,12 @@ A: Contact support@aptiogen.com with details.</textarea>
         const r = await fetch(`${API_BASE}/super-admin/settings`, { headers: authHeaders() });
         if (!r.ok) return;
         const settings = await r.json();
-        const idMap = { studentTerms:'studentTermsContent', instituteTerms:'instituteTermsContent', privacy:'privacyContent', faqs:'faqsContent' };
+        const idMap = { studentTerms: 'studentTermsContent', instituteTerms: 'instituteTermsContent', privacy: 'privacyContent', faqs: 'faqsContent' };
         settings.forEach(s => {
           const el = document.getElementById(idMap[s.key]);
           if (el) el.value = s.value;
         });
-      } catch(e) { console.error('Content load error:', e); }
+      } catch (e) { console.error('Content load error:', e); }
     }
 
     /* ── Auth header helper ───────────────────────────────────────── */
@@ -1845,4 +2761,5 @@ A: Contact support@aptiogen.com with details.</textarea>
     loadDashboard();
   </script>
 </body>
+
 </html>

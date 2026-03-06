@@ -53,6 +53,7 @@
       font-size: 2rem;
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
     }
@@ -274,6 +275,11 @@
         <input type="email" id="email" placeholder="Your email" readonly>
       </div>
 
+      <div class="form-group" id="rollNoGroup">
+        <label for="rollNumber" class="label-required">Roll Number</label>
+        <input type="text" id="rollNumber" placeholder="Enter your roll number">
+      </div>
+
       <div class="form-group">
         <label for="department" class="label-required">Department</label>
         <select id="department" required>
@@ -397,9 +403,70 @@
           if (profile.department) document.getElementById("department").value = profile.department;
           if (profile.college) document.getElementById("college").value = profile.college;
           if (profile.city) document.getElementById("city").value = profile.city;
+          if (profile.rollNumber) document.getElementById("rollNumber").value = profile.rollNumber;
+        } else {
+          // If no profile, check sessionStorage for registration data
+          const pending = JSON.parse(sessionStorage.getItem('pendingProfile') || '{}');
+          if (pending.name) document.getElementById("username").value = pending.name;
+          if (pending.firstName) window.pendingFirstName = pending.firstName;
+          if (pending.lastName) window.pendingLastName = pending.lastName;
+          if (pending.rollNumber) document.getElementById("rollNumber").value = pending.rollNumber;
+
+          if (pending.departmentName) {
+            const deptSelect = document.getElementById("department");
+            // Check if option exists
+            let exists = false;
+            for (let i = 0; i < deptSelect.options.length; i++) {
+              if (deptSelect.options[i].text === pending.departmentName) {
+                deptSelect.selectedIndex = i;
+                exists = true;
+                break;
+              }
+            }
+            if (!exists) {
+              const opt = new Option(pending.departmentName, pending.departmentName);
+              deptSelect.add(opt);
+              deptSelect.value = pending.departmentName;
+            }
+          }
+
+          if (pending.institutionName) {
+            const collSelect = document.getElementById("college");
+            let exists = false;
+            for (let i = 0; i < collSelect.options.length; i++) {
+              if (collSelect.options[i].text === pending.institutionName || collSelect.options[i].value === pending.institutionName) {
+                collSelect.selectedIndex = i;
+                exists = true;
+                break;
+              }
+            }
+            if (!exists) {
+              const opt = new Option(pending.institutionName, pending.institutionName);
+              collSelect.add(opt);
+              collSelect.value = pending.institutionName;
+            }
+          }
         }
       } catch (error) {
         console.log("No existing profile found (this is normal for new users):", error.message);
+
+        // Fallback to pendingProfile if getProfile fails or is empty
+        const pending = JSON.parse(sessionStorage.getItem('pendingProfile') || '{}');
+        if (pending.name) document.getElementById("username").value = pending.name;
+
+        if (pending.departmentName) {
+          const deptSelect = document.getElementById("department");
+          const opt = new Option(pending.departmentName, pending.departmentName);
+          deptSelect.add(opt);
+          deptSelect.value = pending.departmentName;
+        }
+        if (pending.institutionName) {
+          const collSelect = document.getElementById("college");
+          const opt = new Option(pending.institutionName, pending.institutionName);
+          collSelect.add(opt);
+          collSelect.value = pending.institutionName;
+        }
+        if (pending.rollNumber) document.getElementById("rollNumber").value = pending.rollNumber;
       }
     });
 
@@ -422,17 +489,20 @@
 
       const profileData = {
         username: document.getElementById("username").value.trim(),
+        firstName: window.pendingFirstName || "",
+        lastName: window.pendingLastName || "",
         email: document.getElementById("email").value,
         department: document.getElementById("department").value,
         college: document.getElementById("college").value,
         city: document.getElementById("city").value.trim(),
+        rollNumber: document.getElementById("rollNumber").value.trim(),
         photoURL: user.photoURL || null,
         provider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'email',
         // Institution specific additions
         role: pendingProfile.role || 'student',
         institutionId: pendingProfile.institutionId || undefined,
         departmentId: pendingProfile.departmentId || undefined,
-        batchId: pendingProfile.batchId || undefined
+        batchId: pendingProfile.batchId || pendingProfile.yearId || undefined
       };
 
       console.log("Saving profile data:", profileData);

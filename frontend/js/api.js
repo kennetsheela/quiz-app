@@ -17,7 +17,7 @@ async function getAuthToken() {
         .catch(reject);
       return;
     }
-    
+
     // Otherwise, wait for auth state to initialize
     const unsubscribe = onAuthStateChanged(auth, user => {
       unsubscribe();
@@ -29,7 +29,7 @@ async function getAuthToken() {
         reject(new Error("Not authenticated"));
       }
     });
-    
+
     // Timeout after 5 seconds
     setTimeout(() => {
       unsubscribe();
@@ -42,7 +42,7 @@ async function getAuthToken() {
 async function apiCall(endpoint, options = {}) {
   try {
     const token = await getAuthToken();
-    
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
@@ -61,17 +61,17 @@ async function apiCall(endpoint, options = {}) {
     return data;
   } catch (error) {
     console.error("API call error:", error);
-    
+
     // If backend is unavailable and fallback is enabled
     if (USE_FALLBACK && (error.message.includes("Failed to fetch") || error.message.includes("404"))) {
       console.warn("Backend unavailable, using localStorage fallback");
       return handleFallback(endpoint, options);
     }
-    
+
     if (error.message.includes("auth/") || error.message === "Not authenticated") {
       window.location.href = "index.html";
     }
-    
+
     throw error;
   }
 }
@@ -85,11 +85,11 @@ function handleFallback(endpoint, options) {
   if (endpoint === "/auth/profile" && options.method !== "POST") {
     const profileKey = `profile_${user.uid}`;
     const savedProfile = localStorage.getItem(profileKey);
-    
+
     if (savedProfile) {
       return JSON.parse(savedProfile);
     }
-    
+
     // Return basic profile from Firebase user
     return {
       uid: user.uid,
@@ -100,28 +100,28 @@ function handleFallback(endpoint, options) {
       createdAt: new Date().toISOString()
     };
   }
-  
+
   // Handle POST /auth/profile
   if (endpoint === "/auth/profile" && options.method === "POST") {
     const profileData = JSON.parse(options.body);
     const profileKey = `profile_${user.uid}`;
-    
+
     const profile = {
       ...profileData,
       uid: user.uid,
       email: user.email,
-      createdAt: localStorage.getItem(profileKey) 
-        ? JSON.parse(localStorage.getItem(profileKey)).createdAt 
+      createdAt: localStorage.getItem(profileKey)
+        ? JSON.parse(localStorage.getItem(profileKey)).createdAt
         : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    
+
     localStorage.setItem(profileKey, JSON.stringify(profile));
     console.log("Profile saved to localStorage:", profile);
-    
+
     return { message: "Profile saved successfully (localStorage)", user: profile };
   }
-  
+
   // Handle POST /auth/login
   if (endpoint === "/auth/login") {
     const loginKey = `login_${user.uid}`;
@@ -133,7 +133,7 @@ function handleFallback(endpoint, options) {
     localStorage.setItem(loginKey, JSON.stringify(loginData));
     return { message: "Login recorded (localStorage)" };
   }
-  
+
   throw new Error("Fallback not implemented for this endpoint");
 }
 
@@ -143,24 +143,24 @@ export const authAPI = {
     method: "POST",
     body: JSON.stringify(profileData)
   }),
-  
+
   getProfile: () => apiCall("/auth/profile"),
-  
+
   recordLogin: () => apiCall("/auth/login", { method: "POST" })
 };
 
 // Practice APIs
 export const practiceAPI = {
-  getSets: (category, topic, level) => 
+  getSets: (category, topic, level) =>
     apiCall(`/practice/sets?category=${category}&topic=${topic}&level=${level}`),
-  
+
   getQuestions: (setId) => apiCall(`/practice/sets/${setId}/questions`),
-  
+
   startSet: (data) => apiCall("/practice/sets/start", {
     method: "POST",
     body: JSON.stringify(data)
   }),
-  
+
   submitSet: (data) => {
     // Debug: Log what we're sending
     console.log("📤 [api.js] submitSet payload:", {
@@ -173,22 +173,22 @@ export const practiceAPI = {
       hasTimings: !!data.timings,
       timingsSample: data.timings ? data.timings.slice(0, 3) : null
     });
-    
+
     // Verify timings structure
     if (!data.timings || data.timings.length === 0) {
       console.error("❌ [api.js] NO TIMINGS in submission data!");
     } else {
       console.log("✅ [api.js] Timings present:", data.timings.length, "items");
-      
+
       // Check for invalid values
-      const invalidTimings = data.timings.filter(t => 
+      const invalidTimings = data.timings.filter(t =>
         t === undefined || t === null || isNaN(t) || t < 0
       );
       if (invalidTimings.length > 0) {
         console.warn(`⚠️ [api.js] ${invalidTimings.length} invalid timing values found`);
       }
     }
-    
+
     return apiCall("/practice/sets/submit", {
       method: "POST",
       body: JSON.stringify(data)
@@ -197,7 +197,7 @@ export const practiceAPI = {
       console.log("📥 [api.js] submitSet response received");
       console.log("📋 [api.js] Response has results:", !!result.results);
       console.log("📋 [api.js] Results count:", result.results?.length);
-      
+
       if (result.results && result.results.length > 0) {
         const firstResult = result.results[0];
         console.log("🔍 [api.js] First result analysis:", {
@@ -207,14 +207,14 @@ export const practiceAPI = {
           timeSpentType: typeof firstResult.timeSpent,
           allKeys: Object.keys(firstResult)
         });
-        
+
         // Count results with timing data
-        const withTime = result.results.filter(r => 
+        const withTime = result.results.filter(r =>
           r.timeSpent !== undefined && r.timeSpent !== null && !isNaN(r.timeSpent)
         );
-        
+
         console.log(`⏱️ [api.js] ${withTime.length}/${result.results.length} results have valid timing data`);
-        
+
         if (withTime.length === 0) {
           console.error("❌ [api.js] CRITICAL: Backend returned NO per-question timing data!");
         } else if (withTime.length < result.results.length) {
@@ -223,19 +223,19 @@ export const practiceAPI = {
           console.log("✅ [api.js] All results have timing data!");
         }
       }
-      
+
       return result;
     }).catch(error => {
       console.error("❌ [api.js] submitSet error:", error);
       throw error;
     });
   },
-  
+
   getProgress: () => apiCall("/practice/progress"),
-  
+
   getCategories: () => fetch(`${API_BASE_URL}/practice/categories`).then(r => r.json()),
-  
-  getTopics: (category) => 
+
+  getTopics: (category) =>
     fetch(`${API_BASE_URL}/practice/categories/${category}/topics`).then(r => r.json())
 };
 
@@ -253,7 +253,7 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   getAllEvents: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/events`);
@@ -266,7 +266,7 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   getEvent: async (eventId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/events/${eventId}`);
@@ -279,7 +279,7 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   createEvent: async (formData) => {
     const token = await getAuthToken();
     const response = await fetch(`${API_BASE_URL}/events/create`, {
@@ -289,20 +289,20 @@ export const eventAPI = {
       },
       body: formData
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || "Failed to create event");
     }
-    
+
     return response.json();
   },
-  
+
   studentLogin: (data) => apiCall("/events/student-login", {
     method: "POST",
     body: JSON.stringify(data)
   }),
-  
+
   // ⭐ NEW: Check if user already participated
   checkParticipation: async (eventId, email) => {
     try {
@@ -319,7 +319,7 @@ export const eventAPI = {
       );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to check participation');
       }
@@ -331,17 +331,17 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   getActiveSet: async (eventId) => {
     try {
       console.log("Fetching active set for event:", eventId);
       const response = await fetch(`${API_BASE_URL}/events/${eventId}/active-set`);
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to get active set");
       }
-      
+
       const data = await response.json();
       console.log("Active set response:", data);
       return data;
@@ -350,7 +350,7 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   startSet: async (data) => {
     try {
       console.log("Starting set with data:", data);
@@ -365,7 +365,7 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   submitSet: async (data) => {
     try {
       console.log("Submitting set with data:", data);
@@ -380,14 +380,14 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   toggleSet: (data) => apiCall("/events/toggle-set", {
     method: "POST",
     body: JSON.stringify(data)
   }),
-  
+
   getParticipants: (eventId) => apiCall(`/events/${eventId}/participants`),
-  
+
   // ⭐ Get single participant data
   getParticipant: async (participantId) => {
     try {
@@ -402,9 +402,9 @@ export const eventAPI = {
       throw error;
     }
   },
-  
+
   getStats: (eventId) => apiCall(`/events/${eventId}/stats`),
-  
+
   deleteEvent: (eventId, adminPassword) => apiCall(`/events/${eventId}`, {
     method: "DELETE",
     body: JSON.stringify({ adminPassword })

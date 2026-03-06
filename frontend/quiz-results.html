@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -376,17 +377,18 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Appbar -->
   <div class="appbar">
     <h2>AptioGen</h2>
-    
+
     <div class="nav-links">
       <a href="explore.html">Explore</a>
       <a href="challenge.html">Challenge</a>
       <a href="level-up.html">Level Up</a>
     </div>
-    
+
     <div class="right-icons">
       <i class="fa-solid fa-moon theme-toggle"></i>
       <div class="dropdown" id="userDropdown">
@@ -420,7 +422,8 @@
       </div>
       <div class="score-message" id="scoreMessage">Great Job!</div>
       <div class="score-details" id="scoreDetails">
-        You answered <strong id="correctCount">0</strong> out of <strong id="totalQuestions">0</strong> questions correctly
+        You answered <strong id="correctCount">0</strong> out of <strong id="totalQuestions">0</strong> questions
+        correctly
       </div>
     </div>
 
@@ -497,7 +500,7 @@
     // Load results from localStorage
     function loadResults() {
       const resultsStr = localStorage.getItem('quizResults');
-      
+
       if (!resultsStr) {
         alert('No quiz results found. Redirecting...');
         window.location.href = 'explore.html';
@@ -520,11 +523,11 @@
       if (results.score !== undefined) {
         correctCount = results.score;
         const totalQuestions = results.totalQuestions;
-        
+
         // Calculate incorrect and skipped
         results.questions.forEach((question, index) => {
           const userAnswer = results.userAnswers[index];
-          const isCorrect = userAnswer === question.correctAnswer;
+          const isCorrect = userAnswer === question.answer;
           const isSkipped = userAnswer === null;
 
           if (isSkipped) {
@@ -549,7 +552,7 @@
         // Fallback: Calculate scores if not from backend
         results.questions.forEach((question, index) => {
           const userAnswer = results.userAnswers[index];
-          const isCorrect = userAnswer === question.correctAnswer;
+          const isCorrect = userAnswer === question.answer;
           const isSkipped = userAnswer === null;
 
           if (isCorrect) {
@@ -606,7 +609,7 @@
       // Display time
       const minutes = Math.floor(results.timeSpent / 60);
       const seconds = results.timeSpent % 60;
-      document.getElementById('statTime').textContent = 
+      document.getElementById('statTime').textContent =
         `${minutes}:${String(seconds).padStart(2, '0')}`;
 
       // Display category breakdown
@@ -630,7 +633,7 @@
 
       Object.entries(categoryStats).forEach(([category, stats]) => {
         const percentage = Math.round((stats.correct / stats.total) * 100);
-        
+
         const categoryItem = document.createElement('div');
         categoryItem.className = 'category-item';
         categoryItem.innerHTML = `
@@ -652,7 +655,7 @@
             <div class="category-score">${percentage}%</div>
           </div>
         `;
-        
+
         container.appendChild(categoryItem);
       });
     }
@@ -664,31 +667,30 @@
 
       results.questions.forEach((question, index) => {
         const userAnswer = results.userAnswers[index];
-        const isCorrect = userAnswer === question.correctAnswer;
+        const isCorrect = userAnswer === question.answer;
         const isSkipped = userAnswer === null;
 
         const resultQuestion = document.createElement('div');
-        resultQuestion.className = `result-question ${
-          isSkipped ? 'skipped' : isCorrect ? 'correct' : 'incorrect'
-        }`;
+        resultQuestion.className = `result-question ${isSkipped ? 'skipped' : isCorrect ? 'correct' : 'incorrect'
+          }`;
 
-        const statusIcon = isSkipped 
-          ? '<i class="fas fa-forward"></i>' 
-          : isCorrect 
-          ? '<i class="fas fa-check-circle"></i>' 
-          : '<i class="fas fa-times-circle"></i>';
+        const statusIcon = isSkipped
+          ? '<i class="fas fa-forward"></i>'
+          : isCorrect
+            ? '<i class="fas fa-check-circle"></i>'
+            : '<i class="fas fa-times-circle"></i>';
 
-        const statusText = isSkipped 
-          ? 'Skipped' 
-          : isCorrect 
-          ? 'Correct' 
-          : 'Incorrect';
+        const statusText = isSkipped
+          ? 'Skipped'
+          : isCorrect
+            ? 'Correct'
+            : 'Incorrect';
 
-        const statusClass = isSkipped 
-          ? 'skipped' 
-          : isCorrect 
-          ? 'correct' 
-          : 'incorrect';
+        const statusClass = isSkipped
+          ? 'skipped'
+          : isCorrect
+            ? 'correct'
+            : 'incorrect';
 
         resultQuestion.innerHTML = `
           <div class="result-header">
@@ -716,7 +718,7 @@
             `}
             ${!isCorrect ? `
               <div class="result-answer-item correct-answer">
-                <strong>Correct Answer:</strong> ${question.correctAnswer}
+                <strong>Correct Answer:</strong> ${question.answer}
               </div>
             ` : ''}
           </div>
@@ -745,4 +747,5 @@
   </script>
   <script src="js/theme.js" type="module"></script>
 </body>
+
 </html>

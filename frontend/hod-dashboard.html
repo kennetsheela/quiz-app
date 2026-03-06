@@ -1,318 +1,1905 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOD Dashboard - AptioGen</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>HOD Dashboard — AptioGen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/components.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        /* ===================== DESIGN TOKENS ===================== */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #eff6ff;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-w: 240px;
+            --header-h: 64px;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --surface2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-2: #64748b;
+            --text-3: #94a3b8;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 4px 16px rgba(0, 0, 0, .04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, .1), 0 8px 32px rgba(0, 0, 0, .06);
+            --radius: 12px;
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #94a3b8;
+            --sidebar-active: #3b82f6;
+            --sidebar-hover: rgba(255, 255, 255, .06);
         }
 
-        .stat-card {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        [data-theme="dark"] {
+            --bg: #0b1120;
+            --surface: #131c2e;
+            --surface2: #1e293b;
+            --border: #1e2d42;
+            --text: #e2e8f0;
+            --text-2: #94a3b8;
+            --text-3: #475569;
+            --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 4px 16px rgba(0, 0, 0, .2);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, .4), 0 8px 32px rgba(0, 0, 0, .3);
+            --primary-light: #1e3a5f;
         }
 
-        .stat-card h3 {
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0.9;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background .3s, color .3s;
+        }
+
+        /* UtilityClasses */
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-2 {
             margin-bottom: 8px;
-            color: white;
         }
 
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 4px;
+        .mt-4 {
+            margin-top: 16px;
         }
 
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.8;
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            top: 0;
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform .3s;
         }
 
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .action-card {
-            background: white;
+        .sidebar-logo {
             padding: 20px;
-            border-radius: 12px;
-            border: 2px solid #e2e8f0;
-            cursor: pointer;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            height: var(--header-h);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .action-card:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
         }
 
-        .action-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background: #f0f7ff;
+        .sidebar-logo-text {
+            color: white;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .sidebar-nav {
+            padding: 16px 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--sidebar-text);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .header {
+            position: fixed;
+            left: var(--sidebar-w);
+            right: 0;
+            top: 0;
+            height: var(--header-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 50;
+        }
+
+        .main {
+            margin-left: var(--sidebar-w);
+            padding-top: var(--header-h);
+            min-height: 100vh;
+        }
+
+        .section {
+            display: none;
+            padding: 28px;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* MetricCards */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .metric-card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
+        }
+
+        .metric-icon.blue {
+            background: #eff6ff;
             color: #3b82f6;
+        }
+
+        .metric-icon.green {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .metric-icon.orange {
+            background: #fff7ed;
+            color: #f97316;
+        }
+
+        .metric-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-2);
+            margin-top: 4px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            color: var(--text-2);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-primary {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .profile-btn {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+        }
+
+        /* ===================== MODALS ===================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .5);
+            backdrop-filter: blur(4px);
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: var(--shadow-md);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* ===================== WIZARD ===================== */
+        .wizard-steps-bar {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px 0;
+            gap: 0;
+        }
+
+        .wstep {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+            cursor: default;
+        }
+
+        .wstep:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .wstep.done:not(:last-child)::after {
+            background: var(--primary);
+        }
+
+        .wstep-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface2);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-2);
+            position: relative;
+            z-index: 1;
+            transition: all .3s;
+        }
+
+        .wstep.active .wstep-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .wstep.done .wstep-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+
+        .wstep-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-3);
+            margin-top: 6px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .wstep.active .wstep-label {
+            color: var(--primary);
+        }
+
+        .wstep.done .wstep-label {
+            color: var(--success);
+        }
+
+        .wizard-pane {
+            display: none;
+        }
+
+        .wizard-pane.active {
+            display: block;
+        }
+
+        .wizard-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--surface2);
+            border-radius: 0 0 16px 16px;
+        }
+
+        .wizard-step-indicator {
+            font-size: 12px;
+            color: var(--text-2);
+            font-weight: 600;
+        }
+
+        /* ===================== MULTI SELECT ===================== */
+        .multi-select-area {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 44px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            cursor: pointer;
+            background: var(--surface);
+        }
+
+        .ms-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--primary);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .ms-tag button {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .ms-options {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .ms-options.open {
+            display: block;
+        }
+
+        .ms-option {
+            padding: 9px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background .15s;
+        }
+
+        .ms-option:hover {
+            background: var(--surface2);
+        }
+
+        /* ===================== TOGGLE SWITCHES ===================== */
+        .toggle-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .toggle-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .toggle-icon.blue {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .toggle-icon.orange {
+            background: #fff7ed;
+            color: #f97316;
+        }
+
+        .toggle-icon.purple {
+            background: #f5f3ff;
+            color: #8b5cf6;
+        }
+
+        .toggle-icon.green {
+            background: #ecfdf5;
+            color: var(--success);
+        }
+
+        .toggle-text strong {
+            font-size: 13px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .toggle-text small {
+            font-size: 11px;
+            color: var(--text-2);
+        }
+
+        .switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 22px;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .slider:before {
+            content: '';
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .3s;
+        }
+
+        input:checked+.slider {
+            background: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(18px);
+        }
+
+        /* ===================== METHOD CARDS ===================== */
+        .method-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .method-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .method-card:hover {
+            border-color: var(--primary);
+        }
+
+        .method-card.selected {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .method-card i {
+            font-size: 22px;
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .method-card span {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ===================== SUMMARY GRID ===================== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .summary-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--text-2);
+            margin-bottom: 3px;
+        }
+
+        .summary-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-2);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .badge-orange {
+            background: #fff7ed;
+            color: #f97316;
+        }
+
+        .badge-purple {
+            background: #f5f3ff;
+            color: #8b5cf6;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main,
+            .header {
+                left: 0;
+                margin-left: 0;
+            }
         }
     </style>
 </head>
 
 <body>
-    <header class="appbar">
-        <h2>AptioGen - HOD Dashboard</h2>
-        <div class="right-icons">
-            <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
-            <button class="btn btn-danger" onclick="logout()" style="padding: 8px 16px;">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">A</div>
+            <div class="sidebar-logo-text">Aptio<span>Gen</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-section="dashboard">
+                <i class="fa-solid fa-gauge-high"></i> Dashboard
+            </button>
+            <button class="nav-item" data-section="students">
+                <i class="fa-solid fa-users"></i> Students
+            </button>
+            <button class="nav-item" data-section="events">
+                <i class="fa-solid fa-calendar"></i> Events
+            </button>
+            <button class="nav-item" data-section="analytics">
+                <i class="fa-solid fa-chart-line"></i> Analytics
+            </button>
+            <button class="nav-item" data-section="reports">
+                <i class="fa-solid fa-file-pdf"></i> Reports
+            </button>
+        </nav>
+        <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.05)">
+            <button class="nav-item" id="logoutBtn">
                 <i class="fa-solid fa-right-from-bracket"></i> Logout
             </button>
         </div>
+    </aside>
+
+    <header class="header">
+        <div class="header-title">
+            <h3 id="hodDeptTitle">HOD Dashboard</h3>
+            <p id="hodInstName">Loading context...</p>
+        </div>
+        <div class="profile-btn">
+            <div style="width:28px; height:28px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;"
+                id="hodInitial">H</div>
+            <span style="font-size:13px; font-weight:600;" id="hodName">HOD User</span>
+        </div>
     </header>
 
-    <div class="container">
-        <div class="mb-4">
-            <h1>Department Dashboard</h1>
-            <p id="departmentInfo">Loading department information...</p>
+    <main class="main">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-icon blue"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <div class="metric-val" id="totalStudents">-</div>
+                        <div class="metric-label">Department Students</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon green"><i class="fa-solid fa-bolt"></i></div>
+                    <div>
+                        <div class="metric-val" id="activeEvents">-</div>
+                        <div class="metric-label">Active Events</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon orange"><i class="fa-solid fa-star"></i></div>
+                    <div>
+                        <div class="metric-val" id="avgScore">-</div>
+                        <div class="metric-label">Average Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="mb-2">Recent Department Events</h3>
+                <div id="recentEventsList">
+                    <p class="text-center" style="padding: 20px; color: var(--text-2);">Fetching recently created
+                        events...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Students Section -->
+        <section id="students" class="section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Department Students</h2>
+                    <p class="section-subtitle">Manage and monitor students in your department.</p>
+                </div>
+            </div>
+            <div class="card mt-4">
+                <table id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Batch</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTbody">
+                        <tr>
+                            <td colspan="5" class="text-center">Loading student records...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Other sections placeholders -->
+        <section id="events" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h2>Department Events</h2>
+                    <p>Manage events specific to your department.</p>
+                </div>
+                <button class="btn btn-primary" id="openCreateEventBtn">
+                    <i class="fa-solid fa-plus"></i> Create Event
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Code</th>
+                                <th>Date</th>
+                                <th>Visibility</th>
+                                <th>Participants</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsTbody">
+                            <tr>
+                                <td colspan="7" class="text-center">Loading events...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ SCORES MODAL ============ -->
+        <div id="scoresModal"
+            style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:20px;">
+            <div
+                style="background:var(--surface);border-radius:16px;max-width:860px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.3);">
+                <div
+                    style="padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;">
+                    <div>
+                        <div id="scoresModalTitle" style="font-size:16px;font-weight:700;">Event Scores</div>
+                        <p style="font-size:12px;color:var(--text-2);margin-top:2px">Department students only &bull;
+                            Sorted by score descending</p>
+                    </div>
+                    <button onclick="closeScoresModal()"
+                        style="width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:16px;">&times;</button>
+                </div>
+                <div id="scoresEmptyMsg" style="display:none;text-align:center;padding:48px 24px;">
+                    <div style="font-size:40px;margin-bottom:12px;">&#128237;</div>
+                    <p style="font-size:14px;color:var(--text-2);">No attempts yet for this event.</p>
+                    <p style="font-size:12px;color:var(--text-3);margin-top:4px;">Scores will appear here once students
+                        complete the quiz.</p>
+                </div>
+                <div style="padding:16px 24px;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th
+                                    style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-2);background:var(--surface2);border-bottom:1px solid var(--border);">
+                                    #</th>
+                                <th
+                                    style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-2);background:var(--surface2);border-bottom:1px solid var(--border);">
+                                    Student</th>
+                                <th
+                                    style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-2);background:var(--surface2);border-bottom:1px solid var(--border);">
+                                    Roll No</th>
+                                <th
+                                    style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-2);background:var(--surface2);border-bottom:1px solid var(--border);">
+                                    Department</th>
+                                <th
+                                    style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-2);background:var(--surface2);border-bottom:1px solid var(--border);">
+                                    Batch</th>
+                                <th
+                                    style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-2);background:var(--surface2);border-bottom:1px solid var(--border);">
+                                    Score (%)</th>
+                                <th
+                                    style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-2);background:var(--surface2);border-bottom:1px solid var(--border);">
+                                    Attempted At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scoresTbody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Students</h3>
-                <div class="stat-value" id="totalStudents">-</div>
-                <div class="stat-label">In your department</div>
+        <section id="analytics" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h2>Department Analytics</h2>
+                    <p>Insights for your department's performance.</p>
+                </div>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                <h3>Active Events</h3>
-                <div class="stat-value" id="activeEvents">-</div>
-                <div class="stat-label">Currently running</div>
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-icon blue"><i class="fa-solid fa-medal"></i></div>
+                    <div>
+                        <div class="metric-val" id="topScore">-</div>
+                        <div class="metric-label">Avg Score (%)</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon orange"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <div class="metric-val" id="totalParticipantsCount">-</div>
+                        <div class="metric-label">Participants</div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                <h3>Average Score</h3>
-                <div class="stat-value" id="avgScore">-</div>
-                <div class="stat-label">Department average</div>
+            <div class="card">
+                <h4 style="margin-bottom: 20px;">Performance Charts</h4>
+                <div style="height: 300px;">
+                    <canvas id="hodAnalyticsChart"></canvas>
+                </div>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                <h3>Total Batches</h3>
-                <div class="stat-value" id="totalBatches">-</div>
-                <div class="stat-label">Under your department</div>
-            </div>
-        </div>
+        </section>
 
-        <!-- Quick Actions -->
-        <h2>Quick Actions</h2>
-        <div class="quick-actions">
-            <div class="action-card" onclick="viewStudents()">
-                <div class="action-icon">
-                    <i class="fa-solid fa-users"></i>
-                </div>
+        <section id="reports" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <div>
-                    <h4>View Students</h4>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Department students</p>
+                    <h2>Department Reports</h2>
+                    <p>Generate and export department performance reports.</p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" onclick="generateHODReport()">
+                        <i class="fa-solid fa-file-export"></i> Generate Report
+                    </button>
                 </div>
             </div>
-            <div class="action-card" onclick="createEvent()">
-                <div class="action-icon">
-                    <i class="fa-solid fa-calendar-plus"></i>
+            <div id="reportOutput" class="card" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h4 id="reportTitle">Department Performance Report</h4>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="exportReportPDF()"><i
+                                class="fa-solid fa-file-pdf"></i> PDF</button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportReportExcel()"><i
+                                class="fa-solid fa-file-excel"></i> Excel</button>
+                    </div>
                 </div>
-                <div>
-                    <h4>Create Event</h4>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Department-specific</p>
-                </div>
-            </div>
-            <div class="action-card" onclick="viewAnalytics()">
-                <div class="action-icon">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <div>
-                    <h4>Analytics</h4>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Department insights</p>
-                </div>
-            </div>
-            <div class="action-card" onclick="generateReport()">
-                <div class="action-icon">
-                    <i class="fa-solid fa-file-pdf"></i>
-                </div>
-                <div>
-                    <h4>Generate Report</h4>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Performance reports</p>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div>
+                            <div class="metric-val" id="repTotalEvents">-</div>
+                            <div class="metric-label">Total Events</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div>
+                            <div class="metric-val" id="repAvgScore">-</div>
+                            <div class="metric-label">Avg. Score</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
+    </main>
 
-        <!-- Recent Events -->
-        <div class="card">
-            <h3>Recent Department Events</h3>
-            <div id="recentEvents">
-                <p class="text-center">Loading events...</p>
+    <!-- Create Event Modal -->
+    <div class="modal-overlay" id="createEventModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title">🚀 Create Department Event</div>
+                    <p style="font-size:12px;color:var(--text-2);margin-top:2px">Complete all 4 steps to launch your
+                        assessment</p>
+                </div>
+                <button class="close-btn" onclick="closeModal('createEventModal')">×</button>
             </div>
-        </div>
+            <div class="wizard-steps-bar">
+                <div class="wstep active" id="wstep1">
+                    <div class="wstep-circle">1</div>
+                    <div class="wstep-label">Details</div>
+                </div>
+                <div class="wstep" id="wstep2">
+                    <div class="wstep-circle">2</div>
+                    <div class="wstep-label">Access</div>
+                </div>
+                <div class="wstep" id="wstep3">
+                    <div class="wstep-circle">3</div>
+                    <div class="wstep-label">Quiz Logic</div>
+                </div>
+                <div class="wstep" id="wstep4">
+                    <div class="wstep-circle">4</div>
+                    <div class="wstep-label">Proctoring</div>
+                </div>
+            </div>
 
-        <!-- Student Performance -->
-        <div class="card mt-4">
-            <h3>Top Performers</h3>
-            <table class="student-table" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th
-                            style="padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
-                            Rank</th>
-                        <th
-                            style="padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
-                            Roll Number</th>
-                        <th
-                            style="padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
-                            Name</th>
-                        <th
-                            style="padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
-                            Batch</th>
-                        <th
-                            style="padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
-                            Average Score</th>
-                    </tr>
-                </thead>
-                <tbody id="topPerformers">
-                    <tr>
-                        <td colspan="5" style="padding: 12px; text-align: center;">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- STEP 1: Event Details -->
+            <div class="modal-body" id="wpane1" style="padding-top:20px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Event Name *</label>
+                        <input class="form-control" id="wEvtName" placeholder="e.g. Mid-Term Proficiency Test">
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Category *</label>
+                        <select class="form-control" id="wEvtCategory">
+                            <option value="">— Select Category —</option>
+                            <option value="Aptitude">📐 Aptitude</option>
+                            <option value="Reasoning">🧠 Reasoning</option>
+                            <option value="Coding">💻 Coding</option>
+                            <option value="Technical">⚙️ Technical</option>
+                            <option value="General Knowledge">🌍 General Knowledge</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date &amp; Time *</label>
+                        <input class="form-control" type="datetime-local" id="wEvtStart">
+                    </div>
+                    <div class="form-group">
+                        <label>End Date &amp; Time *</label>
+                        <input class="form-control" type="datetime-local" id="wEvtEnd">
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (minutes)</label>
+                        <input class="form-control" type="number" id="wEvtDuration" value="60" min="10" max="360">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Participants</label>
+                        <input class="form-control" type="number" id="wEvtMaxPart" placeholder="Unlimited">
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Description</label>
+                        <textarea class="form-control" id="wEvtDesc" rows="2"
+                            placeholder="Brief description of the event..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Access & Targeting -->
+            <div class="modal-body" id="wpane2" style="display:none;padding-top:20px">
+                <!-- Visibility is FIXED to Department -->
+                <div
+                    style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px">
+                    <i class="fa-solid fa-building" style="color:var(--primary);font-size:18px"></i>
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:var(--primary)">Department Only</div>
+                        <div style="font-size:12px;color:var(--text-2)">This event is visible only to students in your
+                            department. Only HOD-level visibility applies.</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Target Batches</label>
+                    <div style="position:relative">
+                        <div class="multi-select-area" id="batchTagsArea" onclick="toggleMsDropdown('batchOpts')">
+                            <span id="batchTagsPlaceholder"
+                                style="font-size:13px;color:var(--text-3);padding:2px 4px">Click to select
+                                batches…</span>
+                        </div>
+                        <div class="ms-options" id="batchOpts" style="max-height:200px;overflow-y:auto"></div>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-2);margin-top:4px">Leave empty to target all batches in
+                        your department</p>
+                </div>
+                <div class="form-group">
+                    <label>Visibility After Completion</label>
+                    <select class="form-control" id="wEvtVisibility">
+                        <option value="scores_only">Show scores only</option>
+                        <option value="rank_and_scores">Show rank &amp; scores</option>
+                        <option value="full_leaderboard">Full leaderboard visible</option>
+                        <option value="hidden">Hidden (admin view only)</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group">
+                        <label>Admin Password *</label>
+                        <input class="form-control" type="password" id="wEvtAdminPass" placeholder="For management">
+                    </div>
+                    <div class="form-group">
+                        <label>Student Password *</label>
+                        <input class="form-control" type="password" id="wEvtStudentPass" placeholder="For participants">
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Registration Deadline</label>
+                        <input class="form-control" type="datetime-local" id="wEvtDeadline">
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Quiz Logic -->
+            <div class="modal-body" id="wpane3" style="display:none;padding-top:20px">
+                <div class="form-group">
+                    <label>Question Selection Method *</label>
+                    <div class="method-cards">
+                        <div class="method-card selected" id="mcard_random" onclick="selectHodMethod('random')"><i
+                                class="fa-solid fa-shuffle"></i><span>Random from Bank</span></div>
+                        <div class="method-card" id="mcard_set" onclick="selectHodMethod('set')"><i
+                                class="fa-solid fa-layer-group"></i><span>Specific Quiz Set</span></div>
+                        <div class="method-card" id="mcard_upload" onclick="selectHodMethod('upload')"><i
+                                class="fa-solid fa-file-arrow-up"></i><span>Manual Upload</span></div>
+                    </div>
+                </div>
+                <div id="hodMethodOpts_random">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div class="form-group">
+                            <label>Number of Questions *</label>
+                            <input class="form-control" type="number" id="wEvtQCount" value="30" min="1" max="200">
+                        </div>
+                        <div class="form-group">
+                            <label>Marks Per Question</label>
+                            <input class="form-control" type="number" id="wEvtMarks" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Negative Marking</label>
+                            <select class="form-control" id="wEvtNegative">
+                                <option value="0">No negative marking</option>
+                                <option value="0.25">-0.25 per wrong</option>
+                                <option value="0.5">-0.5 per wrong</option>
+                                <option value="1">-1 per wrong</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Difficulty Mix</label>
+                            <select class="form-control" id="wEvtDifficulty">
+                                <option value="auto">Auto (balanced)</option>
+                                <option value="easy">Easy only</option>
+                                <option value="medium">Medium only</option>
+                                <option value="hard">Hard only</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pass Percentage (%)</label>
+                            <input class="form-control" type="number" id="wEvtPassPercentage" value="40" min="1"
+                                max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Attempts</label>
+                            <input class="form-control" type="number" id="wEvtMaxAttempts" value="1" min="1">
+                        </div>
+                    </div>
+                </div>
+                <div id="hodMethodOpts_set" style="display:none">
+                    <div class="form-group">
+                        <label>Select Quiz Set</label>
+                        <select class="form-control" id="wEvtQuizSet">
+                            <option value="">— Choose a pre-built set —</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="hodMethodOpts_upload" style="display:none">
+                    <div class="form-group">
+                        <label>Upload Question File *</label>
+                        <div id="wEvtFileDropzone"
+                            style="border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;background:var(--surface2);cursor:pointer;transition:border-color .2s"
+                            onclick="document.getElementById('wEvtFile').click()"
+                            ondragover="event.preventDefault();this.style.borderColor='var(--primary)'"
+                            ondragleave="this.style.borderColor='var(--border)'"
+                            ondrop="event.preventDefault();this.style.borderColor='var(--border)';handleHodFileDrop(event.dataTransfer.files)">
+                            <i class="fa-solid fa-cloud-arrow-up" id="wEvtFileIcon"
+                                style="font-size:28px;color:var(--text-3);display:block;margin-bottom:8px"></i>
+                            <p id="wEvtFileName" style="font-size:13px;color:var(--text-2)">Click to upload or drag &
+                                drop</p>
+                            <p style="font-size:11px;color:var(--text-3);margin-top:4px">Supports: .pdf, .docx, .txt</p>
+                            <input type="file" id="wEvtFile" accept=".pdf,.docx,.txt" style="display:none"
+                                onchange="handleHodFileSelect(this.files)">
+                        </div>
+                        <p style="font-size:11px;color:var(--text-2);margin-top:8px">
+                            <strong>Format:</strong> Number each question (1. Question...), add options (A. ... B. ...)
+                            and answer (Answer: A)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Proctoring & Launch -->
+            <div class="modal-body" id="wpane4" style="display:none;padding-top:20px">
+                <div class="toggle-list">
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon blue"><i class="fa-solid fa-expand"></i></div>
+                            <div class="toggle-text"><strong>Fullscreen Lock</strong><small>Force fullscreen mode during
+                                    exam</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pFullscreen" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon orange"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+                            <div class="toggle-text"><strong>Disable Tab Switching</strong><small>Warn &amp; auto-submit
+                                    on tab switch</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pTabLock" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon purple"><i class="fa-solid fa-camera"></i></div>
+                            <div class="toggle-text"><strong>Face Recognition (Webcam)</strong><small>Periodic identity
+                                    verification</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pFaceRec"><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon green"><i class="fa-solid fa-shuffle"></i></div>
+                            <div class="toggle-text"><strong>Randomize Question Sequence</strong><small>Each student
+                                    gets unique order</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pRandomQ" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon blue"><i class="fa-solid fa-copy"></i></div>
+                            <div class="toggle-text"><strong>Disable Copy/Paste</strong><small>Block clipboard actions
+                                    during exam</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pNoCopy" checked><span
+                                class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-info">
+                            <div class="toggle-icon orange"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            <div class="toggle-text"><strong>Auto-submit on Time Up</strong><small>Automatically submit
+                                    when timer expires</small></div>
+                        </div><label class="switch"><input type="checkbox" id="pAutoSubmit" checked><span
+                                class="slider"></span></label>
+                    </div>
+                </div>
+                <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+                    <p
+                        style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);margin-bottom:12px">
+                        📋 Event Summary</p>
+                    <div class="summary-grid" id="wizardSummary"></div>
+                </div>
+            </div>
+
+            <div class="wizard-nav">
+                <div class="wizard-step-indicator" id="wizardStepLabel">Step 1 of 4 — Event Details</div>
+                <div style="display:flex;gap:10px">
+                    <button class="btn btn-secondary" id="wizBtnBack" onclick="hodWizardBack()" style="display:none"><i
+                            class="fa-solid fa-arrow-left"></i> Back</button>
+                    <button class="btn btn-primary" id="wizBtnNext" onclick="hodWizardNext()">Next: Access &amp;
+                        Targeting <i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="btn btn-primary" id="wizBtnLaunch" onclick="hodWizardLaunch()"
+                        style="display:none"><i class="fa-solid fa-rocket"></i> Launch Event</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initTheme } from './js/theme.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { firebaseConfig } from './js/firebase-config.js';
+        import { auth } from './js/firebase.js';
+        import API_CONFIG from './js/config.js';
 
-        initTheme();
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const API_BASE = API_CONFIG.API_URL;
+        let currentUser = null;
 
-        const API_BASE = 'http://localhost:5000/api';
-        let hodData = null;
+        // Navigation
+        function showSection(id, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if (btn) btn.classList.add('active');
 
-        // Check authentication
-        onAuthStateChanged(auth, async (user) => {
+            if (id === 'students') loadStudents();
+            if (id === 'events') loadEvents();
+            if (id === 'analytics') loadAnalytics();
+        }
+
+        document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sectionId = btn.getAttribute('data-section');
+                showSection(sectionId, btn);
+            });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            auth.signOut().then(() => { window.location.href = 'institution-login.html'; });
+        });
+
+        auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'institution-login.html';
                 return;
             }
-
-            // Get HOD token and load dashboard
+            currentUser = user;
             const token = await user.getIdToken();
-            loadDashboard(token);
+            fetchDashboardData(token);
         });
 
-        async function loadDashboard(token) {
+        async function fetchDashboardData(token) {
             try {
-                const response = await fetch(`${API_BASE}/hod/dashboard`, {
+                const res = await fetch(`${API_BASE}/hod/dashboard`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (!res.ok) throw new Error('HOD Auth Failed');
+                const data = await res.json();
 
-                if (response.ok) {
-                    const data = await response.json();
-                    hodData = data;
-                    displayDashboard(data);
-                } else {
-                    alert('Failed to load dashboard. Please ensure you have HOD permissions.');
+                // Update UI
+                document.getElementById('hodDeptTitle').textContent = `${data.department.name} Dashboard`;
+                document.getElementById('hodInstName').textContent = data.department.institutionId?.name || 'AptioGen Institution';
+                document.getElementById('totalStudents').textContent = data.stats.totalStudents;
+                document.getElementById('activeEvents').textContent = data.stats.totalEvents;
+                document.getElementById('avgScore').textContent = data.stats.averageScore ? data.stats.averageScore.toFixed(1) + '%' : '—';
+
+                // Update profile info
+                const user = data.user;
+                if (user) {
+                    const name = user.username || user.name || 'HOD User';
+                    document.getElementById('hodName').textContent = name;
+                    document.getElementById('hodInitial').textContent = name.charAt(0).toUpperCase();
                 }
-            } catch (error) {
-                console.error('Dashboard error:', error);
+
+                // Load recent events
+                renderRecentEvents(data.recentEvents || []);
+            } catch (err) {
+                console.error(err);
             }
         }
 
-        function displayDashboard(data) {
-            // Update department info
-            document.getElementById('departmentInfo').textContent =
-                `${data.department.name} (${data.department.code})`;
+        async function loadStudents() {
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const res = await fetch(`${API_BASE}/hod/students`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const tbody = document.getElementById('studentsTbody');
 
-            // Update stats
-            document.getElementById('totalStudents').textContent = data.stats.totalStudents;
-            document.getElementById('activeEvents').textContent = data.stats.activeEvents;
-            document.getElementById('avgScore').textContent =
-                data.stats.averageScore ? data.stats.averageScore.toFixed(1) + '%' : 'N/A';
-            document.getElementById('totalBatches').textContent = data.stats.totalBatches;
+                if (!data.students || data.students.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No students found in this department.</td></tr>';
+                    return;
+                }
 
-            // Display recent events
-            const eventsHtml = data.recentEvents.length > 0
-                ? data.recentEvents.map(event => `
-                    <div style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <h4 style="margin-bottom: 5px;">${event.title}</h4>
-                                <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">
-                                    ${new Date(event.startDate).toLocaleDateString()} - ${event.participantCount || 0} participants
-                                </p>
-                            </div>
-                            <span class="badge ${event.status === 'active' ? 'badge-success' : 'badge-primary'}">
-                                ${event.status}
-                            </span>
-                        </div>
-                    </div>
-                `).join('')
-                : '<p class="text-center">No recent events</p>';
-
-            document.getElementById('recentEvents').innerHTML = eventsHtml;
-
-            // Display top performers (mock data for now)
-            const topPerformersHtml = `
-                <tr>
-                    <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">1</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">CS2024001</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">Student Name</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">2024</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;"><span class="badge badge-success">95%</span></td>
-                </tr>
-            `;
-            document.getElementById('topPerformers').innerHTML = topPerformersHtml;
+                tbody.innerHTML = data.students.map(s => `
+                    <tr>
+                        <td><strong>${s.rollNumber || s.rollNo || '—'}</strong></td>
+                        <td>${s.username || s.name || 'Student'}</td>
+                        <td>${s.email}</td>
+                        <td><span class="badge badge-primary">${s.batchId?.batchID || '—'}</span></td>
+                        <td><button class="btn btn-primary btn-sm">Profile</button></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
         }
 
-        window.logout = () => {
-            auth.signOut();
-            window.location.href = 'institution-login.html';
+        // Modals
+        window.openModal = (id) => {
+            document.getElementById(id).classList.add('show');
+            if (id === 'createEventModal') {
+                // Reset HOD wizard to step 1
+                hodWizardStep = 1;
+                hodMsState.batch = [];
+                renderHodWizardStep();
+                // Reset form fields
+                ['wEvtName', 'wEvtDesc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                ['wEvtStart', 'wEvtEnd', 'wEvtDeadline'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                const dur = document.getElementById('wEvtDuration'); if (dur) dur.value = '60';
+                const cat = document.getElementById('wEvtCategory'); if (cat) cat.value = '';
+                renderHodMsTags();
+            }
+        }
+        window.closeModal = (id) => document.getElementById(id).classList.remove('show');
+
+        document.getElementById('openCreateEventBtn').addEventListener('click', () => openModal('createEventModal'));
+
+        // ======================== HOD EVENT WIZARD ========================
+        let hodWizardStep = 1;
+        const HOD_WIZARD_STEPS = 4;
+        const hodMsState = { batch: [] };
+        const hodWizardNextLabels = [
+            'Next: Access &amp; Targeting <i class="fa-solid fa-arrow-right"></i>',
+            'Next: Quiz Logic <i class="fa-solid fa-arrow-right"></i>',
+            'Next: Proctoring <i class="fa-solid fa-arrow-right"></i>',
+            ''
+        ];
+        const hodWizardStepLabels = [
+            'Step 1 of 4 — Event Details',
+            'Step 2 of 4 — Access &amp; Targeting',
+            'Step 3 of 4 — Quiz Logic',
+            'Step 4 of 4 — Proctoring &amp; Launch'
+        ];
+
+        function renderHodWizardStep() {
+            for (let i = 1; i <= HOD_WIZARD_STEPS; i++) {
+                const pane = document.getElementById('wpane' + i);
+                if (pane) pane.style.display = i === hodWizardStep ? 'block' : 'none';
+                const step = document.getElementById('wstep' + i);
+                if (step) {
+                    step.classList.remove('active', 'done');
+                    if (i === hodWizardStep) step.classList.add('active');
+                    else if (i < hodWizardStep) step.classList.add('done');
+                    const circle = step.querySelector('.wstep-circle');
+                    if (circle) circle.innerHTML = i < hodWizardStep ? '<i class="fa-solid fa-check" style="font-size:12px"></i>' : i;
+                }
+            }
+            document.getElementById('wizardStepLabel').textContent = hodWizardStepLabels[hodWizardStep - 1];
+            document.getElementById('wizBtnBack').style.display = hodWizardStep > 1 ? '' : 'none';
+            document.getElementById('wizBtnNext').style.display = hodWizardStep < HOD_WIZARD_STEPS ? '' : 'none';
+            document.getElementById('wizBtnLaunch').style.display = hodWizardStep === HOD_WIZARD_STEPS ? '' : 'none';
+            if (hodWizardStep < HOD_WIZARD_STEPS) document.getElementById('wizBtnNext').innerHTML = hodWizardNextLabels[hodWizardStep - 1];
+            if (hodWizardStep === 2) loadBatchesForWizard();
+            if (hodWizardStep === HOD_WIZARD_STEPS) buildHodWizardSummary();
+        }
+
+        function hodWizardValidate() {
+            if (hodWizardStep === 1) {
+                if (!document.getElementById('wEvtName').value.trim()) { alert('Please enter an Event Name.'); return false; }
+                if (!document.getElementById('wEvtCategory').value) { alert('Please select a Category.'); return false; }
+                if (!document.getElementById('wEvtStart').value) { alert('Please set a Start Date & Time.'); return false; }
+                if (!document.getElementById('wEvtEnd').value) { alert('Please set an End Date & Time.'); return false; }
+                if (new Date(document.getElementById('wEvtEnd').value) <= new Date(document.getElementById('wEvtStart').value)) { alert('End Date must be after Start Date.'); return false; }
+            }
+            if (hodWizardStep === 2) {
+                if (!document.getElementById('wEvtAdminPass').value) { alert('Please enter an Admin Password.'); return false; }
+                if (!document.getElementById('wEvtStudentPass').value) { alert('Please enter a Student Password.'); return false; }
+            }
+            if (hodWizardStep === 3) {
+                const method = document.querySelector('.method-card.selected')?.id?.replace('mcard_', '') || 'random';
+                if (method === 'upload') {
+                    const fileInput = document.getElementById('wEvtFile');
+                    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                        alert('Please select a question file to upload (.pdf, .docx, .txt).');
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        window.hodWizardNext = () => {
+            if (!hodWizardValidate()) return;
+            if (hodWizardStep < HOD_WIZARD_STEPS) { hodWizardStep++; renderHodWizardStep(); }
         };
 
-        window.viewStudents = () => {
-            alert('View Students: This would show all students in your department with filters');
+        window.hodWizardBack = () => {
+            if (hodWizardStep > 1) { hodWizardStep--; renderHodWizardStep(); }
         };
 
-        window.createEvent = () => {
-            alert('Create Event: This would open the event creation wizard scoped to your department');
+        function buildHodWizardSummary() {
+            const items = [
+                { label: 'Event Name', value: document.getElementById('wEvtName').value || '—' },
+                { label: 'Category', value: document.getElementById('wEvtCategory').value || '—' },
+                { label: 'Visibility', value: '🏢 Department Only' },
+                { label: 'Duration', value: document.getElementById('wEvtDuration').value + ' mins' },
+                { label: 'Batches', value: hodMsState.batch.length ? hodMsState.batch.map(b => b.label).join(', ') : 'All Batches' },
+                { label: 'After Completion', value: document.getElementById('wEvtVisibility').value.replace(/_/g, ' ') },
+                { label: 'Questions', value: document.getElementById('wEvtQCount').value },
+                { label: 'Pass %', value: document.getElementById('wEvtPassPercentage').value + '%' },
+                { label: 'Max Attempts', value: document.getElementById('wEvtMaxAttempts').value },
+                { label: 'Admin Pass', value: document.getElementById('wEvtAdminPass').value ? '••••••' : '—' },
+                { label: 'Student Pass', value: document.getElementById('wEvtStudentPass').value ? '••••••' : '—' },
+                { label: 'Fullscreen', value: document.getElementById('pFullscreen').checked ? '✅ Yes' : '❌ No' },
+            ];
+            document.getElementById('wizardSummary').innerHTML = items.map(i => `<div class="summary-item"><div class="summary-label">${i.label}</div><div class="summary-value">${i.value}</div></div>`).join('');
+        }
+
+        window.hodWizardLaunch = async () => {
+            const btn = document.getElementById('wizBtnLaunch');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Launching...';
+
+            const method = document.querySelector('.method-card.selected')?.id?.replace('mcard_', '') || 'random';
+
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const proctoring = {
+                    fullscreen: document.getElementById('pFullscreen').checked,
+                    tabLock: document.getElementById('pTabLock').checked,
+                    faceRecognition: document.getElementById('pFaceRec').checked,
+                    randomizeQ: document.getElementById('pRandomQ').checked,
+                    noCopyPaste: document.getElementById('pNoCopy').checked,
+                    autoSubmit: document.getElementById('pAutoSubmit').checked
+                };
+
+                const eventData = {
+                    eventName: document.getElementById('wEvtName').value,
+                    adminPassword: document.getElementById('wEvtAdminPass').value,
+                    studentPassword: document.getElementById('wEvtStudentPass').value,
+                    category: document.getElementById('wEvtCategory').value,
+                    duration: parseInt(document.getElementById('wEvtDuration').value),
+                    startTime: document.getElementById('wEvtStart').value,
+                    endTime: document.getElementById('wEvtEnd').value,
+                    description: document.getElementById('wEvtDesc').value,
+                    maxParticipants: document.getElementById('wEvtMaxPart').value || null,
+                    targetBatches: hodMsState.batch.map(b => b.id),
+                    visibility: 'department',
+                    resultsVisibility: document.getElementById('wEvtVisibility').value,
+                    questionMethod: method,
+                    numQuestions: parseInt(document.getElementById('wEvtQCount').value),
+                    marksPerQ: parseInt(document.getElementById('wEvtMarks').value),
+                    negativeMarking: document.getElementById('wEvtNegative').value,
+                    difficulty: document.getElementById('wEvtDifficulty').value,
+                    passPercentage: parseInt(document.getElementById('wEvtPassPercentage').value),
+                    maxAttempts: parseInt(document.getElementById('wEvtMaxAttempts').value),
+                    proctoring
+                };
+
+                let fetchOptions;
+
+                if (method === 'upload') {
+                    // Use FormData to send both the JSON event data and the file
+                    const fileInput = document.getElementById('wEvtFile');
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    // Send eventData as a JSON string in the 'data' field
+                    formData.append('data', JSON.stringify(eventData));
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }, // NO Content-Type — browser sets multipart boundary
+                        body: formData
+                    };
+                } else {
+                    // JSON for random/set methods
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(eventData)
+                    };
+                }
+
+                const res = await fetch(`${API_BASE}/hod/events`, fetchOptions);
+
+                if (res.ok) {
+                    closeModal('createEventModal');
+                    loadEvents();
+                    showToast('🚀 Event created successfully!');
+                } else {
+                    const err = await res.json();
+                    alert('Error: ' + (err.error || 'Failed to create event'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to create event: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rocket"></i> Launch Event';
+            }
         };
 
-        window.viewAnalytics = () => {
-            alert('Analytics: This would show detailed department analytics and performance trends');
+        // Method card selector
+        window.selectHodMethod = (method) => {
+            ['random', 'set', 'upload'].forEach(m => {
+                document.getElementById(`mcard_${m}`)?.classList.remove('selected');
+                const opts = document.getElementById(`hodMethodOpts_${m}`);
+                if (opts) opts.style.display = 'none';
+            });
+            document.getElementById(`mcard_${method}`)?.classList.add('selected');
+            const shown = document.getElementById(`hodMethodOpts_${method}`);
+            if (shown) shown.style.display = 'block';
         };
 
-        window.generateReport = () => {
-            alert('Generate Report: This would create a PDF report of department performance');
+        // File upload helpers
+        function updateHodFileUI(file) {
+            if (!file) return;
+            const nameEl = document.getElementById('wEvtFileName');
+            const iconEl = document.getElementById('wEvtFileIcon');
+            if (nameEl) nameEl.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            if (iconEl) { iconEl.className = 'fa-solid fa-file-circle-check'; iconEl.style.color = 'var(--primary)'; }
+            // Auto-select upload method card if not already selected
+            selectHodMethod('upload');
+        }
+
+        window.handleHodFileSelect = (files) => {
+            if (files && files.length > 0) updateHodFileUI(files[0]);
         };
+
+        window.handleHodFileDrop = (files) => {
+            if (files && files.length > 0) {
+                const dt = new DataTransfer();
+                dt.items.add(files[0]);
+                document.getElementById('wEvtFile').files = dt.files;
+                updateHodFileUI(files[0]);
+            }
+        };
+
+        // Multi-select helpers for HOD batches
+        const msState = { batch: hodMsState.batch }; // alias for compat
+        window.toggleMsDropdown = (id) => {
+            event.stopPropagation();
+            document.querySelectorAll('.ms-options').forEach(o => { if (o.id !== id) o.classList.remove('open'); });
+            document.getElementById(id).classList.toggle('open');
+        };
+        document.addEventListener('click', () => document.querySelectorAll('.ms-options').forEach(o => o.classList.remove('open')));
+
+        function renderHodMsTags() {
+            const area = document.getElementById('batchTagsArea');
+            const placeholder = document.getElementById('batchTagsPlaceholder');
+            area.querySelectorAll('.ms-tag').forEach(t => t.remove());
+            if (hodMsState.batch.length === 0) {
+                placeholder.style.display = 'block';
+            } else {
+                placeholder.style.display = 'none';
+                hodMsState.batch.forEach(item => {
+                    const tag = document.createElement('span');
+                    tag.className = 'ms-tag';
+                    tag.innerHTML = `${item.label} <button type="button" onclick="removeHodBatchTag('${item.id}');event.stopPropagation()">×</button>`;
+                    area.appendChild(tag);
+                });
+            }
+        }
+
+        window.removeHodBatchTag = (id) => {
+            hodMsState.batch = hodMsState.batch.filter(b => b.id !== id);
+            renderHodMsTags();
+        };
+
+        window.toggleHodBatch = (id, label) => {
+            event.stopPropagation();
+            const idx = hodMsState.batch.findIndex(b => b.id === id);
+            if (idx === -1) hodMsState.batch.push({ id, label });
+            else hodMsState.batch.splice(idx, 1);
+            renderHodMsTags();
+            // update checkbox
+            const cb = document.getElementById(`hbCK_${id}`);
+            if (cb) cb.checked = hodMsState.batch.some(b => b.id === id);
+        };
+
+        async function loadBatchesForWizard() {
+            const opts = document.getElementById('batchOpts');
+            opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">Loading batches...</div>';
+            try {
+                const token = await auth.currentUser.getIdToken();
+                // Fetch via HOD dashboard to get institution context
+                const dashRes = await fetch(`${API_BASE}/hod/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const dashData = await dashRes.json();
+                const instId = dashData.department?.institutionId?._id || dashData.department?.institutionId;
+                if (!instId) { opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">No institution found</div>'; return; }
+
+                const batchRes = await fetch(`${API_BASE}/institutions/${instId}/batches/active`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const batchData = await batchRes.json();
+                const batches = batchData.batches || [];
+                if (batches.length === 0) {
+                    opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">No active batches found</div>';
+                    return;
+                }
+                opts.innerHTML = batches.map(b => `
+                    <div class="ms-option" onclick="toggleHodBatch('${b._id}', '${b.batchID || b.name}')">
+                        <input type="checkbox" id="hbCK_${b._id}" style="accent-color:var(--primary)">
+                        ${b.batchID || b.name}
+                    </div>
+                `).join('');
+            } catch (err) {
+                opts.innerHTML = '<div style="padding:10px;color:var(--danger);font-size:13px">Failed to load batches</div>';
+                console.error(err);
+            }
+        }
+
+        // Events
+        async function loadEvents() {
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const res = await fetch(`${API_BASE}/hod/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const tbody = document.getElementById('eventsTbody');
+
+                const events = data.recentEvents;
+                if (!events || events.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No events found for your department.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = events.map(e => `
+                    <tr>
+                        <td><strong>${e.eventName}</strong></td>
+                        <td><code>${e.eventCode}</code></td>
+                        <td>${new Date(e.startTime).toLocaleDateString()}</td>
+                        <td><span class="badge ${e.visibility === 'department' ? 'badge-orange' : 'badge-purple'}">${e.visibility}</span></td>
+                        <td id="partCount_${e._id}">${e.participantCount || 0}</td>
+                        <td><span class="badge badge-success">${e.status || 'Active'}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="viewEventScores('${e._id}', '${e.eventName.replace(/'/g, "\\'")}')"
+                                style="gap:4px">
+                                <i class="fa-solid fa-chart-line"></i> Scores
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        // View Scores Modal
+        window.viewEventScores = async (eventId, eventName) => {
+            const modal = document.getElementById('scoresModal');
+            const title = document.getElementById('scoresModalTitle');
+            const tbody = document.getElementById('scoresTbody');
+            const emptyMsg = document.getElementById('scoresEmptyMsg');
+
+            title.textContent = `📊 Scores — ${eventName}`;
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px"><i class="fa-solid fa-spinner fa-spin"></i> Loading scores...</td></tr>';
+            emptyMsg.style.display = 'none';
+            modal.style.display = 'flex';
+
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const res = await fetch(`${API_BASE}/hod/events/${eventId}/scores`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || 'Failed to fetch scores');
+
+                const scores = data.scores || [];
+                if (scores.length === 0) {
+                    tbody.innerHTML = '';
+                    emptyMsg.style.display = 'block';
+                    return;
+                }
+
+                tbody.innerHTML = scores.map((s, i) => {
+                    const pct = parseFloat(s.scorePercent).toFixed(2);
+                    const pctColor = pct >= 60 ? '#10b981' : pct >= 40 ? '#f59e0b' : '#ef4444';
+                    const attempted = new Date(s.attemptedAt).toLocaleString();
+                    return `
+                        <tr>
+                            <td style="font-weight:700;color:#64748b">#${i + 1}</td>
+                            <td>
+                                <div style="font-weight:600">${s.name}</div>
+                                <div style="font-size:11px;color:var(--text-2)">${s.email}</div>
+                            </td>
+                            <td>${s.rollNumber}</td>
+                            <td>${s.department}</td>
+                            <td>${s.batch}</td>
+                            <td style="text-align:center">
+                                <span style="font-size:1.1rem;font-weight:800;color:${pctColor}">${pct}%</span>
+                                <div style="font-size:10px;color:var(--text-2);margin-top:2px">${s.correct}✓ ${s.wrong}✗ / ${s.total}</div>
+                            </td>
+                            <td style="font-size:11px;color:var(--text-2)">${attempted}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:20px">Error: ${err.message}</td></tr>`;
+            }
+        };
+
+        window.closeScoresModal = () => {
+            document.getElementById('scoresModal').style.display = 'none';
+        };
+
+        async function loadAnalytics() {
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const res = await fetch(`${API_BASE}/hod/analytics`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const stats = data.analytics || {};
+
+                document.getElementById('topScore').textContent = stats.averageScore ? stats.averageScore.toFixed(2) + '%' : '0%';
+                document.getElementById('totalParticipantsCount').textContent = stats.totalParticipants || 0;
+
+                const ctx = document.getElementById('hodAnalyticsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: stats.performanceHistory?.map(p => p.month) || ['No Data'],
+                        datasets: [{
+                            label: 'Average Score',
+                            data: stats.performanceHistory?.map(p => p.score) || [0],
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, max: 100 }
+                        }
+                    }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        window.generateHODReport = async () => {
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const res = await fetch(`${API_BASE}/hod/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                document.getElementById('reportOutput').style.display = 'block';
+                document.getElementById('repTotalEvents').textContent = data.stats.totalEvents;
+                document.getElementById('repAvgScore').textContent = data.stats.averageScore ? data.stats.averageScore.toFixed(2) + '%' : '0%';
+
+                showToast('Report generated successfully');
+            } catch (err) { console.error(err); }
+        }
+
+        window.exportReportPDF = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Department Performance Report", 10, 10);
+            doc.text(`Avg Score: ${document.getElementById('repAvgScore').textContent}`, 10, 20);
+            doc.text(`Total Events: ${document.getElementById('repTotalEvents').textContent}`, 10, 30);
+            doc.save("department-report.pdf");
+        };
+
+        window.exportReportExcel = () => {
+            const ws = XLSX.utils.aoa_to_sheet([
+                ["Metric", "Value"],
+                ["Average Score", document.getElementById('repAvgScore').textContent],
+                ["Total Events", document.getElementById('repTotalEvents').textContent]
+            ]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Report");
+            XLSX.writeFile(wb, "department-report.xlsx");
+        };
+
+        function renderRecentEvents(events) {
+            const list = document.getElementById('recentEventsList');
+            if (!events || events.length === 0) {
+                list.innerHTML = '<p class="text-center" style="padding: 20px; color: var(--text-2);">No recent events found.</p>';
+                return;
+            }
+
+            list.innerHTML = events.map(event => `
+                <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="font-size: 14px; margin-bottom: 4px;">${event.eventName}</h4>
+                        <p style="font-size: 12px; color: var(--text-2);">
+                            ${new Date(event.startTime).toLocaleDateString()} • Code: ${event.eventCode}
+                        </p>
+                    </div>
+                    <span class="badge ${event.visibility === 'department' ? 'badge-orange' : 'badge-success'}">
+                        ${event.visibility}
+                    </span>
+                </div>
+            `).join('');
+        }
+
     </script>
 </body>
 

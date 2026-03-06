@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/common.css">
-    
+
     <link rel="stylesheet" href="css/components.css">
     <style>
         .wizard-container {
@@ -259,7 +259,16 @@
                     </div>
                 </div>
 
-                <button class="btn btn-success w-100 mt-3" onclick="completeRegistration()">
+                <div class="form-group mt-3">
+                    <label
+                        style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-weight: 400;">
+                        <input type="checkbox" id="policyCheck" style="width: auto; margin-top: 4px;">
+                        <span>I have read and agree to the <a href="#" onclick="showPolicy('instituteTerms')">Terms &
+                                Conditions</a> and <a href="#" onclick="showPolicy('privacy')">Privacy Policy</a></span>
+                    </label>
+                </div>
+
+                <button class="btn btn-success w-100 mt-2" onclick="completeRegistration()">
                     <i class="fa-solid fa-check"></i> Complete Registration
                 </button>
             </div>
@@ -276,11 +285,30 @@
         </div>
     </div>
 
+    <div class="modal" id="policyModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header flex justify-between items-center mb-4">
+                <h3 class="mb-0" id="policyModalTitle">Policy</h3>
+                <button class="close-modal" onclick="closePolicyModal()"
+                    style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div id="policyContainer" class="p-4 bg-light rounded"
+                style="max-height: 400px; overflow-y: auto; line-height: 1.6;">
+                Loading...
+            </div>
+            <button class="btn btn-primary w-100 mt-4" onclick="closePolicyModal()">I Understand</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initTheme } from './js/theme.js';
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { firebaseConfig } from './js/firebase-config.js';
+        import API_CONFIG from './js/config.js';
+
+        const API_BASE = API_CONFIG.API_URL;
+
 
         initTheme();
         const app = initializeApp(firebaseConfig);
@@ -384,6 +412,11 @@
         }
 
         window.completeRegistration = async () => {
+            if (!document.getElementById('policyCheck').checked) {
+                alert('Please accept the Terms & Conditions and Privacy Policy to proceed.');
+                return;
+            }
+
             const email = document.getElementById('adminEmail').value;
             const password = prompt('Create a password for your admin account:');
 
@@ -419,7 +452,7 @@
                 };
 
                 // Save to backend
-                const response = await fetch('http://localhost:5000/api/institutions/register', {
+                const response = await fetch(`${API_BASE}/institutions/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(institutionData)
@@ -451,6 +484,40 @@
             if (recommendations[range]) {
                 selectPlan(recommendations[range]);
             }
+        };
+
+        // Policy Modal Logic
+        window.showPolicy = async (key) => {
+            const modal = document.getElementById("policyModal");
+            const container = document.getElementById("policyContainer");
+            const title = document.getElementById("policyModalTitle");
+
+            title.textContent = key === 'privacy' ? 'Privacy Policy' : 'Terms of Service';
+            container.innerHTML = "Loading...";
+            modal.classList.add("active");
+
+            try {
+                const res = await fetch(`${API_BASE}/public/settings/${key}`);
+                const data = await res.json();
+
+                if (data.value) {
+                    const html = data.value
+                        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                        .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
+                        .replace(/\n/gim, '<br>');
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = "No policy available at this time.";
+                }
+            } catch (e) {
+                container.innerHTML = "Error loading policy. Please try again later.";
+            }
+        };
+
+        window.closePolicyModal = () => {
+            document.getElementById("policyModal").classList.remove("active");
         };
     </script>
 </body>

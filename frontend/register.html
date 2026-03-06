@@ -172,7 +172,8 @@
       <div class="terms">
         <label>
           <input type="checkbox" id="agreeTerms" required>
-          I agree to the <a href="#" onclick="showTerms()">Terms of Service</a>
+          I agree to the <a href="#" onclick="showPolicy('studentTerms')">Terms of Service</a> & <a href="#"
+            onclick="showPolicy('privacy')">Privacy Policy</a>
         </label>
       </div>
 
@@ -184,19 +185,19 @@
     </form>
   </div>
 
-  <!-- Terms & Conditions Modal -->
-  <div class="modal" id="termsModal">
+  <!-- Policy Modal -->
+  <div class="modal" id="policyModal">
     <div class="modal-content" style="max-width: 600px;">
       <div class="modal-header flex justify-between items-center mb-4">
-        <h3 class="mb-0">Terms & Conditions</h3>
-        <button class="close-modal" onclick="closeTermsModal()"
+        <h3 class="mb-0" id="policyModalTitle">Policy</h3>
+        <button class="close-modal" onclick="closePolicyModal()"
           style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
       </div>
-      <div id="termsContainer" class="p-4 bg-light rounded"
+      <div id="policyContainer" class="p-4 bg-light rounded"
         style="max-height: 400px; overflow-y: auto; line-height: 1.6;">
         Loading...
       </div>
-      <button class="btn btn-primary w-100 mt-4" onclick="closeTermsModal()">I Understand</button>
+      <button class="btn btn-primary w-100 mt-4" onclick="closePolicyModal()">I Understand</button>
     </div>
   </div>
 
@@ -210,18 +211,21 @@
     const passwordInput = document.getElementById("password");
     const strengthBar = document.getElementById("strengthBar");
 
-    // Terms & Conditions Modal
-    window.showTerms = async () => {
-      const modal = document.getElementById("termsModal");
-      const container = document.getElementById("termsContainer");
+    // Policy Modal Logic
+    window.showPolicy = async (key) => {
+      const modal = document.getElementById("policyModal");
+      const container = document.getElementById("policyContainer");
+      const title = document.getElementById("policyModalTitle");
+
+      title.textContent = key === 'privacy' ? 'Privacy Policy' : 'Terms of Service';
+      container.innerHTML = "Loading...";
       modal.classList.add("active");
 
       try {
-        const res = await fetch(`${API_BASE}/public/settings/studentTerms`);
+        const res = await fetch(`${API_BASE}/public/settings/${key}`);
         const data = await res.json();
 
         if (data.value) {
-          // Simple markdown-to-html conversion for basic preview
           const html = data.value
             .replace(/^# (.*$)/gim, '<h1>$1</h1>')
             .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -230,15 +234,15 @@
             .replace(/\n/gim, '<br>');
           container.innerHTML = html;
         } else {
-          container.innerHTML = "No terms available at this time.";
+          container.innerHTML = "No policy available at this time.";
         }
       } catch (e) {
-        container.innerHTML = "Error loading terms. Please try again later.";
+        container.innerHTML = "Error loading policy. Please try again later.";
       }
     };
 
-    window.closeTermsModal = () => {
-      document.getElementById("termsModal").classList.remove("active");
+    window.closePolicyModal = () => {
+      document.getElementById("policyModal").classList.remove("active");
     };
 
     // Password strength checker

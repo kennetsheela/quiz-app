@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Results - AptioGen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --premium-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #f1f5f9, #e2e8f0);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
+            padding: 2rem 1rem;
+        }
+
+        .results-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .premium-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid white;
+            border-radius: 2rem;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section {
+            margin-bottom: 3rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .score-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .score-pill {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid #f1f5f9;
+            transition: transform 0.3s ease;
+        }
+
+        .score-pill:hover {
+            transform: translateY(-5px);
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--premium-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+        }
+
+        .score-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        .rank-badge {
+            background: var(--premium-gradient);
+            color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .rank-icon {
+            font-size: 3rem;
+        }
+
+        .rank-info {
+            text-align: left;
+        }
+
+        .rank-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .rank-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .leaderboard-section {
+            text-align: left;
+            margin-top: 3rem;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.75rem;
+        }
+
+        .leaderboard-row {
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .leaderboard-row:hover {
+            background: #f8fafc;
+        }
+
+        .leaderboard-row.current {
+            background: #f5f3ff;
+            border: 1px solid #ddd6fe;
+        }
+
+        .leaderboard-cell {
+            padding: 1.25rem;
+            font-size: 1rem;
+        }
+
+        .leaderboard-cell:first-child {
+            border-radius: 1rem 0 0 1rem;
+            font-weight: 700;
+            width: 60px;
+            text-align: center;
+        }
+
+        .leaderboard-cell:last-child {
+            border-radius: 0 1rem 1rem 0;
+            text-align: right;
+            font-weight: 600;
+            color: #6366f1;
+        }
+
+        .rank-gold {
+            color: #eab308;
+        }
+
+        .rank-silver {
+            color: #94a3b8;
+        }
+
+        .rank-bronze {
+            color: #b45309;
+        }
+
+        .hidden-empty {
+            padding: 5rem 0;
+        }
+
+        .hidden-icon {
+            font-size: 5rem;
+            background: var(--premium-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-return {
+            background: var(--premium-gradient);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            margin-top: 2rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-return:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        #lottie-celebration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="results-wrapper">
+        <div class="premium-card" id="mainCard">
+            <div id="loading" class="loading-spinner">
+                <i class="fa-solid fa-spinner fa-spin fa-3x" style="color: #6366f1; margin-bottom: 1rem;"></i>
+                <p class="text-secondary">Generating your performance report...</p>
+            </div>
+
+            <!-- Content will be injected here -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { BASE_URL } from './js/config.js';
+        import { auth } from './js/firebase.js';
+
+        const params = new URLSearchParams(window.location.search);
+        const attemptId = params.get('attemptId');
+        const eventId = params.get('eventId');
+
+        if (!attemptId || !eventId) {
+            window.location.href = 'student-dashboard.html';
+        }
+
+        async function fetchResults() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const token = await user.getIdToken();
+                const response = await fetch(`${BASE_URL}/api/events/${eventId}/results/${attemptId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch results');
+                const data = await response.json();
+                renderResults(data);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('mainCard').innerHTML = `
+                    <div class="hidden-empty">
+                        <i class="fa-solid fa-circle-exclamation hidden-icon"></i>
+                        <h2>Oops! Calculation Error</h2>
+                        <p class="text-secondary">We couldn't retrieve your results. Please check your dashboard.</p>
+                        <a href="student-dashboard.html" class="btn-return">Dashboard</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderResults(data) {
+            const card = document.getElementById('mainCard');
+
+            if (data.visibility === 'hidden') {
+                card.innerHTML = `
+                    <div class="hidden-empty">
+                        <i class="fa-solid fa-cloud-check hidden-icon"></i>
+                        <h1 class="mb-3">Submission Success</h1>
+                        <p class="text-secondary fs-18 mb-5">${data.message}</p>
+                        <a href="student-dashboard.html" class="btn-return">Return Home</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const { result, participant, eventName, rank, totalParticipants, leaderboard } = data;
+
+            let html = `
+                <div class="hero-section">
+                    <div class="status-badge ${result.passed ? 'status-success' : 'status-fail'}">
+                        <i class="fa-solid ${result.passed ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                        ${result.passed ? 'PASSED' : 'FAILED'}
+                    </div>
+                    <h1 class="mb-2">${eventName}</h1>
+                    <p class="text-secondary">Student Performance Report</p>
+                </div>
+
+                <div class="score-display" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="score-pill" style="grid-column: 1/-1; background: #f8fafc; border: 2px solid #e2e8f0;">
+                         <div class="flex justify-between align-center mb-4">
+                            <div style="text-align: left">
+                                <h3 class="mb-1">${participant.name}</h3>
+                                <p class="text-secondary small mb-0">${participant.email}</p>
+                            </div>
+                            <div style="text-align: right">
+                                <span class="badge badge-primary">${participant.rollNo}</span>
+                                <div class="small text-secondary mt-1">${participant.department}</div>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="score-pill">
+                        <span class="score-value" id="count-marks">${result.score}</span>
+                        <span class="score-label">Total Marks</span>
+                    </div>
+                    <div class="score-pill">
+                        <span class="score-value">${result.percentage}%</span>
+                        <span class="score-label">Accuracy</span>
+                    </div>
+                    <div class="score-pill">
+                        <span class="score-value">${result.correctAnswers}/${result.totalQuestions}</span>
+                        <span class="score-label">Correct Answers</span>
+                    </div>
+                     <div class="score-pill">
+                        <span class="score-value">${formatTime(result.timeTaken)}</span>
+                        <span class="score-label">Time Spent</span>
+                    </div>
+                </div>
+            `;
+
+            if (rank) {
+                html += `
+                    <div class="rank-badge">
+                        <div class="rank-icon">
+                            <i class="fa-solid ${rank === 1 ? 'fa-crown' : 'fa-ranking-star'}"></i>
+                        </div>
+                        <div class="rank-info">
+                            <div class="rank-label">Global Standing</div>
+                            <div class="rank-number">#${rank} <small style="font-size: 1rem; font-weight: 400;">out of ${totalParticipants}</small></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (leaderboard && leaderboard.length > 0) {
+                html += `
+                    <div class="leaderboard-section">
+                        <h3 class="mb-4 fw-700">Top Performers</h3>
+                        <div class="table-wrap" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 1rem; overflow: hidden;">
+                            <table class="leaderboard-table" style="margin:0; border-spacing: 0;">
+                                <thead style="background: #f1f5f9">
+                                    <tr>
+                                        <th style="padding: 1rem; font-size: 11px; text-transform: uppercase;">Rank</th>
+                                        <th style="padding: 1rem; font-size: 11px; text-transform: uppercase;">Name</th>
+                                        <th style="padding: 1rem; font-size: 11px; text-transform: uppercase;">Dept/Batch</th>
+                                        <th style="padding: 1rem; font-size: 11px; text-transform: uppercase;">Score</th>
+                                        <th style="padding: 1rem; font-size: 11px; text-transform: uppercase;">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${leaderboard.map(item => `
+                                        <tr class="leaderboard-row ${item.isCurrent ? 'current' : ''}">
+                                            <td class="leaderboard-cell" style="padding: 1rem;">
+                                                ${renderRank(item.rank)}
+                                            </td>
+                                            <td class="leaderboard-cell" style="padding: 1rem;">
+                                                <div class="fw-600">${item.name}</div>
+                                                <div class="small text-secondary">${item.rollNo}</div>
+                                            </td>
+                                            <td class="leaderboard-cell" style="padding: 1rem; font-size: 12px;">
+                                                ${item.department}<br>
+                                                <small class="text-secondary">${item.batchName || 'N/A'}</small>
+                                            </td>
+                                            <td class="leaderboard-cell" style="padding: 1rem; color: #6366f1; font-weight: 700;">
+                                                ${item.score}
+                                            </td>
+                                            <td class="leaderboard-cell" style="padding: 1rem; font-size: 12px; color: #64748b;">
+                                                ${formatTime(item.timeTaken)}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="mt-5">
+                    <a href="student-dashboard.html" class="btn-return">Back to Dashboard</a>
+                </div>
+            `;
+
+            card.innerHTML = html;
+            animateCount('count-marks', 0, result.score, 1000);
+        }
+
+        function formatTime(seconds) {
+            if (!seconds) return '0s';
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return m > 0 ? `${m}m ${s}s` : `${s}s`;
+        }
+
+        function renderRank(rank) {
+            if (rank === 1) return '<i class="fa-solid fa-trophy rank-gold"></i>';
+            if (rank === 2) return '<i class="fa-solid fa-trophy rank-silver"></i>';
+            if (rank === 3) return '<i class="fa-solid fa-trophy rank-bronze"></i>';
+            return rank;
+        }
+
+        function animateCount(id, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                document.getElementById(id).innerText = Math.floor(progress * (end - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) fetchResults();
+            else window.location.href = 'student-login.html';
+        });
+    </script>
+</body>
+
+</html>

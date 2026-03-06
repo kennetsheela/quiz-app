@@ -11,15 +11,58 @@
     <link rel="stylesheet" href="css/components.css">
     <style>
         .dashboard-container {
-            display: grid;
-            grid-template-columns: 250px 1fr;
+            display: block;
             min-height: calc(100vh - 70px);
+            position: relative;
+        }
+
+        /* ===== SIDEBAR OVERLAY ===== */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-backdrop.open {
+            display: block;
         }
 
         .sidebar {
-            background: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: #ffffff;
             border-right: 1px solid #e2e8f0;
-            padding: 20px 0;
+            z-index: 2100;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-105%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        /* Support for right side */
+        .sidebar.right-side {
+            left: auto !important;
+            right: 0 !important;
+            transform: translateX(105%);
+            border-right: none;
+            border-left: 1px solid #e2e8f0;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar.right-side.open {
+            transform: translateX(0);
         }
 
         .sidebar-item {
@@ -40,10 +83,72 @@
             border-right: 3px solid #3b82f6;
         }
 
+        .sidebar.right-side .sidebar-item:hover,
+        .sidebar.right-side .sidebar-item.active {
+            border-right: none;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .sidebar-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 16px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-toolbar span {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1e293b;
+        }
+
+        .sidebar-tool-btn {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .sidebar-tool-btn:hover {
+            background: #e2e8f0;
+            color: #3b82f6;
+        }
+
         .main-content {
             padding: 30px;
             background: #f8fafc;
-            overflow-y: auto;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Toggle button in header */
+        .sidebar-toggle-btn {
+            background: rgba(59, 130, 246, 0.1);
+            border: none;
+            border-radius: 8px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #3b82f6;
+            font-size: 16px;
+            transition: background 0.2s;
+            margin-right: 12px;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
         }
 
         .stat-grid {
@@ -80,13 +185,14 @@
             margin-bottom: 16px;
             border: 1px solid #e2e8f0;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
             transition: all 0.3s ease;
         }
 
         .event-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             border-color: #3b82f6;
         }
 
@@ -111,12 +217,60 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
         }
+
+        .chart-wrapper {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        .upcoming-event-row {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upcoming-event-row:last-child {
+            border-bottom: none;
+        }
+
+        .badge-live {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .event-header-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .event-meta-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 12px;
+            margin-top: 4px;
+        }
     </style>
 </head>
 
 <body>
     <header class="appbar">
-        <h2>AptioGen</h2>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h2 style="margin:0">AptioGen</h2>
+        </div>
         <div class="right-icons">
             <span id="userName" class="fw-600 mr-3"></span>
             <i class="fa-solid fa-bell mr-3"></i>
@@ -124,24 +278,39 @@
         </div>
     </header>
 
+    <!-- Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
     <div class="dashboard-container">
-        <aside class="sidebar">
-            <div class="sidebar-item active" onclick="showView('overview')">
+        <aside class="sidebar" id="mainSidebar">
+            <!-- Toolbar -->
+            <div class="sidebar-toolbar">
+                <span>Navigation</span>
+                <div style="display:flex;gap:6px;">
+                    <button class="sidebar-tool-btn" onclick="flipSidebarSide()" title="Move to other side">
+                        <i class="fa-solid fa-right-left"></i>
+                    </button>
+                    <button class="sidebar-tool-btn" onclick="toggleSidebar()" title="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="sidebar-item active" data-view="overview" onclick="showView('overview', this)">
                 <i class="fa-solid fa-chart-pie"></i> Overview
             </div>
-            <div class="sidebar-item" onclick="showView('events')">
+            <div class="sidebar-item" data-view="events" onclick="showView('events', this)">
                 <i class="fa-solid fa-calendar-alt"></i> Quizzes/Events
             </div>
-            <div class="sidebar-item" onclick="showView('practice')">
+            <div class="sidebar-item" data-view="practice" onclick="showView('practice', this)">
                 <i class="fa-solid fa-dumbbell"></i> Practice Center
             </div>
-            <div class="sidebar-item" onclick="showView('results')">
+            <div class="sidebar-item" data-view="results" onclick="showView('results', this)">
                 <i class="fa-solid fa-file-invoice"></i> My Results
             </div>
-            <div class="sidebar-item" onclick="showView('leaderboard')">
+            <div class="sidebar-item" data-view="leaderboard" onclick="showView('leaderboard', this)">
                 <i class="fa-solid fa-trophy"></i> Leaderboard
             </div>
-            <div class="sidebar-item" onclick="showView('profile')">
+            <div class="sidebar-item" data-view="profile" onclick="showView('profile', this)">
                 <i class="fa-solid fa-user"></i> My Profile
             </div>
         </aside>
@@ -161,7 +330,7 @@
                         </div>
                         <div>
                             <div class="small text-secondary">Participated</div>
-                            <div class="fs-24 fw-700" id="statParticipated">0</div>
+                            <div class="fs-24 fw-700" id="statParticipated">—</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -170,7 +339,7 @@
                         </div>
                         <div>
                             <div class="small text-secondary">Avg. Score</div>
-                            <div class="fs-24 fw-700" id="statAvgScore">0%</div>
+                            <div class="fs-24 fw-700" id="statAvgScore">—</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -179,7 +348,7 @@
                         </div>
                         <div>
                             <div class="small text-secondary">Global Rank</div>
-                            <div class="fs-24 fw-700" id="statRank">#0</div>
+                            <div class="fs-24 fw-700" id="statRank">—</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -187,47 +356,70 @@
                             <i class="fa-solid fa-bolt"></i>
                         </div>
                         <div>
-                            <div class="small text-secondary">Practice Streak</div>
-                            <div class="fs-24 fw-700" id="statStreak">0 Days</div>
+                            <div class="small text-secondary">Best Score</div>
+                            <div class="fs-24 fw-700" id="statBestScore">—</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid col-2 gap-4">
+                <div class="grid col-2 gap-4 mb-4">
                     <div class="chart-container">
-                        <h3>Performance Trend (Practice)</h3>
-                        <canvas id="performanceChart"></canvas>
+                        <h3>Year-wise Performance</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
                     </div>
                     <div class="chart-container">
-                        <h3>Year-wise Progress (Events)</h3>
-                        <canvas id="yearWiseChart"></canvas>
+                        <h3>Category Performance</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid col-1 gap-4 mb-4">
+                    <div class="chart-container">
+                        <h3>Topic wise Analysis Visualization</h3>
+                        <div class="chart-wrapper" style="height: 350px;">
+                            <canvas id="topicChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card mb-4">
-                    <h3>Upcoming Events</h3>
+                    <div class="flex justify-between align-center mb-3">
+                        <h3>Active Events</h3>
+                        <button class="btn btn-sm btn-primary"
+                            onclick="showView('events', document.querySelector('[data-view=events]'))">View All</button>
+                    </div>
                     <div id="upcomingEventsList">
-                        <p class="text-center text-secondary py-4">No upcoming events found</p>
+                        <p class="text-center text-secondary py-4"><i
+                                class="fa-solid fa-spinner fa-spin mr-2"></i>Loading events...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Other views will be loaded dynamically -->
+            <!-- Dynamic views loaded here -->
             <div id="dynamicView" style="display: none;"></div>
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
+        import { BASE_URL } from './js/config.js';
         import { initTheme } from './js/theme.js';
         import { auth } from './js/firebase.js';
         import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         initTheme();
+        // Clear any stale event redirection state
+        sessionStorage.removeItem('pendingEventId');
 
-        const API_BASE = 'http://localhost:5000/api';
-        let studentData = JSON.parse(sessionStorage.getItem('studentInfo'));
+        const API_BASE = `${BASE_URL}/api`;
+        let studentData = null;
         let profileData = null;
+        let perfChart = null;
+        let batchChart = null;
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -249,6 +441,8 @@
                     profileData = data.profile;
                     sessionStorage.setItem('studentInfo', JSON.stringify(studentData));
                     displayDashboard();
+                } else {
+                    console.error('Profile fetch failed:', response.status);
                 }
             } catch (error) {
                 console.error('Error fetching student data:', error);
@@ -256,26 +450,264 @@
         }
 
         function displayDashboard() {
-            document.getElementById('userName').textContent = studentData.username;
+            // Name
+            document.getElementById('userName').textContent = studentData.username || studentData.email;
+
+            // Badge
             if (studentData.institutionId) {
                 document.getElementById('studentBadge').textContent = 'Institutional Student';
                 document.getElementById('studentBadge').className = 'badge badge-success';
             }
 
-            // Stats
-            document.getElementById('statParticipated').textContent = profileData?.totalEventsAttended || '0';
-            document.getElementById('statAvgScore').textContent = (profileData?.overallAverage || 0) + '%';
-            document.getElementById('statRank').textContent = '#' + (profileData?.rankings?.institutionRank || '0');
+            // Stats from profile (Computed Real-time)
+            const p = profileData || {};
+            document.getElementById('statParticipated').textContent = p.totalEventsAttended ?? '0';
+            document.getElementById('statAvgScore').textContent = (p.overallAverage ?? 0) + '%';
+            document.getElementById('statRank').textContent =
+                '#' + (p.rankings?.globalRank || p.rankings?.institutionRank || '—');
+            document.getElementById('statBestScore').textContent = (p.bestScore ?? 0) + '%';
 
-            // Initial view
-            showView('overview');
+            // Load events on overview
             loadUpcomingEvents();
             initCharts();
         }
 
-        window.showView = (view) => {
+        async function getIdToken() {
+            return await auth.currentUser.getIdToken();
+        }
+
+        // =================== EVENTS ===================
+
+        async function fetchEvents() {
+            const idToken = await getIdToken();
+            const response = await fetch(`${API_BASE}/students/events/available`, {
+                headers: { 'Authorization': `Bearer ${idToken}` }
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            console.log('[DASHBOARD] fetchEvents returned:', data.events);
+            return data.events || [];
+        }
+
+        async function loadUpcomingEvents() {
+            const list = document.getElementById('upcomingEventsList');
+            try {
+                const events = await fetchEvents();
+                console.log(`[DASHBOARD] Loaded ${events.length} upcoming events from ${API_BASE}`);
+
+                if (events.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state" style="padding: 20px; text-align: center;">
+                            <p style="color: #64748b; margin: 0; font-size: 13px;">No active events right now.</p>
+                            <div style="margin-top: 10px; font-size: 10px; color: #cbd5e1;">Connected to ${API_BASE}</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = events.slice(0, 5).map(event => {
+                    const isLimitReached = event.attemptsCount >= event.maxAttempts;
+                    const endDate = new Date(event.endTime).toLocaleString();
+                    return `
+                        <div class="upcoming-event-row">
+                            <div>
+                                <h4 style="font-size: 14px; margin-bottom: 4px;">${event.eventName}</h4>
+                                <p style="font-size: 12px; color: #64748b; margin: 0;">
+                                    <i class="fa-solid fa-clock" style="margin-right:4px;"></i>Ends: ${endDate}
+                                    &nbsp;·&nbsp; <span style="color:#8b5cf6;">${event.category}</span>
+                                </p>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <span class="badge-live">${isLimitReached ? 'Done' : 'LIVE'}</span>
+                                <button class="btn btn-sm ${isLimitReached ? 'btn-secondary' : 'btn-primary'}"
+                                    onclick="${isLimitReached
+                            ? "alert('You have reached the max attempts for this event.')"
+                            : `startEvent('${event._id}')`}"
+                                    ${isLimitReached ? 'disabled' : ''}>
+                                    ${isLimitReached ? 'Completed' : 'Start'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading events:', error);
+                list.innerHTML = '<p class="text-center text-danger py-4">Failed to load events. Please try again.</p>';
+            }
+        }
+
+        async function loadEventsView() {
+            const container = document.getElementById('dynamicView');
+            container.innerHTML = `
+                <div class="flex justify-between align-center mb-4">
+                    <h1>My Quizzes &amp; Events</h1>
+                </div>
+                <div id="eventsListFull"><p class="text-center py-5"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading events...</p></div>
+            `;
+
+            const list = document.getElementById('eventsListFull');
+            try {
+                const events = await fetchEvents();
+                console.log(`[DASHBOARD] Loaded ${events.length} full list events from ${API_BASE}`);
+
+                if (events.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                            <i class="fa-solid fa-calendar-xmark" style="font-size: 40px; color: #cbd5e1; margin-bottom: 16px;"></i>
+                            <h3 style="color: #64748b; margin-bottom: 8px;">No events available</h3>
+                            <p style="color: #94a3b8; font-size: 14px; max-width: 400px; margin: 0 auto;">There are no active events matching your profile at this time.</p>
+                            <div style="margin-top: 30px; border-top: 1px solid #f1f5f9; padding-top: 20px; display: inline-block;">
+                                <div style="display: flex; gap: 20px; justify-content: center; font-size: 11px; color: #94a3b8;">
+                                    <span><i class="fa-solid fa-link mr-1"></i> API: ${API_BASE}</span>
+                                    <span><i class="fa-solid fa-user mr-1"></i> User: ${profileData?.username || 'Loading...'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = events.map(event => {
+                    const isLimitReached = event.attemptsCount >= event.maxAttempts;
+                    const startDate = new Date(event.startTime).toLocaleString();
+                    const endDate = new Date(event.endTime).toLocaleString();
+                    return `
+                        <div class="event-card">
+                            <div class="event-header-row">
+                                <div>
+                                    <h4 class="mb-1">${event.eventName}</h4>
+                                    <p class="small text-secondary mb-0">
+                                        <i class="fa-solid fa-play mr-1"></i> Start: ${startDate}
+                                        &nbsp;·&nbsp;
+                                        <i class="fa-solid fa-stop mr-1"></i> End: ${endDate}
+                                    </p>
+                                </div>
+                                <div class="flex align-center gap-3">
+                                    <span class="badge ${event.category === 'Technical' ? 'badge-primary' : 'badge-secondary'}">${event.category}</span>
+                                    <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">Min ${event.passPercentage}% to Pass</span>
+                                </div>
+                            </div>
+                            <div style="color: #64748b; font-size: 14px;">${event.description || 'No description provided.'}</div>
+                            <div class="event-meta-row">
+                                <div style="font-size: 13px; color: #475569;">
+                                    <strong>Duration:</strong> ${event.duration} mins
+                                    &nbsp;·&nbsp;
+                                    <strong>Attempts:</strong> ${event.attemptsCount} / ${event.maxAttempts}
+                                    ${isLimitReached ? '<span class="text-danger ml-2">(Limit Reached)</span>' : ''}
+                                </div>
+                                <button class="btn ${isLimitReached ? 'btn-secondary' : 'btn-primary'}"
+                                    onclick="${isLimitReached
+                            ? "alert('You have reached the maximum number of attempts for this event.')"
+                            : `startEvent('${event._id}')`}"
+                                    ${isLimitReached ? 'disabled' : ''}>
+                                    ${isLimitReached ? 'Attempt Limit Reached' : '<i class="fa-solid fa-play mr-1"></i> Start Quiz'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading events view:', error);
+                list.innerHTML = '<p class="text-danger text-center py-4">Failed to load events. Please refresh.</p>';
+            }
+        }
+
+        // =================== CHARTS ===================
+
+        function initCharts() {
+            // 1. Year-wise Performance (Existing logic with safer fallbacks)
+            const yearData = profileData?.yearWisePerformance || [];
+            const perfLabels = yearData.length ? yearData.map(y => `Year ${y.year}`) : ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
+            const perfValues = yearData.length ? yearData.map(y => y.averageScore || 0) : [0, 0, 0, 0];
+
+            const ctxPerf = document.getElementById('performanceChart').getContext('2d');
+            if (perfChart) perfChart.destroy();
+            perfChart = new Chart(ctxPerf, {
+                type: 'line',
+                data: {
+                    labels: perfLabels,
+                    datasets: [{
+                        label: 'Avg Score %',
+                        data: perfValues,
+                        borderColor: '#3b82f6',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+
+            // 2. Category Performance (Radar Chart or Multi-color Bar)
+            const catStats = profileData?.categoryStats || {};
+            const catLabels = Object.keys(catStats);
+            const catValues = Object.values(catStats).map(c => c.avg);
+
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctxCat, {
+                type: 'bar',
+                data: {
+                    labels: catLabels.length ? catLabels : ['Aptitude', 'Reasoning', 'Coding', 'Technical', 'General'],
+                    datasets: [{
+                        label: 'Avg Score %',
+                        data: catValues.length ? catValues : [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+
+            // 3. Topic wise Analysis Visualization (Mocked using Category subsets for now)
+            // Real topic data would require deeper integration, but we can visualize what we have
+            const ctxTopic = document.getElementById('topicChart').getContext('2d');
+            new Chart(ctxTopic, {
+                type: 'polarArea',
+                data: {
+                    labels: catLabels.length ? catLabels : ['Topic A', 'Topic B', 'Topic C', 'Topic D'],
+                    datasets: [{
+                        data: catValues.length ? catValues : [65, 59, 80, 81],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.5)',
+                            'rgba(16, 185, 129, 0.5)',
+                            'rgba(245, 158, 11, 0.5)',
+                            'rgba(239, 68, 68, 0.5)',
+                            'rgba(139, 92, 246, 0.5)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        // =================== NAVIGATION ===================
+
+        window.showView = (view, el) => {
             document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if (el) el.classList.add('active');
 
             if (view === 'overview') {
                 document.getElementById('overviewView').style.display = 'block';
@@ -289,115 +721,37 @@
 
         async function loadDynamicView(view) {
             const container = document.getElementById('dynamicView');
-            container.innerHTML = `<h2>${view.charAt(0).toUpperCase() + view.slice(1)}</h2><p>Content for ${view} coming soon...</p>`;
-
             if (view === 'events') {
-                loadEventsView();
+                await loadEventsView();
+            } else {
+                container.innerHTML = `
+                    <h2>${view.charAt(0).toUpperCase() + view.slice(1)}</h2>
+                    <p class="text-secondary">This section is coming soon.</p>
+                `;
             }
         }
 
-        async function loadEventsView() {
-            const container = document.getElementById('dynamicView');
-            container.innerHTML = `
-                <div class="flex justify-between align-center mb-4">
-                    <h1>My Quizzes & Events</h1>
-                    <div class="flex gap-2">
-                        <button class="btn btn-sm btn-primary">Active</button>
-                        <button class="btn btn-sm btn-outline-secondary">Completed</button>
-                    </div>
-                </div>
-                <div id="eventsListFull">Loading events...</div>
-            `;
+        // =================== SIDEBAR ===================
 
-            try {
-                const idToken = await auth.currentUser.getIdToken();
-                const response = await fetch(`${API_BASE}/students/events/available`, {
-                    headers: { 'Authorization': `Bearer ${idToken}` }
-                });
-                const data = await response.json();
+        let sidebarOnRight = false;
 
-                const list = document.getElementById('eventsListFull');
-                if (data.events && data.events.length > 0) {
-                    list.innerHTML = data.events.map(event => `
-                        <div class="event-card">
-                            <div>
-                                <h4 class="mb-1">${event.title}</h4>
-                                <p class="small text-secondary mb-0">
-                                    <i class="fa-solid fa-clock mr-1"></i> Ends: ${new Date(event.endTime).toLocaleString()}
-                                </p>
-                            </div>
-                            <div class="flex align-center gap-3">
-                                <span class="badge ${event.category === 'Technical' ? 'badge-primary' : 'badge-secondary'}">${event.category}</span>
-                                <button class="btn btn-primary" onclick="startEvent('${event._id}')">Start Quiz</button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    list.innerHTML = '<p class="text-center py-5">No active events found for you.</p>';
-                }
-            } catch (error) {
-                list.innerHTML = '<p class="text-danger">Failed to load events.</p>';
-            }
-        }
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('mainSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const isOpen = sidebar.classList.contains('open');
+            sidebar.classList.toggle('open', !isOpen);
+            backdrop.classList.toggle('open', !isOpen);
+        };
 
-        async function loadStats() {
-            // Mocking stats update for now or fetch from profile
-            document.getElementById('statParticipated').textContent = '12';
-            document.getElementById('statAvgScore').textContent = '84%';
-            document.getElementById('statRank').textContent = '#156';
-            document.getElementById('statStreak').textContent = '5 Days';
-        }
+        window.flipSidebarSide = () => {
+            const sidebar = document.getElementById('mainSidebar');
+            sidebarOnRight = !sidebarOnRight;
+            sidebar.classList.toggle('right-side', sidebarOnRight);
+            // Keep it open after flip
+            sidebar.classList.add('open');
+        };
 
-        async function loadUpcomingEvents() {
-            // Similar to loadEventsView but mini version
-        }
-
-        function initCharts() {
-            // Performance Trend Chart
-            const ctxPerf = document.getElementById('performanceChart').getContext('2d');
-            new Chart(ctxPerf, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Avg Score %',
-                        data: [65, 72, 68, 85, 82, 90],
-                        borderColor: '#3b82f6',
-                        tension: 0.4,
-                        fill: true,
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, max: 100 } }
-                }
-            });
-
-            // Year-wise Progress Chart
-            const ctxYear = document.getElementById('yearWiseChart').getContext('2d');
-            const yearLabels = profileData?.yearWisePerformance?.map(y => `Year ${y.year}`) || ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
-            const yearData = profileData?.yearWisePerformance?.map(y => y.averageScore) || [0, 0, 0, 0];
-
-            new Chart(ctxYear, {
-                type: 'bar',
-                data: {
-                    labels: yearLabels,
-                    datasets: [{
-                        label: 'Average Score %',
-                        data: yearData,
-                        backgroundColor: '#10b981',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, max: 100 } }
-                }
-            });
-        }
+        // =================== UTILS ===================
 
         window.logout = async () => {
             await signOut(auth);
@@ -406,7 +760,29 @@
         };
 
         window.startEvent = (id) => {
-            window.location.href = `quiz.html?eventId=${id}`;
+            console.log('[DASHBOARD] startEvent called with raw id:', id);
+
+            // Handle common id field variations
+            const finalId = id || '';
+
+            if (!finalId || finalId === 'undefined' || finalId === 'null' || finalId === '[object Object]') {
+                console.error('[DASHBOARD] Invalid ID detected in startEvent:', id);
+                alert('Error: This event seems to have an invalid ID. Please refresh the page and try again.\n\nDebug Info: id=' + id);
+                return;
+            }
+
+            // BACKUP: Save to sessionStorage in case query parameters are stripped
+            sessionStorage.setItem('pendingEventId', finalId);
+
+            const targetUrl = `event-quiz?eventId=${finalId}`;
+            console.log('[DASHBOARD] Attempting redirection to:', targetUrl);
+
+            try {
+                window.location.href = targetUrl;
+            } catch (err) {
+                console.error('[DASHBOARD] Redirection failed:', err);
+                alert('Redirection failed. Please click here: ' + targetUrl);
+            }
         };
     </script>
 </body>

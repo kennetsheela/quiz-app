@@ -16,430 +16,539 @@
             margin: 40px auto;
         }
 
-        .wizard-steps {
+        .step-indicator {
             display: flex;
             justify-content: space-between;
             margin-bottom: 40px;
-        }
-
-        .wizard-step {
-            flex: 1;
-            text-align: center;
             position: relative;
         }
 
-        .wizard-step::before {
+        .step-indicator::before {
             content: '';
             position: absolute;
             top: 20px;
-            left: 50%;
+            left: 0;
             width: 100%;
             height: 2px;
-            background: #e2e8f0;
+            background: var(--border-color);
             z-index: -1;
         }
 
-        .wizard-step:first-child::before {
-            display: none;
-        }
-
-        .step-circle {
+        .step {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #e2e8f0;
-            color: #64748b;
-            display: inline-flex;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            background: var(--card-bg);
         }
 
-        .wizard-step.active .step-circle {
-            background: #3b82f6;
+        .step.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            box-shadow: 0 0 0 4px var(--shadow);
+        }
+
+        .step.completed {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
             color: white;
         }
 
-        .wizard-step.completed .step-circle {
-            background: #10b981;
-            color: white;
-        }
-
-        .step-content {
+        .wizard-step {
             display: none;
+            animation: fadeIn 0.4s ease;
         }
 
-        .step-content.active {
+        .wizard-step.active {
             display: block;
         }
 
-        .department-item,
-        .batch-item {
-            background: #f8fafc;
-            padding: 15px;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .list-items {
+            margin-top: 20px;
+        }
+
+        .list-item {
+            background: var(--bg-tertiary);
+            padding: 10px 20px;
             border-radius: 8px;
-            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .flex.gap-2 {
+            display: flex;
+            gap: 10px;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .department-hod-group {
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .department-hod-group:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .hod-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .hod-row input,
+        .hod-row select {
+            position: relative;
+            z-index: 5;
+            pointer-events: auto !important;
+            cursor: text;
+        }
+
+        .hod-row select {
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .hod-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
     <header class="appbar">
-        <h2>AptioGen - Setup Wizard</h2>
+        <h2>AptioGen</h2>
         <div class="right-icons">
             <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
         </div>
     </header>
 
-    <div class="container wizard-container">
-        <h1 class="text-center">Institution Setup</h1>
-        <p class="text-center mb-4">Configure your institution structure</p>
-
-        <div class="wizard-steps">
-            <div class="wizard-step active" data-step="1">
-                <div class="step-circle">1</div>
-                <div>Academic Config</div>
-            </div>
-            <div class="wizard-step" data-step="2">
-                <div class="step-circle">2</div>
-                <div>Departments</div>
-            </div>
-            <div class="wizard-step" data-step="3">
-                <div class="step-circle">3</div>
-                <div>Batches</div>
-            </div>
-            <div class="wizard-step" data-step="4">
-                <div class="step-circle">4</div>
-                <div>Complete</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <!-- Step 1: Academic Configuration -->
-            <div class="step-content active" data-step="1">
-                <h3>Academic Configuration</h3>
-                <div class="form-group">
-                    <label>Program Duration (Years) *</label>
-                    <select id="programDuration">
-                        <option value="3">3 Years</option>
-                        <option value="4" selected>4 Years</option>
-                        <option value="5">5 Years</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Current Academic Year *</label>
-                    <input type="text" id="academicYear" placeholder="e.g., 2025-2026" value="2025-2026">
-                </div>
-                <div class="form-group">
-                    <label>Graduation Month *</label>
-                    <select id="graduationMonth">
-                        <option value="May" selected>May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Semesters Per Year *</label>
-                    <select id="semestersPerYear">
-                        <option value="2" selected>2 Semesters</option>
-                        <option value="3">3 Trimesters</option>
-                    </select>
-                </div>
+    <main class="container">
+        <div class="wizard-container">
+            <div class="step-indicator">
+                <div class="step active" id="step1-marker">1</div>
+                <div class="step" id="step2-marker">2</div>
+                <div class="step" id="step3-marker">3</div>
             </div>
 
-            <!-- Step 2: Departments -->
-            <div class="step-content" data-step="2">
-                <h3>Add Departments</h3>
-                <p>Create departments and assign HODs</p>
-
-                <div class="form-group">
-                    <label>Department Name</label>
-                    <input type="text" id="deptName" placeholder="e.g., Computer Science">
-                </div>
-                <div class="form-group">
-                    <label>Department Code</label>
-                    <input type="text" id="deptCode" placeholder="e.g., CS">
-                </div>
-                <div class="form-group">
-                    <label>HOD Name</label>
-                    <input type="text" id="hodName" placeholder="Dr. John Doe">
-                </div>
-                <div class="form-group">
-                    <label>HOD Email</label>
-                    <input type="email" id="hodEmail" placeholder="hod@institution.edu">
-                </div>
-                <button class="btn btn-secondary" onclick="addDepartment()">
-                    <i class="fa-solid fa-plus"></i> Add Department
-                </button>
-
-                <div id="departmentsList" class="mt-3"></div>
-            </div>
-
-            <!-- Step 3: Batches -->
-            <div class="step-content" data-step="3">
-                <h3>Add Batches</h3>
-                <p>Create batches for different years and departments</p>
-
-                <div class="form-group">
-                    <label>Batch Name *</label>
-                    <input type="text" id="batchName" placeholder="e.g., CS 2024">
-                </div>
-                <div class="form-group">
-                    <label>Department *</label>
-                    <select id="batchDepartment"></select>
-                </div>
-                <div class="form-group">
-                    <label>Academic Year *</label>
-                    <select id="batchYear">
-                        <option value="1">1st Year</option>
-                        <option value="2">2nd Year</option>
-                        <option value="3">3rd Year</option>
-                        <option value="4">4th Year</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Graduation Date *</label>
-                    <input type="date" id="graduationDate">
-                </div>
-                <button class="btn btn-secondary" onclick="addBatch()">
-                    <i class="fa-solid fa-plus"></i> Add Batch
-                </button>
-
-                <div id="batchesList" class="mt-3"></div>
-            </div>
-
-            <!-- Step 4: Complete -->
-            <div class="step-content" data-step="4">
-                <div class="text-center">
-                    <i class="fa-solid fa-check-circle" style="font-size: 64px; color: #10b981;"></i>
-                    <h3>Setup Complete!</h3>
-                    <p>Your institution is ready to use AptioGen</p>
-
-                    <div class="info-box mt-3">
-                        <i class="fa-solid fa-info-circle"></i>
-                        <div>
-                            <strong>Next Steps:</strong>
-                            <ul style="text-align: left; margin-top: 10px;">
-                                <li>Add students to batches</li>
-                                <li>Create your first event</li>
-                                <li>Invite HODs to their dashboards</li>
-                            </ul>
-                        </div>
+            <div class="card">
+                <!-- Step 1: Departments -->
+                <div id="step1" class="wizard-step active">
+                    <h3>Step 1: Define Departments</h3>
+                    <p>Add the departments present in your institution.</p>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="deptInput" placeholder="e.g. Computer Science">
+                        <input type="text" id="deptCodeInput" placeholder="e.g. CS" style="width: 100px;">
+                        <button class="btn btn-primary" onclick="addItem('dept')">Add</button>
                     </div>
+                    <div id="deptList" class="list-items"></div>
+                    <div class="mt-4 text-right">
+                        <button class="btn btn-primary" onclick="nextStep(2)">Next: Configure Batches</button>
+                    </div>
+                </div>
 
-                    <button class="btn btn-primary mt-3" onclick="goToDashboard()">
-                        Go to Dashboard <i class="fa-solid fa-arrow-right"></i>
-                    </button>
+                <!-- Step 2: Batches -->
+                <div id="step2" class="wizard-step">
+                    <h3>Step 2: Configure Batches</h3>
+                    <p>Define active student batches (cohorts).</p>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="batchInput" placeholder="e.g. 2021-2025" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="addItem('batch')">Add</button>
+                    </div>
+                    <div id="batchList" class="list-items"></div>
+                    <div class="mt-4 flex justify-between">
+                        <button class="btn btn-secondary" onclick="nextStep(1)">Back</button>
+                        <button class="btn btn-primary" onclick="nextStep(3)">Next: Admin Access</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Admin Access -->
+                <div id="step3" class="wizard-step">
+                    <h3>Step 3: Setup Admin/HOD Access</h3>
+                    <p>Assign administrative roles to your staff per department.</p>
+                    <div id="departmentHodsList">
+                        <!-- Dynamic HOD inputs will go here -->
+                    </div>
+                    <div class="mt-4 flex justify-between">
+                        <button class="btn btn-secondary" onclick="nextStep(2)">Back</button>
+                        <button class="btn btn-success" onclick="finishSetup()">Complete Setup</button>
+                    </div>
                 </div>
             </div>
-
-            <!-- Wizard Actions -->
-            <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 30px;">
-                <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display:none;">
-                    <i class="fa-solid fa-arrow-left"></i> Previous
-                </button>
-                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
-                    Next <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
         </div>
-    </div>
+    </main>
 
     <script type="module">
         import { initTheme } from './js/theme.js';
+        import API_CONFIG from './js/config.js';
+        import { requireAuth, getFreshToken } from './js/auth.js';
+
         initTheme();
 
-        const API_BASE = 'http://localhost:5000/api';
-        let currentStep = 1;
-        const totalSteps = 4;
-        let departments = [];
-        let batches = [];
+        const API_BASE = API_CONFIG.API_URL;
         const institutionId = sessionStorage.getItem('institutionId');
+
+        // Ensure authenticated
+        try {
+            await requireAuth('institution-login.html');
+            // Update token initially
+            await getFreshToken();
+        } catch (error) {
+            console.error("Auth error:", error);
+        }
 
         if (!institutionId) {
             alert('Please complete registration first');
             window.location.href = 'institution-register.html';
         }
 
-        window.nextStep = () => {
-            if (currentStep === 1) {
-                saveAcademicConfig();
-            }
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateWizard();
-            }
+        const state = {
+            depts: [],
+            batches: []
         };
 
-        window.previousStep = () => {
-            if (currentStep > 1) {
-                currentStep--;
-                updateWizard();
-            }
-        };
-
-        function updateWizard() {
-            document.querySelectorAll('.wizard-step').forEach((step, index) => {
-                step.classList.remove('active', 'completed');
-                if (index + 1 < currentStep) step.classList.add('completed');
-                if (index + 1 === currentStep) step.classList.add('active');
-            });
-
-            document.querySelectorAll('.step-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active');
-
-            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'block' : 'none';
-            document.getElementById('nextBtn').style.display = currentStep < totalSteps ? 'block' : 'none';
-
-            if (currentStep === 3) {
-                updateBatchDepartmentSelect();
-            }
-        }
-
-        async function saveAcademicConfig() {
-            const config = {
-                programDuration: parseInt(document.getElementById('programDuration').value),
-                currentAcademicYear: document.getElementById('academicYear').value,
-                graduationMonth: document.getElementById('graduationMonth').value,
-                semestersPerYear: parseInt(document.getElementById('semestersPerYear').value)
-            };
-
+        async function initWizard() {
             try {
-                await fetch(`${API_BASE}/institutions/${institutionId}/config`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ academicConfig: config })
+                const token = await getFreshToken();
+
+                // Fetch Departments
+                const deptResp = await fetch(`${API_BASE}/institutions/${institutionId}/departments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (deptResp.ok) {
+                    const data = await deptResp.json();
+                    state.depts = data.departments || [];
+                    state.depts.forEach(d => renderItem('dept', d.name, d._id));
+                }
+
+                // Fetch Batches
+                const batchResp = await fetch(`${API_BASE}/institutions/${institutionId}/batches`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (batchResp.ok) {
+                    const data = await batchResp.json();
+                    state.batches = data.batches || [];
+                    state.batches.forEach(b => renderItem('batch', b.batchID, b._id));
+                }
             } catch (error) {
-                console.error('Config save error:', error);
+                console.error("Initialization error:", error);
             }
         }
 
-        window.addDepartment = async () => {
-            const dept = {
-                institutionId,
-                name: document.getElementById('deptName').value,
-                code: document.getElementById('deptCode').value,
-                hodName: document.getElementById('hodName').value,
-                hodEmail: document.getElementById('hodEmail').value
-            };
+        // Run initialization
+        initWizard();
 
-            if (!dept.name || !dept.code) {
-                alert('Please fill department name and code');
-                return;
+        window.addItem = async function (type) {
+            const input = document.getElementById(type + 'Input');
+            const list = document.getElementById(type + 'List');
+            const val = input.value.trim();
+
+            if (!val) return;
+
+            if (type === 'dept') {
+                const codeInput = document.getElementById('deptCodeInput');
+                const code = codeInput.value.trim();
+                if (!code) {
+                    alert('Please enter a department code');
+                    return;
+                }
+
+                const deptData = {
+                    institutionId,
+                    name: val,
+                    code: code
+                };
+
+                try {
+                    const token = await getFreshToken();
+                    const response = await fetch(`${API_BASE}/institutions/${institutionId}/departments`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(deptData)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Check if already in state to avoid visual duplicates
+                        const exists = state.depts.some(d => d._id === data.department._id || d.code === data.department.code);
+                        if (!exists) {
+                            state.depts.push(data.department);
+                            renderItem('dept', data.department.name, data.department._id);
+                        } else {
+                            // Update existing in state if needed
+                            const index = state.depts.findIndex(d => d._id === data.department._id || d.code === data.department.code);
+                            state.depts[index] = data.department;
+                            // Optionally update UI label if it changed
+                        }
+                        input.value = '';
+                        codeInput.value = '';
+                    } else {
+                        const err = await response.json();
+                        alert('Error adding department: ' + (err.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Dept save error:', error);
+                    alert('Failed to save department');
+                }
+            } else if (type === 'batch') {
+                // Batches are now global to the institution
+
+                // Smart parse years from val (e.g. "2021-2025" or "2024")
+                const years = val.match(/\d{4}/g);
+                const startYear = years ? parseInt(years[0]) : new Date().getFullYear();
+                const endYear = (years && years.length > 1) ? parseInt(years[1]) : startYear + 4;
+
+                const batchData = {
+                    institutionId,
+                    batchID: val,
+                    currentYearLevel: 1,
+                    graduationDate: new Date(endYear, 4, 1),
+                    startYear: startYear,
+                    endYear: endYear
+                };
+
+                try {
+                    const token = await getFreshToken();
+                    const response = await fetch(`${API_BASE}/institutions/${institutionId}/batches`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(batchData)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Check if already in state to avoid visual duplicates
+                        const exists = state.batches.some(b => b._id === data.batch._id || b.batchID === data.batch.batchID);
+                        if (!exists) {
+                            state.batches.push(data.batch);
+                            renderItem('batch', `${val}`, data.batch._id);
+                        } else {
+                            // Update existing in state
+                            const index = state.batches.findIndex(b => b._id === data.batch._id || b.batchID === data.batch.batchID);
+                            state.batches[index] = data.batch;
+                        }
+                        input.value = '';
+                    } else {
+                        const err = await response.json();
+                        alert('Error adding batch: ' + (err.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Batch save error:', error);
+                    alert('Failed to save batch: ' + error.message);
+                }
             }
+        }
+
+        window.removeItem = async function (type, id, btn) {
+            if (!confirm(`Are you sure you want to remove this ${type}?`)) return;
+
+            const url = type === 'dept'
+                ? `${API_BASE}/institutions/${institutionId}/departments/${id}`
+                : `${API_BASE}/institutions/${institutionId}/batches/${id}`; // Corrected batch delete
 
             try {
-                const response = await fetch(`${API_BASE}/institutions/${institutionId}/departments`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dept)
+                const token = await getFreshToken();
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    departments.push(data.department);
-                    renderDepartments();
-                    // Clear form
-                    document.getElementById('deptName').value = '';
-                    document.getElementById('deptCode').value = '';
-                    document.getElementById('hodName').value = '';
-                    document.getElementById('hodEmail').value = '';
+                    btn.parentElement.remove();
+                    if (type === 'dept') {
+                        state.depts = state.depts.filter(d => d._id !== id);
+                    } else {
+                        state.batches = state.batches.filter(b => b._id !== id);
+                    }
+                } else {
+                    const err = await response.json().catch(() => ({}));
+                    alert('Failed to delete item: ' + (err.error || 'Unknown error'));
                 }
             } catch (error) {
-                console.error('Add department error:', error);
+                console.error('Delete error:', error);
+                alert('An error occurred during deletion');
             }
-        };
+        }
 
-        function renderDepartments() {
-            const list = document.getElementById('departmentsList');
-            list.innerHTML = departments.map((dept, index) => `
-                <div class="department-item">
-                    <div>
-                        <strong>${dept.name}</strong> (${dept.code})
-                        ${dept.hodName ? `<br><small>HOD: ${dept.hodName}</small>` : ''}
+        function renderItem(type, label, id) {
+            const list = document.getElementById(type + 'List');
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <span>${label}</span>
+                <button onclick="removeItem('${type}', '${id}', this)" class="text-error" style="background:none; border:none; color:var(--error); cursor:pointer;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            list.appendChild(item);
+        }
+
+        function renderHodInputs() {
+            const container = document.getElementById('departmentHodsList');
+            container.innerHTML = '';
+
+            if (state.depts.length === 0) {
+                container.innerHTML = `
+                    <div class="card p-4 text-center">
+                        <i class="fas fa-building-circle-exclamation fa-2x mb-3 text-secondary"></i>
+                        <p class="text-secondary">No departments defined in Step 1. A default "General" admin will be created.</p>
+                        <div class="department-hod-group p-4 mt-3 rounded-lg" data-dept-name="General">
+                            <div class="hod-row">
+                                <div class="form-group">
+                                    <label>Admin Email</label>
+                                    <input type="email" class="hod-email" placeholder="admin@institution.edu">
+                                </div>
+                                <div class="form-group">
+                                    <label>Admin Name</label>
+                                    <input type="text" class="hod-name" placeholder="Full Name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Role</label>
+                                    <select class="admin-role">
+                                        <option>Head of Department (HOD)</option>
+                                        <option>Exam Coordinator</option>
+                                        <option>Faculty Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn btn-danger" onclick="removeDepartment(${index})" style="padding: 6px 12px;">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        window.removeDepartment = (index) => {
-            departments.splice(index, 1);
-            renderDepartments();
-        };
-
-        function updateBatchDepartmentSelect() {
-            const select = document.getElementById('batchDepartment');
-            select.innerHTML = '<option value="">Select Department</option>' +
-                departments.map(dept => `<option value="${dept._id}">${dept.name}</option>`).join('');
-        }
-
-        window.addBatch = async () => {
-            const batch = {
-                institutionId,
-                departmentId: document.getElementById('batchDepartment').value,
-                name: document.getElementById('batchName').value,
-                year: parseInt(document.getElementById('batchYear').value),
-                graduationDate: document.getElementById('graduationDate').value
-            };
-
-            if (!batch.name || !batch.departmentId) {
-                alert('Please fill batch name and select department');
+                `;
                 return;
             }
 
+            state.depts.forEach((dept) => {
+                const group = document.createElement('div');
+                group.className = 'card p-4 mb-4 department-hod-group rounded-lg';
+                group.setAttribute('data-dept-name', dept.name);
+                group.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="m-0"><i class="fas fa-university text-accent-primary me-2"></i> ${dept.name}</h4>
+                        <span class="badge">${dept.code}</span>
+                    </div>
+                    <div class="hod-row">
+                        <div class="form-group">
+                            <label>HOD Email</label>
+                            <input type="email" class="hod-email" placeholder="hod.${dept.code.toLowerCase()}@institution.edu">
+                        </div>
+                        <div class="form-group">
+                            <label>HOD Name</label>
+                            <input type="text" class="hod-name" placeholder="Full Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select class="admin-role">
+                                <option>Head of Department (HOD)</option>
+                                <option>Exam Coordinator</option>
+                                <option>Faculty Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(group);
+            });
+        }
+
+        window.nextStep = function (step) {
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.step').forEach((s, idx) => {
+                if (idx + 1 < step) s.classList.add('completed');
+                else s.classList.remove('completed');
+
+                if (idx + 1 === step) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+            document.getElementById('step' + step).classList.add('active');
+
+            if (step === 3) {
+                renderHodInputs();
+            }
+        }
+
+        window.finishSetup = async function () {
+            const hods = [];
+            document.querySelectorAll('.department-hod-group').forEach(group => {
+                const deptName = group.getAttribute('data-dept-name');
+                const email = group.querySelector('.hod-email').value.trim();
+                const name = group.querySelector('.hod-name').value.trim();
+                const roleSelect = group.querySelector('.admin-role');
+                const selectedRole = roleSelect.options[roleSelect.selectedIndex].text;
+
+                if (email && name) {
+                    hods.push({
+                        email: email,
+                        name: name,
+                        departmentName: deptName,
+                        permissions: {
+                            isHOD: selectedRole.includes('HOD'),
+                            isCoordinator: selectedRole.includes('Coordinator')
+                        }
+                    });
+                }
+            });
+
+            const payload = {
+                departments: state.depts,
+                batches: state.batches,
+                hods: hods
+            };
+
             try {
-                const response = await fetch(`${API_BASE}/institutions/${institutionId}/batches`, {
+                const token = await getFreshToken();
+                const response = await fetch(`${API_BASE}/institutions/setup`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(batch)
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    batches.push(data.batch);
-                    renderBatches();
-                    // Clear form
-                    document.getElementById('batchName').value = '';
-                    document.getElementById('graduationDate').value = '';
+                    alert('Setup completed! Your institution profile is now active.');
+                    window.location.href = 'institution-dashboard.html';
+                } else {
+                    const err = await response.json();
+                    alert('Error completing setup: ' + (err.error || 'Unknown error'));
                 }
             } catch (error) {
-                console.error('Add batch error:', error);
+                console.error('Setup completion error:', error);
+                alert('Failed to complete setup');
             }
-        };
-
-        function renderBatches() {
-            const list = document.getElementById('batchesList');
-            list.innerHTML = batches.map((batch, index) => `
-                <div class="batch-item">
-                    <div>
-                        <strong>${batch.name}</strong> - Year ${batch.year}
-                        <br><small>Graduation: ${new Date(batch.graduationDate).toLocaleDateString()}</small>
-                    </div>
-                    <button class="btn btn-danger" onclick="removeBatch(${index})" style="padding: 6px 12px;">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
         }
-
-        window.removeBatch = (index) => {
-            batches.splice(index, 1);
-            renderBatches();
-        };
-
-        window.goToDashboard = () => {
-            window.location.href = 'institution-dashboard.html';
-        };
     </script>
 </body>
 

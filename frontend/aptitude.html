@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +14,7 @@
       padding-top: 80px;
       min-height: 100vh;
     }
-    
+
     .breadcrumb {
       display: flex;
       gap: 10px;
@@ -22,18 +23,18 @@
       color: var(--text-secondary);
       font-size: 0.9rem;
     }
-    
+
     .breadcrumb a {
       color: var(--accent-primary);
     }
-    
+
     .topic-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 25px;
       margin-top: 30px;
     }
-    
+
     .topic-card {
       background: var(--card-bg);
       border-radius: 15px;
@@ -42,24 +43,24 @@
       transition: all 0.3s ease;
       cursor: pointer;
     }
-    
+
     .topic-card:hover {
       transform: translateY(-5px);
       border-color: var(--accent-primary);
       box-shadow: 0 10px 20px var(--shadow);
     }
-    
+
     .topic-card h3 {
       margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    
+
     .topic-card h3 i {
       color: var(--accent-primary);
     }
-    
+
     .topic-stats {
       display: flex;
       justify-content: space-between;
@@ -69,14 +70,14 @@
       font-size: 0.85rem;
       color: var(--text-secondary);
     }
-    
+
     .level-selector {
       display: flex;
       gap: 10px;
       margin: 20px 0;
       justify-content: center;
     }
-    
+
     .level-btn {
       padding: 10px 20px;
       border: 2px solid var(--border-color);
@@ -86,17 +87,17 @@
       cursor: pointer;
       transition: all 0.3s ease;
     }
-    
+
     .level-btn.active {
       background: var(--accent-primary);
       color: white;
       border-color: var(--accent-primary);
     }
-    
+
     .sets-container {
       margin-top: 30px;
     }
-    
+
     .set-card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -107,63 +108,64 @@
       align-items: center;
       border: 2px solid var(--border-color);
     }
-    
+
     .set-card.locked {
       opacity: 0.6;
       cursor: not-allowed;
     }
-    
+
     .set-card.completed {
       border-color: var(--success);
     }
-    
+
     .set-info h4 {
       margin: 0 0 5px 0;
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    
+
     .set-info p {
       margin: 0;
       font-size: 0.9rem;
       color: var(--text-secondary);
     }
-    
+
     .badge {
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: 600;
     }
-    
+
     .badge-completed {
       background: var(--success);
       color: white;
     }
-    
+
     .badge-locked {
       background: var(--error);
       color: white;
     }
-    
+
     .badge-available {
       background: var(--accent-primary);
       color: white;
     }
   </style>
 </head>
+
 <body>
   <!-- Appbar -->
   <div class="appbar">
     <h2>AptioGen</h2>
-    
+
     <div class="nav-links">
       <a href="explore.html">Explore</a>
-      <a href="challenge.html">Challenge</a>
+      <a href="student-dashboard.html">Challenge</a>
       <a href="brain-break.html">Brain Break</a>
     </div>
-    
+
     <div class="right-icons">
       <i class="fa-solid fa-moon theme-toggle"></i>
       <div class="dropdown">
@@ -233,7 +235,7 @@
     </div>
   </div>
   <script type="module">
-    const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
+    const API_BASE_URL = 'http://localhost:5000/api';
 
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
     import { practiceAPI } from "./js/api.js";
@@ -244,6 +246,8 @@
     const CATEGORY = "aptitude";
     let currentTopic = null;
     let currentLevel = "easy";
+    // FIX: Store loaded sets so startSet() can look up the _id by setNumber
+    let loadedSets = [];
 
     // Topic metadata with icons
     const topicMeta = {
@@ -266,7 +270,7 @@
         const data = await response.json();
 
         if (data.topics.length === 0) {
-          document.getElementById("topicsGrid").innerHTML = 
+          document.getElementById("topicsGrid").innerHTML =
             '<p class="text-center">No topics available yet. Check back soon!</p>';
           return;
         }
@@ -291,39 +295,42 @@
         document.getElementById("topicsGrid").innerHTML = topicsHTML;
       } catch (error) {
         console.error("Error loading topics:", error);
-        document.getElementById("topicsGrid").innerHTML = 
+        document.getElementById("topicsGrid").innerHTML =
           '<p class="text-center">Error loading topics. Please try again.</p>';
       }
     }
 
     // Select topic and load sets
-    window.selectTopic = async function(topic) {
+    window.selectTopic = async function (topic) {
       currentTopic = topic;
       document.getElementById("topicsView").style.display = "none";
       document.getElementById("setsView").style.display = "block";
-      document.getElementById("topicTitle").innerHTML = 
+      document.getElementById("topicTitle").innerHTML =
         `<i class="fas ${topicMeta[topic]?.icon || 'fa-book'}"></i> ${formatTopicName(topic)}`;
-      document.getElementById("topicBreadcrumb").innerHTML = 
+      document.getElementById("topicBreadcrumb").innerHTML =
         `<i class="fas fa-chevron-right"></i> ${formatTopicName(topic)}`;
 
       await loadSets();
     };
 
     // Back to topics view
-    window.backToTopics = function() {
+    window.backToTopics = function () {
       document.getElementById("topicsView").style.display = "block";
       document.getElementById("setsView").style.display = "none";
       document.getElementById("topicBreadcrumb").innerHTML = "";
       currentTopic = null;
+      loadedSets = [];
     };
 
     // Load practice sets
     async function loadSets() {
       try {
         const { sets } = await practiceAPI.getSets(CATEGORY, currentTopic, currentLevel);
+        // FIX: Store the full set objects (including _id) for use in startSet()
+        loadedSets = sets;
 
         if (sets.length === 0) {
-          document.getElementById("setsContainer").innerHTML = 
+          document.getElementById("setsContainer").innerHTML =
             '<p class="text-center">No practice sets available for this level yet.</p>';
           return;
         }
@@ -336,7 +343,7 @@
           if (set.completed) {
             statusBadge = `<span class="badge badge-completed">Completed (${set.score}/${set.questionCount})</span>`;
             statusIcon = '<i class="fas fa-check-circle" style="color: var(--success);"></i>';
-            actionBtn = `<button class="btn btn-secondary" onclick="startSet(${set.setNumber})">
+            actionBtn = `<button class="btn btn-secondary" onclick="startSet('${set._id}',${set.setNumber},'${CATEGORY}','${currentTopic}','${currentLevel}')">
               <i class="fas fa-redo"></i> Retry
             </button>`;
           } else if (set.locked) {
@@ -346,7 +353,7 @@
           } else {
             statusBadge = '<span class="badge badge-available">Available</span>';
             statusIcon = '<i class="fas fa-play-circle" style="color: var(--accent-primary);"></i>';
-            actionBtn = `<button class="btn btn-primary" onclick="startSet(${set.setNumber})">
+            actionBtn = `<button class="btn btn-primary" onclick="startSet('${set._id}',${set.setNumber},'${CATEGORY}','${currentTopic}','${currentLevel}')">
               <i class="fas fa-play"></i> Start Quiz
             </button>`;
           }
@@ -371,20 +378,38 @@
         document.getElementById("setsContainer").innerHTML = setsHTML;
       } catch (error) {
         console.error("Error loading sets:", error);
-        document.getElementById("setsContainer").innerHTML = 
+        document.getElementById("setsContainer").innerHTML =
           '<p class="text-center">Error loading practice sets. Please try again.</p>';
       }
     }
 
-    // Start quiz
-    window.startSet = function(setNumber) {
-      const url = `quiz.html?category=${CATEGORY}&topic=${currentTopic}&level=${currentLevel}&set=${setNumber}`;
+    // All data passed directly as arguments - no module variable dependency
+    window.startSet = function (setId, setNumber, category, topic, level) {
+      console.log("🚀 startSet called with:", { setId, setNumber, category, topic, level });
+
+      if (!setId || setId === 'undefined' || !category || !topic || !level) {
+        console.error("❌ Missing params:", { setId, category, topic, level });
+        alert('Missing set details. Please refresh the page and try again.');
+        return;
+      }
+
+      const url = 'practice-quiz.html'
+        + '?setId=' + encodeURIComponent(setId)
+        + '&setNumber=' + encodeURIComponent(setNumber)
+        + '&category=' + encodeURIComponent(category)
+        + '&topic=' + encodeURIComponent(topic)
+        + '&level=' + encodeURIComponent(level);
+
+      // Seed session storage for robustness
+      sessionStorage.setItem('lastQuizContext', JSON.stringify({ setId, setNumber, category, topic, level }));
+
+      console.log("🔗 Navigating to:", url);
       window.location.href = url;
     };
 
     // Level selector
     document.querySelectorAll(".level-btn").forEach(btn => {
-      btn.addEventListener("click", async function() {
+      btn.addEventListener("click", async function () {
         document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("active"));
         this.classList.add("active");
         currentLevel = this.dataset.level;
@@ -394,7 +419,7 @@
 
     // Helper functions
     function formatTopicName(topic) {
-      return topic.split('-').map(word => 
+      return topic.split('-').map(word =>
         word.charAt(0).toUpperCase() + word.slice(1)
       ).join(' ');
     }
@@ -404,4 +429,5 @@
   </script>
   <script src="js/theme.js" type="module"></script>
 </body>
+
 </html>

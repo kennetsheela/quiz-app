@@ -1,6 +1,6 @@
-<!--results.html-->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,12 +14,12 @@
       padding: 40px 20px;
       min-height: 100vh;
     }
-    
+
     .results-container {
       max-width: 1000px;
       margin: 0 auto;
     }
-    
+
     .score-card {
       background: var(--card-bg);
       border-radius: 20px;
@@ -29,7 +29,7 @@
       position: relative;
       overflow: hidden;
     }
-    
+
     .score-card::before {
       content: '';
       position: absolute;
@@ -39,22 +39,23 @@
       height: 5px;
       background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
     }
-    
+
     .score-display {
       font-size: 5rem;
       font-weight: bold;
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       margin: 20px 0;
     }
-    
+
     .percentage {
       font-size: 2rem;
       color: var(--text-secondary);
       margin-bottom: 20px;
     }
-    
+
     .performance-badge {
       display: inline-block;
       padding: 10px 30px;
@@ -63,65 +64,65 @@
       font-size: 1.1rem;
       margin: 20px 0;
     }
-    
+
     .badge-excellent {
       background: linear-gradient(135deg, #48bb78, #38a169);
       color: white;
     }
-    
+
     .badge-good {
       background: linear-gradient(135deg, #4299e1, #3182ce);
       color: white;
     }
-    
+
     .badge-average {
       background: linear-gradient(135deg, #ed8936, #dd6b20);
       color: white;
     }
-    
+
     .badge-poor {
       background: linear-gradient(135deg, #f56565, #e53e3e);
       color: white;
     }
-    
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 20px;
       margin: 30px 0;
     }
-    
+
     .stat-box {
       background: var(--bg-tertiary);
       padding: 25px;
       border-radius: 12px;
       text-align: center;
     }
-    
+
     .stat-box i {
       font-size: 2.5rem;
       color: var(--accent-primary);
       margin-bottom: 10px;
     }
-    
+
     .stat-box h3 {
       font-size: 2rem;
       margin: 10px 0 5px 0;
     }
-    
+
     .stat-box p {
       margin: 0;
       color: var(--text-secondary);
       font-size: 0.9rem;
     }
-    
+
     .questions-review {
       background: var(--card-bg);
       border-radius: 20px;
       padding: 30px;
       margin-bottom: 30px;
     }
-    
+
     .question-item {
       background: var(--bg-tertiary);
       padding: 25px;
@@ -129,15 +130,15 @@
       margin-bottom: 20px;
       border-left: 4px solid transparent;
     }
-    
+
     .question-item.correct {
       border-left-color: var(--success);
     }
-    
+
     .question-item.incorrect {
       border-left-color: var(--error);
     }
-    
+
     .question-header {
       display: flex;
       justify-content: space-between;
@@ -146,7 +147,7 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-    
+
     .question-number {
       font-weight: 600;
       color: var(--text-primary);
@@ -157,7 +158,7 @@
       align-items: center;
       gap: 15px;
     }
-    
+
     .time-spent-badge {
       display: inline-flex;
       align-items: center;
@@ -191,47 +192,47 @@
       border-color: #ed8936;
       color: #ed8936;
     }
-    
+
     .result-icon {
       font-size: 1.5rem;
     }
-    
+
     .result-icon.correct {
       color: var(--success);
     }
-    
+
     .result-icon.incorrect {
       color: var(--error);
     }
-    
+
     .question-text {
       font-size: 1.1rem;
       margin-bottom: 15px;
       font-weight: 500;
     }
-    
+
     .answer-box {
       background: var(--card-bg);
       padding: 15px;
       border-radius: 8px;
       margin: 10px 0;
     }
-    
+
     .answer-label {
       font-size: 0.85rem;
       font-weight: 600;
       text-transform: uppercase;
       margin-bottom: 5px;
     }
-    
+
     .your-answer {
       color: var(--error);
     }
-    
+
     .correct-answer {
       color: var(--success);
     }
-    
+
     .explanation {
       background: var(--bg-tertiary);
       padding: 15px;
@@ -239,7 +240,7 @@
       margin-top: 15px;
       border-left: 3px solid var(--accent-primary);
     }
-    
+
     .explanation-label {
       font-weight: 600;
       margin-bottom: 8px;
@@ -247,18 +248,18 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .action-buttons {
       display: flex;
       gap: 15px;
       justify-content: center;
       flex-wrap: wrap;
     }
-    
+
     .action-buttons button {
       min-width: 150px;
     }
-    
+
     .confetti {
       position: fixed;
       width: 10px;
@@ -267,7 +268,7 @@
       position: absolute;
       animation: confetti-fall 3s linear;
     }
-    
+
     @keyframes confetti-fall {
       to {
         transform: translateY(100vh) rotate(360deg);
@@ -333,6 +334,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="results-container">
     <div class="score-card">
@@ -340,26 +342,26 @@
       <div class="score-display" id="scoreDisplay">-/-</div>
       <div class="percentage" id="percentageDisplay">-%</div>
       <div class="performance-badge" id="performanceBadge">Calculating...</div>
-      
+
       <div class="stats-grid">
         <div class="stat-box">
           <i class="fas fa-check-circle"></i>
           <h3 id="correctCount">0</h3>
           <p>Correct Answers</p>
         </div>
-        
+
         <div class="stat-box">
           <i class="fas fa-times-circle"></i>
           <h3 id="incorrectCount">0</h3>
           <p>Incorrect Answers</p>
         </div>
-        
+
         <div class="stat-box">
           <i class="fas fa-clock"></i>
           <h3 id="timeSpent">0m 0s</h3>
           <p>Total Time</p>
         </div>
-        
+
         <div class="stat-box">
           <i class="fas fa-chart-line"></i>
           <h3 id="accuracy">0%</h3>
@@ -413,234 +415,234 @@
     </div>
   </div>
 
-  <!-- Replace the entire <script type="module"> section in results.html with this -->
-<script type="module">
-  import { requireAuth } from "./js/auth.js";
-  import { practiceAPI } from "./js/api.js";
+  <script type="module">
+    import { requireAuth } from "./js/auth.js";
+    import { practiceAPI } from "./js/api.js";
 
-  requireAuth();
+    requireAuth();
 
-  const params = new URLSearchParams(window.location.search);
-  const category = params.get('category');
-  const topic = params.get('topic');
-  const level = params.get('level');
-  const setNumber = parseInt(params.get('set'));
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category');
+    const topic = params.get('topic');
+    const level = params.get('level');
+    const setNumber = parseInt(params.get('set') || params.get('setNumber'), 10);
+    const setId = params.get('setId');
 
-  let resultsData = null;
+    let resultsData = null;
 
-  function formatTime(seconds) {
-    if (!seconds && seconds !== 0) return 'N/A';
-    if (seconds < 60) return `${seconds}s`;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}m ${secs}s`;
-  }
-
-  function getTimeSpeedClass(timeSpent, avgTime) {
-    if (!timeSpent || !avgTime) return 'normal';
-    if (timeSpent < avgTime * 0.7) return 'fast';
-    if (timeSpent > avgTime * 1.5) return 'slow';
-    return 'normal';
-  }
-
-  // Check if per-question time data is available
-  function hasPerQuestionTimeData(results) {
-    if (!results || results.length === 0) {
-      console.log("❌ No results array");
-      return false;
-    }
-    
-    // Check if at least one question has valid time data
-    const hasTime = results.some(r => {
-      const time = r.timeSpent || r.timeTaken || r.duration;
-      const isValid = time !== undefined && time !== null && time > 0;
-      return isValid;
-    });
-    
-    console.log(`⏱️ Has per-question time data: ${hasTime}`);
-    return hasTime;
-  }
-
-  function calculateTimeStats(results) {
-    const times = results
-      .map(r => r.timeSpent || r.timeTaken || r.duration)
-      .filter(t => t !== undefined && t !== null && t > 0);
-    
-    if (times.length === 0) {
-      console.log("❌ No valid time data found");
-      return null;
+    function formatTime(seconds) {
+      if (!seconds && seconds !== 0) return 'N/A';
+      if (seconds < 60) return `${seconds}s`;
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}m ${secs}s`;
     }
 
-    const total = times.reduce((sum, t) => sum + t, 0);
-    const avg = Math.round(total / times.length);
-    const fastest = Math.min(...times);
-    const slowest = Math.max(...times);
+    function getTimeSpeedClass(timeSpent, avgTime) {
+      if (!timeSpent || !avgTime) return 'normal';
+      if (timeSpent < avgTime * 0.7) return 'fast';
+      if (timeSpent > avgTime * 1.5) return 'slow';
+      return 'normal';
+    }
 
-    console.log(`⏱️ Time stats calculated:`, { total, avg, fastest, slowest, count: times.length });
-    return { avg, fastest, slowest, total };
-  }
+    // Check if per-question time data is available
+    function hasPerQuestionTimeData(results) {
+      if (!results || results.length === 0) {
+        console.log("❌ No results array");
+        return false;
+      }
 
-  async function loadResults() {
-    try {
-      console.log("📊 [results.html] Loading results...");
-      
-      const storedResults = sessionStorage.getItem('quizResults');
-      
-      if (storedResults) {
-        console.log("✅ [results.html] Found stored results");
-        resultsData = JSON.parse(storedResults);
-        
-        // DETAILED DEBUG
-        console.log("🔍 [results.html] Full resultsData:");
-        console.log(JSON.stringify(resultsData, null, 2));
-        
-        console.log("🔍 [results.html] Results array length:", resultsData.results?.length);
-        
-        if (resultsData.results && resultsData.results.length > 0) {
-          const firstResult = resultsData.results[0];
-          console.log("🔍 [results.html] First result structure:");
-          console.log(JSON.stringify(firstResult, null, 2));
-          console.log("🔍 [results.html] First result keys:", Object.keys(firstResult));
-          console.log("🔍 [results.html] Has timeSpent?", 'timeSpent' in firstResult);
-          console.log("🔍 [results.html] timeSpent value:", firstResult.timeSpent);
-          console.log("🔍 [results.html] timeSpent type:", typeof firstResult.timeSpent);
-          
-          // Check all results
-          const withTime = resultsData.results.filter(r => 
-            'timeSpent' in r && r.timeSpent !== null && r.timeSpent !== undefined
-          );
-          console.log(`⏱️ [results.html] ${withTime.length}/${resultsData.results.length} results have timeSpent`);
-          
-          if (withTime.length > 0) {
-            console.log("✅ [results.html] Sample timing data:", withTime[0].timeSpent);
-          } else {
-            console.error("❌ [results.html] NO RESULTS HAVE TIMING DATA!");
+      // Check if at least one question has valid time data
+      const hasTime = results.some(r => {
+        const time = r.timeSpent || r.timeTaken || r.duration;
+        const isValid = time !== undefined && time !== null && time > 0;
+        return isValid;
+      });
+
+      console.log(`⏱️ Has per-question time data: ${hasTime}`);
+      return hasTime;
+    }
+
+    function calculateTimeStats(results) {
+      const times = results
+        .map(r => r.timeSpent || r.timeTaken || r.duration)
+        .filter(t => t !== undefined && t !== null && t > 0);
+
+      if (times.length === 0) {
+        console.log("❌ No valid time data found");
+        return null;
+      }
+
+      const total = times.reduce((sum, t) => sum + t, 0);
+      const avg = Math.round(total / times.length);
+      const fastest = Math.min(...times);
+      const slowest = Math.max(...times);
+
+      console.log(`⏱️ Time stats calculated:`, { total, avg, fastest, slowest, count: times.length });
+      return { avg, fastest, slowest, total };
+    }
+
+    async function loadResults() {
+      try {
+        console.log("📊 [results.html] Loading results...");
+
+        const storedResults = sessionStorage.getItem('quizResults');
+
+        if (storedResults) {
+          console.log("✅ [results.html] Found stored results");
+          resultsData = JSON.parse(storedResults);
+
+          // DETAILED DEBUG
+          console.log("🔍 [results.html] Full resultsData:");
+          console.log(JSON.stringify(resultsData, null, 2));
+
+          console.log("🔍 [results.html] Results array length:", resultsData.results?.length);
+
+          if (resultsData.results && resultsData.results.length > 0) {
+            const firstResult = resultsData.results[0];
+            console.log("🔍 [results.html] First result structure:");
+            console.log(JSON.stringify(firstResult, null, 2));
+            console.log("🔍 [results.html] First result keys:", Object.keys(firstResult));
+            console.log("🔍 [results.html] Has timeSpent?", 'timeSpent' in firstResult);
+            console.log("🔍 [results.html] timeSpent value:", firstResult.timeSpent);
+            console.log("🔍 [results.html] timeSpent type:", typeof firstResult.timeSpent);
+
+            // Check all results
+            const withTime = resultsData.results.filter(r =>
+              'timeSpent' in r && r.timeSpent !== null && r.timeSpent !== undefined
+            );
+            console.log(`⏱️ [results.html] ${withTime.length}/${resultsData.results.length} results have timeSpent`);
+
+            if (withTime.length > 0) {
+              console.log("✅ [results.html] Sample timing data:", withTime[0].timeSpent);
+            } else {
+              console.error("❌ [results.html] NO RESULTS HAVE TIMING DATA!");
+            }
           }
-        }
-        
-        displayResults(resultsData);
-        sessionStorage.removeItem('quizResults');
-      } else {
-        console.log("⚠️ [results.html] No stored results, trying backend...");
-        
-        try {
-          const progressData = await practiceAPI.getProgress();
-          const thisProgress = progressData.progress.find(p => 
-            p.category === category && 
-            p.topic === topic && 
-            p.level === level && 
-            p.setNumber === setNumber &&
-            p.completed
-          );
-          
-          if (thisProgress) {
-            console.log("✅ Found progress data:", thisProgress);
-            displayBasicResults(thisProgress.score, thisProgress.totalQuestions);
-          } else {
-            console.log("❌ No matching progress found");
+
+          displayResults(resultsData);
+          sessionStorage.removeItem('quizResults');
+        } else {
+          console.log("⚠️ [results.html] No stored results, trying backend...");
+
+          try {
+            const progressData = await practiceAPI.getProgress();
+            const thisProgress = progressData.progress.find(p =>
+              p.category === category &&
+              p.topic === topic &&
+              p.level === level &&
+              p.setNumber === setNumber &&
+              p.completed
+            );
+
+            if (thisProgress) {
+              console.log("✅ Found progress data:", thisProgress);
+              displayBasicResults(thisProgress.score, thisProgress.totalQuestions);
+            } else {
+              console.log("❌ No matching progress found");
+              displayError();
+            }
+          } catch (error) {
+            console.error("❌ Error fetching progress:", error);
             displayError();
           }
-        } catch (error) {
-          console.error("❌ Error fetching progress:", error);
-          displayError();
         }
+      } catch (error) {
+        console.error("❌ [results.html] Error loading results:", error);
+        displayError();
       }
-    } catch (error) {
-      console.error("❌ [results.html] Error loading results:", error);
-      displayError();
     }
-  }
 
-  function displayResults(data) {
-    console.log("🎨 [results.html] Displaying full results");
-    
-    const score = data.score || 0;
-    const totalQuestions = data.totalQuestions || 0;
-    const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
-    
-    // Update score display
-    document.getElementById('scoreDisplay').textContent = `${score}/${totalQuestions}`;
-    document.getElementById('percentageDisplay').textContent = `${percentage}%`;
-    document.getElementById('correctCount').textContent = score;
-    document.getElementById('incorrectCount').textContent = totalQuestions - score;
-    document.getElementById('accuracy').textContent = percentage + '%';
-    
-    // Display total time spent
-    const timeSpent = data.timeSpent;
-    if (timeSpent !== undefined && timeSpent !== null) {
-      const minutes = Math.floor(timeSpent / 60);
-      const seconds = timeSpent % 60;
-      document.getElementById('timeSpent').textContent = `${minutes}m ${seconds}s`;
-    } else {
-      document.getElementById('timeSpent').textContent = "N/A";
-    }
-    
-    // Performance badge
-    const badge = document.getElementById('performanceBadge');
-    if (percentage >= 90) {
-      badge.textContent = '🏆 Excellent!';
-      badge.className = 'performance-badge badge-excellent';
-      createConfetti();
-    } else if (percentage >= 70) {
-      badge.textContent = '👍 Good Job!';
-      badge.className = 'performance-badge badge-good';
-    } else if (percentage >= 50) {
-      badge.textContent = '📚 Keep Practicing';
-      badge.className = 'performance-badge badge-average';
-    } else {
-      badge.textContent = '💪 Try Again';
-      badge.className = 'performance-badge badge-poor';
-    }
-    
-    // Calculate time statistics if per-question data exists
-    let timeStats = null;
-    const hasTimeData = hasPerQuestionTimeData(data.results);
-    
-    console.log(`⏱️ [results.html] Has per-question time data: ${hasTimeData}`);
-    
-    if (hasTimeData) {
-      timeStats = calculateTimeStats(data.results);
-      
-      if (timeStats) {
-        console.log("⏱️ [results.html] Displaying time breakdown");
-        document.getElementById('timeBreakdown').style.display = 'block';
-        document.getElementById('avgTimePerQuestion').textContent = `${timeStats.avg}s`;
-        document.getElementById('fastestQuestion').textContent = `${timeStats.fastest}s`;
-        document.getElementById('slowestQuestion').textContent = `${timeStats.slowest}s`;
+    function displayResults(data) {
+      console.log("🎨 [results.html] Displaying full results");
+
+      const score = data.score || 0;
+      const totalQuestions = data.totalQuestions || 0;
+      const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+
+      // Update score display
+      document.getElementById('scoreDisplay').textContent = `${score}/${totalQuestions}`;
+      document.getElementById('percentageDisplay').textContent = `${percentage}%`;
+      document.getElementById('correctCount').textContent = score;
+      document.getElementById('incorrectCount').textContent = totalQuestions - score;
+      document.getElementById('accuracy').textContent = percentage + '%';
+
+      // Display total time spent
+      const timeSpent = data.timeSpent;
+      if (timeSpent !== undefined && timeSpent !== null) {
+        const minutes = Math.floor(timeSpent / 60);
+        const seconds = timeSpent % 60;
+        document.getElementById('timeSpent').textContent = `${minutes}m ${seconds}s`;
       } else {
-        console.log("⚠️ [results.html] Could not calculate time stats");
+        document.getElementById('timeSpent').textContent = "N/A";
       }
-    } else {
-      console.log("ℹ️ [results.html] Hiding time analysis - no per-question data");
-      document.getElementById('timeBreakdown').style.display = 'none';
-    }
-    
-    // Display detailed results
-    if (data.results && data.results.length > 0) {
-      const questionsHTML = data.results.map((result, index) => {
-        const normalizeAnswer = (ans) => ans ? ans.toString().trim().toLowerCase() : '';
-        
-        const selectedAnswer = result.selectedAnswer || result.userAnswer || result.answer || null;
-        const correctAnswer = result.correctAnswer || result.correct || null;
-        
-        let isCorrect = result.isCorrect;
-        if (isCorrect === undefined || isCorrect === null) {
-          isCorrect = selectedAnswer && correctAnswer && 
-                     normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer);
+
+      // Performance badge
+      const badge = document.getElementById('performanceBadge');
+      if (percentage >= 90) {
+        badge.textContent = '🏆 Excellent!';
+        badge.className = 'performance-badge badge-excellent';
+        createConfetti();
+      } else if (percentage >= 70) {
+        badge.textContent = '👍 Good Job!';
+        badge.className = 'performance-badge badge-good';
+      } else if (percentage >= 50) {
+        badge.textContent = '📚 Keep Practicing';
+        badge.className = 'performance-badge badge-average';
+      } else {
+        badge.textContent = '💪 Try Again';
+        badge.className = 'performance-badge badge-poor';
+      }
+
+      // Calculate time statistics if per-question data exists
+      let timeStats = null;
+      const hasTimeData = hasPerQuestionTimeData(data.results);
+
+      console.log(`⏱️ [results.html] Has per-question time data: ${hasTimeData}`);
+
+      if (hasTimeData) {
+        timeStats = calculateTimeStats(data.results);
+
+        if (timeStats) {
+          console.log("⏱️ [results.html] Displaying time breakdown");
+          document.getElementById('timeBreakdown').style.display = 'block';
+          document.getElementById('avgTimePerQuestion').textContent = `${timeStats.avg}s`;
+          document.getElementById('fastestQuestion').textContent = `${timeStats.fastest}s`;
+          document.getElementById('slowestQuestion').textContent = `${timeStats.slowest}s`;
+        } else {
+          console.log("⚠️ [results.html] Could not calculate time stats");
         }
-        
-        // Get time for this question
-        const questionTime = result.timeSpent || result.timeTaken || result.duration || null;
-        const showTimeForThisQuestion = hasTimeData && (questionTime !== null && questionTime !== undefined);
-        
-        // Only calculate time class if we have time stats
-        const timeClass = timeStats && showTimeForThisQuestion 
-          ? getTimeSpeedClass(questionTime, timeStats.avg) 
-          : 'normal';
-        
-        console.log(`Question ${index + 1}: hasTime=${showTimeForThisQuestion}, time=${questionTime}, class=${timeClass}`);
-        
-        return `
+      } else {
+        console.log("ℹ️ [results.html] Hiding time analysis - no per-question data");
+        document.getElementById('timeBreakdown').style.display = 'none';
+      }
+
+      // Display detailed results
+      if (data.results && data.results.length > 0) {
+        const questionsHTML = data.results.map((result, index) => {
+          const normalizeAnswer = (ans) => ans ? ans.toString().trim().toLowerCase() : '';
+
+          const selectedAnswer = result.selectedAnswer || result.userAnswer || null;
+          const correctAnswer = result.correctAnswer || result.correct || result.answer || null;
+
+          let isCorrect = result.isCorrect;
+          if (isCorrect === undefined || isCorrect === null) {
+            isCorrect = selectedAnswer && correctAnswer &&
+              normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswer);
+          }
+
+          // Get time for this question
+          const questionTime = result.timeSpent || result.timeTaken || result.duration || null;
+          const showTimeForThisQuestion = hasTimeData && (questionTime !== null && questionTime !== undefined);
+
+          // Only calculate time class if we have time stats
+          const timeClass = timeStats && showTimeForThisQuestion
+            ? getTimeSpeedClass(questionTime, timeStats.avg)
+            : 'normal';
+
+          console.log(`Question ${index + 1}: hasTime=${showTimeForThisQuestion}, time=${questionTime}, class=${timeClass}`);
+
+          return `
           <div class="question-item ${isCorrect ? 'correct' : 'incorrect'}">
             <div class="question-header">
               <span class="question-number">Question ${index + 1}</span>
@@ -680,98 +682,107 @@
             ` : ''}
           </div>
         `;
-      }).join('');
-      
-      document.getElementById('questionsContainer').innerHTML = questionsHTML;
-    } else {
-      document.getElementById('questionsContainer').innerHTML = 
-        '<p style="text-align: center; color: var(--text-secondary);">Detailed review will be available soon.</p>';
-    }
-    
-    checkNextSet();
-  }
+        }).join('');
 
-  function displayBasicResults(score, total) {
-    console.log("🎨 Displaying basic results:", score, "/", total);
-    
-    const percentage = Math.round((score / total) * 100);
-    
-    document.getElementById('scoreDisplay').textContent = `${score}/${total}`;
-    document.getElementById('percentageDisplay').textContent = `${percentage}%`;
-    document.getElementById('correctCount').textContent = score;
-    document.getElementById('incorrectCount').textContent = total - score;
-    document.getElementById('accuracy').textContent = percentage + '%';
-    
-    const badge = document.getElementById('performanceBadge');
-    if (percentage >= 90) {
-      badge.textContent = '🏆 Excellent!';
-      badge.className = 'performance-badge badge-excellent';
-      createConfetti();
-    } else if (percentage >= 70) {
-      badge.textContent = '👍 Good Job!';
-      badge.className = 'performance-badge badge-good';
-    } else if (percentage >= 50) {
-      badge.textContent = '📚 Keep Practicing';
-      badge.className = 'performance-badge badge-average';
-    } else {
-      badge.textContent = '💪 Try Again';
-      badge.className = 'performance-badge badge-poor';
-    }
-    
-    document.getElementById('questionsContainer').innerHTML = 
-      '<p style="text-align: center; color: var(--text-secondary);">Detailed review is not available for this quiz.</p>';
-    
-    checkNextSet();
-  }
-
-  function displayError() {
-    document.getElementById('questionsContainer').innerHTML = 
-      '<p style="text-align: center; color: var(--error);">Could not load results. Please try again.</p>';
-  }
-
-  async function checkNextSet() {
-    try {
-      const { sets } = await practiceAPI.getSets(category, topic, level);
-      const nextSet = sets.find(s => s.setNumber === setNumber + 1 && !s.locked);
-      
-      if (nextSet) {
-        document.getElementById('nextBtn').style.display = 'block';
-        document.getElementById('nextBtn').onclick = () => {
-          window.location.href = `quiz.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber + 1}`;
-        };
+        document.getElementById('questionsContainer').innerHTML = questionsHTML;
+      } else {
+        document.getElementById('questionsContainer').innerHTML =
+          '<p style="text-align: center; color: var(--text-secondary);">Detailed review will be available soon.</p>';
       }
-    } catch (error) {
-      console.error("Error checking next set:", error);
+
+      checkNextSet();
     }
-  }
 
-  function createConfetti() {
-    const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe'];
-    for (let i = 0; i < 50; i++) {
-      setTimeout(() => {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * window.innerWidth + 'px';
-        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDelay = Math.random() * 3 + 's';
-        document.body.appendChild(confetti);
-        
-        setTimeout(() => confetti.remove(), 3000);
-      }, i * 30);
+    function displayBasicResults(score, total) {
+      console.log("🎨 Displaying basic results:", score, "/", total);
+
+      const percentage = Math.round((score / total) * 100);
+
+      document.getElementById('scoreDisplay').textContent = `${score}/${total}`;
+      document.getElementById('percentageDisplay').textContent = `${percentage}%`;
+      document.getElementById('correctCount').textContent = score;
+      document.getElementById('incorrectCount').textContent = total - score;
+      document.getElementById('accuracy').textContent = percentage + '%';
+
+      const badge = document.getElementById('performanceBadge');
+      if (percentage >= 90) {
+        badge.textContent = '🏆 Excellent!';
+        badge.className = 'performance-badge badge-excellent';
+        createConfetti();
+      } else if (percentage >= 70) {
+        badge.textContent = '👍 Good Job!';
+        badge.className = 'performance-badge badge-good';
+      } else if (percentage >= 50) {
+        badge.textContent = '📚 Keep Practicing';
+        badge.className = 'performance-badge badge-average';
+      } else {
+        badge.textContent = '💪 Try Again';
+        badge.className = 'performance-badge badge-poor';
+      }
+
+      document.getElementById('questionsContainer').innerHTML =
+        '<p style="text-align: center; color: var(--text-secondary);">Detailed review is not available for this quiz.</p>';
+
+      checkNextSet();
     }
-  }
 
-  window.goBack = function() {
-    window.location.href = `${category}.html`;
-  };
+    function displayError() {
+      document.getElementById('questionsContainer').innerHTML =
+        '<p style="text-align: center; color: var(--error);">Could not load results. Please try again.</p>';
+    }
 
-  document.getElementById('retryBtn').onclick = function() {
-    window.location.href = `quiz.html?category=${category}&topic=${topic}&level=${level}&set=${setNumber}`;
-  };
+    async function checkNextSet() {
+      try {
+        const { sets } = await practiceAPI.getSets(category, topic, level);
+        const nextSet = sets.find(s => s.setNumber === setNumber + 1 && !s.locked);
 
-  // Load results on page load
-  loadResults();
-</script>
+        if (nextSet) {
+          document.getElementById('nextBtn').style.display = 'block';
+          document.getElementById('nextBtn').onclick = () => {
+            window.location.href = `practice-quiz.html?category=${category}&topic=${topic}&level=${level}&setNumber=${setNumber + 1}&setId=${nextSet._id}`;
+          };
+        }
+      } catch (error) {
+        console.error("Error checking next set:", error);
+      }
+    }
+
+    function createConfetti() {
+      const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe'];
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * window.innerWidth + 'px';
+          confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.animationDelay = Math.random() * 3 + 's';
+          document.body.appendChild(confetti);
+
+          setTimeout(() => confetti.remove(), 3000);
+        }, i * 30);
+      }
+    }
+
+    window.goBack = function () {
+      if (category) {
+        window.location.href = `${category}.html`;
+      } else {
+        window.location.href = 'explore.html';
+      }
+    };
+
+    document.getElementById('retryBtn').onclick = function () {
+      if (!setId) {
+        alert("Cannot retry: Set ID is missing. Please go back to the topics page.");
+        return;
+      }
+      window.location.href = `practice-quiz.html?category=${category}&topic=${topic}&level=${level}&setNumber=${setNumber}&setId=${setId}`;
+    };
+
+    // Load results on page load
+    loadResults();
+  </script>
   <script src="js/theme.js" type="module"></script>
 </body>
+
 </html>

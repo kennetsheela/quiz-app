@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,8 +76,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.6;
+      }
     }
 
     .timer-display label {
@@ -367,17 +375,18 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Appbar -->
   <div class="appbar">
     <h2>AptioGen</h2>
-    
+
     <div class="nav-links">
       <a href="explore.html">Explore</a>
       <a href="challenge.html">Challenge</a>
       <a href="level-up.html">Level Up</a>
     </div>
-    
+
     <div class="right-icons">
       <i class="fa-solid fa-moon theme-toggle"></i>
       <div class="dropdown" id="userDropdown">
@@ -445,7 +454,7 @@
     <div class="submit-warning" id="submitWarning">
       <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
       <div>
-        <strong>Warning:</strong> You have unanswered questions. 
+        <strong>Warning:</strong> You have unanswered questions.
         <span id="unansweredCount"></span> questions remaining.
       </div>
     </div>
@@ -485,7 +494,7 @@
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
 
     // ✅ FIXED: API_BASE_URL moved inside script, not at top of HTML
-    const API_BASE_URL = 'https://quiz-app-mepj.onrender.com/api';
+    const API_BASE_URL = 'http://localhost:5000/api';
 
     // Quiz state
     let quizConfig = null;
@@ -506,7 +515,7 @@
     // Load quiz configuration
     function loadQuizConfig() {
       const configStr = localStorage.getItem('customQuizConfig');
-      
+
       if (!configStr) {
         alert('No quiz configuration found. Redirecting to quiz creator...');
         window.location.href = 'create-custom.html';
@@ -520,14 +529,14 @@
 
     // Display quiz information
     function displayQuizInfo() {
-      document.getElementById('categoriesDisplay').textContent = 
+      document.getElementById('categoriesDisplay').textContent =
         quizConfig.categories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ');
-      
-      document.getElementById('topicsDisplay').textContent = 
+
+      document.getElementById('topicsDisplay').textContent =
         `${quizConfig.topics.length} topics`;
-      
-      const diffText = quizConfig.difficulty.length === 3 
-        ? 'Mixed' 
+
+      const diffText = quizConfig.difficulty.length === 3
+        ? 'Mixed'
         : quizConfig.difficulty.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ');
       document.getElementById('difficultyDisplay').textContent = diffText;
     }
@@ -538,9 +547,9 @@
 
       try {
         const token = await getAuthToken();
-        
+
         console.log('Fetching questions from:', `${API_BASE_URL}/practice/custom-questions`);
-        
+
         const response = await fetch(`${API_BASE_URL}/practice/custom-questions`, {
           method: 'POST',
           headers: {
@@ -561,7 +570,7 @@
         }
 
         const data = await response.json();
-        
+
         if (!data.questions || data.questions.length === 0) {
           alert('No questions found matching your criteria. Please try different selections.');
           window.location.href = 'create-custom.html';
@@ -570,14 +579,14 @@
 
         questions = data.questions;
         userAnswers = new Array(questions.length).fill(null);
-        
+
         // Initialize quiz
         timeRemaining = quizConfig.timeLimit * 60; // Convert to seconds
         quizStartTime = Date.now(); // Record start time
         startTimer();
         renderQuestion();
         renderPalette();
-        
+
         document.getElementById('loadingOverlay').classList.remove('active');
       } catch (error) {
         console.error('Error fetching questions:', error);
@@ -590,7 +599,7 @@
     async function getAuthToken() {
       const { auth } = await import('./js/firebase.js');
       const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
-      
+
       return new Promise((resolve, reject) => {
         if (auth.currentUser) {
           auth.currentUser.getIdToken(true)
@@ -598,7 +607,7 @@
             .catch(reject);
           return;
         }
-        
+
         const unsubscribe = onAuthStateChanged(auth, user => {
           unsubscribe();
           if (user) {
@@ -609,7 +618,7 @@
             reject(new Error("Not authenticated"));
           }
         });
-        
+
         setTimeout(() => {
           unsubscribe();
           reject(new Error("Authentication timeout"));
@@ -620,11 +629,11 @@
     // Start timer
     function startTimer() {
       updateTimerDisplay();
-      
+
       timerInterval = setInterval(() => {
         timeRemaining--;
         updateTimerDisplay();
-        
+
         if (timeRemaining <= 0) {
           clearInterval(timerInterval);
           autoSubmitQuiz();
@@ -637,12 +646,12 @@
       const minutes = Math.floor(timeRemaining / 60);
       const seconds = timeRemaining % 60;
       const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      
+
       const timerEl = document.getElementById('timer');
       const timerDisplay = document.getElementById('timerDisplay');
-      
+
       timerEl.textContent = timeStr;
-      
+
       // Warning states
       timerDisplay.classList.remove('warning', 'danger');
       if (timeRemaining <= 60) {
@@ -661,12 +670,12 @@
     // Render current question
     function renderQuestion() {
       const question = questions[currentQuestionIndex];
-      
-      document.getElementById('questionNumber').textContent = 
+
+      document.getElementById('questionNumber').textContent =
         `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-      
+
       document.getElementById('questionText').textContent = question.question;
-      
+
       // Render tags
       const tagsContainer = document.getElementById('questionTags');
       tagsContainer.innerHTML = `
@@ -674,30 +683,30 @@
         <span class="tag"><i class="fas fa-book"></i> ${question.topic}</span>
         <span class="tag"><i class="fas fa-signal"></i> ${question.level}</span>
       `;
-      
+
       // Render options
       const optionsContainer = document.getElementById('optionsContainer');
       optionsContainer.innerHTML = '';
-      
+
       question.options.forEach((option, index) => {
         const optionEl = document.createElement('div');
         optionEl.className = 'option-item';
         if (userAnswers[currentQuestionIndex] === option) {
           optionEl.classList.add('selected');
         }
-        
+
         optionEl.innerHTML = `
           <div class="option-radio"></div>
           <div class="option-text">${option}</div>
         `;
-        
+
         optionEl.addEventListener('click', () => selectOption(option));
         optionsContainer.appendChild(optionEl);
       });
-      
+
       // Update navigation buttons
       document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
-      
+
       if (currentQuestionIndex === questions.length - 1) {
         document.getElementById('nextBtn').style.display = 'none';
         document.getElementById('submitBtn').style.display = 'flex';
@@ -705,12 +714,12 @@
         document.getElementById('nextBtn').style.display = 'flex';
         document.getElementById('submitBtn').style.display = 'none';
       }
-      
+
       // Update progress
       const answeredCount = userAnswers.filter(a => a !== null).length;
       const progress = (answeredCount / questions.length) * 100;
       document.getElementById('progressFill').style.width = `${progress}%`;
-      
+
       // Update submit warning
       const unansweredCount = questions.length - answeredCount;
       if (unansweredCount > 0 && currentQuestionIndex === questions.length - 1) {
@@ -732,26 +741,26 @@
     function renderPalette() {
       const paletteGrid = document.getElementById('paletteGrid');
       paletteGrid.innerHTML = '';
-      
+
       questions.forEach((_, index) => {
         const paletteItem = document.createElement('div');
         paletteItem.className = 'palette-item';
         paletteItem.textContent = index + 1;
-        
+
         if (userAnswers[index] !== null) {
           paletteItem.classList.add('answered');
         }
         if (index === currentQuestionIndex) {
           paletteItem.classList.add('current');
         }
-        
+
         paletteItem.addEventListener('click', () => {
           currentQuestionIndex = index;
           renderQuestion();
           renderPalette();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-        
+
         paletteGrid.appendChild(paletteItem);
       });
     }
@@ -778,14 +787,14 @@
     // Submit quiz
     document.getElementById('submitBtn').addEventListener('click', () => {
       const unansweredCount = userAnswers.filter(a => a === null).length;
-      
+
       if (unansweredCount > 0) {
         const confirmed = confirm(
           `You have ${unansweredCount} unanswered question(s). Are you sure you want to submit?`
         );
         if (!confirmed) return;
       }
-      
+
       submitQuiz();
     });
 
@@ -798,9 +807,9 @@
     // Submit quiz and calculate results
     function submitQuiz() {
       clearInterval(timerInterval);
-      
+
       document.getElementById('loadingOverlay').classList.add('active');
-      
+
       // Submit to backend
       submitToBackend();
     }
@@ -809,12 +818,12 @@
     async function submitToBackend() {
       try {
         const token = await getAuthToken();
-        
+
         const questionIds = questions.map(q => q._id);
         const timeSpent = getTimeSpent();
-        
+
         console.log('Submitting quiz with time spent:', timeSpent, 'seconds');
-        
+
         const response = await fetch(`${API_BASE_URL}/practice/custom-quiz/submit`, {
           method: 'POST',
           headers: {
@@ -835,7 +844,7 @@
         }
 
         const data = await response.json();
-        
+
         // Store results for the results page
         const results = {
           quizConfig,
@@ -843,7 +852,7 @@
             _id: r.questionId,
             question: r.question,
             options: questions.find(q => q._id === r.questionId)?.options || [],
-            correctAnswer: r.correctAnswer,
+            answer: r.answer,
             category: r.category,
             topic: r.topic,
             level: r.level
@@ -855,12 +864,12 @@
           score: data.score,
           percentage: data.percentage
         };
-        
+
         localStorage.setItem('quizResults', JSON.stringify(results));
-        
+
         // Redirect to results page
         window.location.href = 'quiz-results.html';
-        
+
       } catch (error) {
         console.error('Error submitting quiz:', error);
         alert(`Failed to submit quiz: ${error.message}`);
@@ -895,4 +904,5 @@
   </script>
   <script src="js/theme.js" type="module"></script>
 </body>
+
 </html>

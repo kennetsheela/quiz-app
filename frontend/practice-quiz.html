@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AptioGen - Practice Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        body {
+            padding: 20px;
+            background: var(--bg-primary);
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Loading / Error overlay */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        #loadingOverlay .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #loadingOverlay p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        #loadingOverlay small {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        #errorOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: var(--bg-primary);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #errorOverlay i {
+            font-size: 48px;
+            color: var(--error);
+        }
+
+        #errorOverlay h2 {
+            font-size: 22px;
+        }
+
+        #errorOverlay p {
+            color: var(--text-secondary);
+            max-width: 420px;
+            line-height: 1.6;
+        }
+
+        #errorOverlay .err-btns {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        /* Quiz UI */
+        #quizUI {
+            display: none;
+        }
+
+        .quiz-header {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer.warning {
+            color: var(--error);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .progress-bar {
+            background: var(--bg-tertiary);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 400px;
+        }
+
+        .question-number {
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 25px;
+            line-height: 1.8;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option {
+            background: var(--bg-tertiary);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-height: 50px;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-primary);
+            text-align: left;
+            width: 100%;
+        }
+
+        .option:hover {
+            border-color: var(--accent-primary);
+            background: var(--card-bg);
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .option-label {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .option.selected .option-label {
+            background: white;
+            color: var(--accent-primary);
+        }
+
+        .option-text {
+            flex: 1;
+            line-height: 1.6;
+        }
+
+        .question-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .q-dot {
+            aspect-ratio: 1;
+            border: 2px solid var(--border-color);
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .q-dot:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        .q-dot.answered {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .q-dot.current {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            transform: scale(1.1);
+        }
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Submit confirm modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 440px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .modal-box i {
+            font-size: 4rem;
+            color: var(--warning);
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .question-text {
+                font-size: 1rem;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .navigation button {
+                width: 100%;
+            }
+        }
+
+        /* Proctoring & Fullscreen Overlays */
+        #fullscreenOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: var(--bg-primary);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #fullscreenOverlay i {
+            font-size: 80px;
+            color: var(--accent-primary);
+            margin-bottom: 24px;
+        }
+
+        #warningOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10001;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #warningOverlay i {
+            font-size: 70px;
+            color: var(--error);
+            margin-bottom: 20px;
+        }
+
+        .violation-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading quiz…</p>
+        <small id="loadStep">Authenticating…</small>
+    </div>
+
+    <!-- Start Fullscreen Overlay -->
+    <div id="fullscreenOverlay">
+        <i class="fas fa-expand-arrows-alt"></i>
+        <h1>Ready to Start?</h1>
+        <p class="mb-4" style="max-width: 500px; color: var(--text-secondary);">
+            To maintain quiz integrity, this practice session requires <b>Full Screen Mode</b>.
+            Any attempt to switch tabs or exit fullscreen will be monitored.
+        </p>
+        <button class="btn btn-primary btn-lg px-5" onclick="window.enterFullscreen()">
+            Enter Fullscreen & Start Quiz
+        </button>
+        <button class="btn btn-link mt-3" onclick="history.back()">Go Back</button>
+    </div>
+
+    <!-- Warning Overlay -->
+    <div id="warningOverlay">
+        <div class="violation-card">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>Proctoring Violation</h2>
+            <p id="violationReason" class="mb-2">Tab switching or exiting fullscreen is not allowed.</p>
+            <p class="text-danger fw-700 mb-4" id="violationStatus">Warning: 1 / 2</p>
+            <p class="small text-secondary mb-4">
+                You have reached a proctoring violation. Please return to fullscreen.
+                Multiple violations will result in <b>automatic submission</b>.
+            </p>
+            <button class="btn btn-primary w-100" onclick="window.resumeQuiz()">
+                Return to Fullscreen
+            </button>
+        </div>
+    </div>
+
+    <!-- Error overlay -->
+    <div id="errorOverlay">
+        <i class="fas fa-exclamation-circle"></i>
+        <h2 id="errTitle">Something went wrong</h2>
+        <p id="errBody">Unable to load the quiz.</p>
+        <div class="err-btns">
+            <button class="btn btn-secondary" onclick="history.back()">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </button>
+            <button class="btn btn-primary" onclick="location.reload()">
+                <i class="fas fa-rotate-right"></i> Retry
+            </button>
+        </div>
+    </div>
+
+    <!-- Quiz UI (hidden until loaded) -->
+    <div id="quizUI">
+        <div class="quiz-container">
+            <div class="quiz-header">
+                <div>
+                    <h2 id="quizTitle">Loading…</h2>
+                    <p id="quizInfo" style="color: var(--text-secondary); margin: 5px 0 0 0;"></p>
+                </div>
+                <div class="timer" id="timerEl">
+                    <i class="fas fa-clock"></i>
+                    <span id="timerText">--:--</span>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+
+            <div class="question-nav" id="questionNav"></div>
+            <div class="question-card" id="questionCard"></div>
+
+            <div class="navigation">
+                <button class="btn btn-secondary" id="btnPrev" onclick="window.navigate(-1)" disabled>
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <button class="btn btn-primary" id="btnNext" onclick="window.navigate(1)">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="btn btn-success" id="btnSubmit" onclick="window.openSubmitModal()" style="display:none;">
+                    <i class="fas fa-check"></i> Submit Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit confirm modal -->
+    <div class="modal-overlay" id="submitModal">
+        <div class="modal-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>Submit Quiz?</h2>
+            <p id="modalWarning" style="margin:20px 0; color: var(--text-secondary);"></p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="window.closeSubmitModal()">Cancel</button>
+                <button class="btn btn-success" onclick="window.doSubmit()">Confirm Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { requireAuth } from "./js/auth.js";
+        import { practiceAPI } from "./js/api.js";
+
+        // State
+        let category, topic, level, setNumber, setId;
+        let questions = [];
+        let answers = [];
+        let timings = [];
+        let currentIdx = 0;
+        let qStart = null;
+        let timerMs = 0;
+        let timerIval = null;
+        let submitting = false;
+        let violations = 0;
+        let isStarted = false;
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const errorOverlay = document.getElementById('errorOverlay');
+        const quizUI = document.getElementById('quizUI');
+
+        function setStep(msg) { document.getElementById('loadStep').textContent = msg; }
+
+        function showError(title, body) {
+            loadingOverlay.style.display = 'none';
+            errorOverlay.style.display = 'flex';
+            document.getElementById('errTitle').textContent = title;
+            document.getElementById('errBody').textContent = body;
+        }
+
+        function fmt(text) { return (text || '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); }
+
+        async function init() {
+            try {
+                // 1. Parse Parameters
+                const p = new URLSearchParams(location.search);
+                category = p.get('category');
+                topic = p.get('topic');
+                level = p.get('level');
+                setNumber = parseInt(p.get('setNumber') || p.get('set'), 10);
+                setId = p.get('setId');
+
+                // 2. Recovery Logic
+                const stored = sessionStorage.getItem('lastQuizContext');
+                console.log("🔍 [practice-quiz] Raw session storage:", stored);
+
+                if (!category || !topic || !level || isNaN(setNumber) || !setId || setId === 'undefined') {
+                    if (stored) {
+                        try {
+                            const context = JSON.parse(stored);
+                            console.log("🔄 [practice-quiz] Attempting recovery from session:", context);
+                            category = category || context.category;
+                            topic = topic || context.topic;
+                            level = level || context.level;
+                            if (isNaN(setNumber)) setNumber = context.setNumber;
+                            setId = setId || context.setId;
+                        } catch (e) {
+                            console.error("❌ [practice-quiz] Error parsing stored context:", e);
+                        }
+                    }
+                }
+
+                // 3. Debug logging
+                console.log("🔍 [practice-quiz] Raw URL:", window.location.href);
+                console.log("🔍 [practice-quiz] Parsed params:", { category, topic, level, setNumber, setId });
+
+                // 4. Validation
+                const missing = [];
+                if (!category) missing.push('category');
+                if (!topic) missing.push('topic');
+                if (!level) missing.push('level');
+                if (isNaN(setNumber)) missing.push('setNumber');
+                if (!setId || setId === 'undefined') missing.push('setId');
+
+                if (missing.length > 0) {
+                    const msg = `Missing required parameters: ${missing.join(', ')}. Please start the quiz from the practice dashboard.`;
+                    console.error("❌ [practice-quiz] Validation failed:", msg);
+                    throw new Error(msg);
+                }
+
+                // 4. Save to session for persistence
+                sessionStorage.setItem('lastQuizContext', JSON.stringify({ category, topic, level, setNumber, setId }));
+
+                // 5. Auth
+                setStep('Authenticating…');
+                await requireAuth();
+
+                // 6. Start Set on Backend
+                setStep('Syncing progress…');
+                await practiceAPI.startSet({ category, topic, level, setNumber });
+
+                // 7. Load Questions
+                setStep('Loading questions for Set ' + setNumber + '…');
+                const data = await practiceAPI.getQuestions(setId);
+                questions = data.questions || [];
+
+                if (questions.length === 0) throw new Error('No questions found for this set.');
+
+                // 8. Ready state
+                answers = new Array(questions.length).fill(null);
+                timings = new Array(questions.length).fill(0);
+                timerMs = (data.timeLimit || 10) * 60 * 1000;
+
+                document.getElementById('quizTitle').textContent = fmt(category) + ' — ' + fmt(topic);
+                document.getElementById('quizInfo').textContent = fmt(level) + ' Level · Set ' + setNumber + ' · ' + questions.length + ' questions';
+
+                buildNav();
+                showQuestion(0);
+
+                loadingOverlay.style.display = 'none';
+                document.getElementById('fullscreenOverlay').style.display = 'flex';
+
+            } catch (err) {
+                console.error(err);
+                showError('Initialization Error', err.message);
+            }
+        }
+
+        window.enterFullscreen = async () => {
+            try {
+                const doc = document.documentElement;
+                if (doc.requestFullscreen) await doc.requestFullscreen();
+                else if (doc.webkitRequestFullscreen) await doc.webkitRequestFullscreen();
+                else if (doc.msRequestFullscreen) await doc.msRequestFullscreen();
+
+                startQuiz();
+            } catch (err) {
+                console.error("Fullscreen request failed:", err);
+                // Fallback for browsers that block fullscreen or if user denies
+                startQuiz();
+            }
+        };
+
+        function startQuiz() {
+            document.getElementById('fullscreenOverlay').style.display = 'none';
+            quizUI.style.display = 'block';
+            isStarted = true;
+            startTimer();
+            setupProctoring();
+        }
+
+        function setupProctoring() {
+            // Prevent Tab Switching
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && isStarted && !submitting) {
+                    triggerViolation('Tab Switching Detected');
+                }
+            });
+
+            // Monitor Fullscreen Exit
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement && isStarted && !submitting) {
+                    triggerViolation('Exited Fullscreen Mode');
+                }
+            });
+
+            // Extra precautions (Optional for practice, but requested)
+            window.addEventListener('blur', () => {
+                if (isStarted && !submitting) {
+                    triggerViolation('Window Lost Focus');
+                }
+            });
+
+            // Disable Context Menu
+            document.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        function triggerViolation(reason) {
+            if (submitting) return;
+            violations++;
+            console.warn(`Proctoring Violation [${violations}]: ${reason}`);
+
+            if (violations >= 2) {
+                document.getElementById('warningOverlay').style.display = 'flex';
+                document.getElementById('violationReason').textContent = 'Automatic Submission Triggered';
+                document.getElementById('violationStatus').textContent = `Violations: ${violations} / 2`;
+                document.getElementById('violationStatus').nextElementSibling.innerHTML =
+                    'You have exceeded the allowed violation limit. <b>Your quiz is being submitted automatically.</b>';
+
+                // Disable the resume button
+                const resumeBtn = document.querySelector('#warningOverlay .btn');
+                if (resumeBtn) {
+                    resumeBtn.disabled = true;
+                    resumeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                }
+
+                // Give the user a moment to see the message then submit
+                setTimeout(() => {
+                    window.doSubmit();
+                }, 2000);
+            } else {
+                document.getElementById('violationReason').textContent = reason;
+                document.getElementById('violationStatus').textContent = `Warning: ${violations} / 2`;
+                document.getElementById('warningOverlay').style.display = 'flex';
+            }
+        }
+
+        window.resumeQuiz = async () => {
+            try {
+                const doc = document.documentElement;
+                if (!document.fullscreenElement) {
+                    if (doc.requestFullscreen) await doc.requestFullscreen();
+                }
+                document.getElementById('warningOverlay').style.display = 'none';
+            } catch (err) {
+                document.getElementById('warningOverlay').style.display = 'none';
+            }
+        };
+
+        function buildNav() {
+            document.getElementById('questionNav').innerHTML = questions.map((_, i) =>
+                '<button class="q-dot" id="dot' + i + '" onclick="window._goTo(' + i + ')">' + (i + 1) + '</button>'
+            ).join('');
+            refreshNav();
+        }
+
+        function refreshNav() {
+            questions.forEach((_, i) => {
+                const d = document.getElementById('dot' + i);
+                if (!d) return;
+                d.className = 'q-dot' + (i === currentIdx ? ' current' : '') + (answers[i] !== null && i !== currentIdx ? ' answered' : '');
+            });
+        }
+
+        function showQuestion(idx) {
+            if (qStart) timings[currentIdx] += Math.round((Date.now() - qStart) / 1000);
+            currentIdx = idx;
+            qStart = Date.now();
+
+            const q = questions[idx];
+            const labels = ['A', 'B', 'C', 'D'];
+            const card = document.getElementById('questionCard');
+
+            card.innerHTML =
+                '<div class="question-number"><i class="fas fa-question-circle"></i> Question ' + (idx + 1) + ' of ' + questions.length + '</div>' +
+                '<div class="question-text">' + esc(q.question) + '</div>' +
+                '<div class="options-container">' + (q.options || []).map((opt, oi) =>
+                    '<button class="option' + (answers[idx] === opt ? ' selected' : '') + '" onclick="window._pick(' + JSON.stringify(opt).replace(/"/g, '&quot;') + ')">' +
+                    '<span class="option-label">' + labels[oi] + '</span>' +
+                    '<span class="option-text">' + esc(opt) + '</span>' +
+                    '</button>'
+                ).join('') + '</div>';
+
+            document.getElementById('progressFill').style.width = ((idx + 1) / questions.length * 100) + '%';
+            document.getElementById('btnPrev').disabled = idx === 0;
+            const isLast = idx === questions.length - 1;
+            document.getElementById('btnNext').style.display = isLast ? 'none' : 'inline-flex';
+            document.getElementById('btnSubmit').style.display = isLast ? 'inline-flex' : 'none';
+            refreshNav();
+        }
+
+        window._pick = (opt) => { answers[currentIdx] = opt; showQuestion(currentIdx); };
+        window._goTo = (idx) => { if (idx !== currentIdx) showQuestion(idx); };
+        window.navigate = (d) => { const n = currentIdx + d; if (n >= 0 && n < questions.length) showQuestion(n); };
+
+        function startTimer() {
+            const el = document.getElementById('timerEl');
+            const text = document.getElementById('timerText');
+            timerIval = setInterval(() => {
+                timerMs -= 1000;
+                const m = Math.floor(timerMs / 60000);
+                const s = Math.floor((timerMs % 60000) / 1000);
+                text.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                el.classList.toggle('warning', timerMs < 60000);
+                if (timerMs <= 0) { clearInterval(timerIval); window.doSubmit(); }
+            }, 1000);
+        }
+
+        window.openSubmitModal = () => {
+            const u = answers.filter(a => a === null).length;
+            document.getElementById('modalWarning').textContent = u > 0 ? 'You have ' + u + ' unanswered questions. Submit anyway?' : 'Ready to submit?';
+            document.getElementById('submitModal').classList.add('active');
+        };
+        window.closeSubmitModal = () => document.getElementById('submitModal').classList.remove('active');
+
+        window.doSubmit = async () => {
+            if (submitting) return;
+            submitting = true;
+            clearInterval(timerIval);
+            if (qStart) timings[currentIdx] += Math.round((Date.now() - qStart) / 1000);
+
+            document.getElementById('submitModal').classList.remove('active');
+            quizUI.style.display = 'none';
+            loadingOverlay.style.display = 'flex';
+            setStep('Submitting answers…');
+
+            try {
+                const result = await practiceAPI.submitSet({ category, topic, level, setNumber, answers, timings, violations });
+
+                // Store results for the results page
+                sessionStorage.setItem('quizResults', JSON.stringify(result));
+
+                window.location.href = `results.html?category=${category}&topic=${topic}&level=${level}&setNumber=${setNumber}&setId=${setId}`;
+            } catch (err) {
+                submitting = false;
+                loadingOverlay.style.display = 'none';
+                quizUI.style.display = 'block';
+                alert('Error: ' + err.message);
+            }
+        };
+
+        init();
+
+        function esc(s) {
+            if (!s) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+    <script src="js/theme.js" type="module"></script>
+</body>
+
+</html>
