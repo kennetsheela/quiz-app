@@ -9,6 +9,7 @@ const User = require("../models/User");
 const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
+        console.log("[AuthMiddleware] Received authorization header:", authHeader ? authHeader.substring(0, 20) + "..." : "NONE");
 
         if (!authHeader || !authHeader.startsWith("Bearer ") || authHeader.split(" ")[1] === "null" || authHeader.split(" ")[1] === "undefined") {
             return res.status(401).json({ error: "No token provided. Authorization denied." });
@@ -35,8 +36,17 @@ const authenticate = async (req, res, next) => {
                 // Fetch user from DB to get role and institutionId
                 const user = await User.findOne({ firebaseUid: firebaseUser.uid });
 
+                // FIX: If user not found in DB, we still allow the request to proceed
+                // but with a restricted req.user object. This allows registration
+                // flows to work for new users who don't have a DB record yet.
                 if (!user) {
-                    return res.status(401).json({ error: "User profile not found in database." });
+                    req.user = {
+                        uid: firebaseUser.uid,
+                        email: firebaseUser.email,
+                        role: null, // No role yet
+                        isNewUser: true
+                    };
+                    return next();
                 }
 
                 req.user = {
@@ -44,18 +54,19 @@ const authenticate = async (req, res, next) => {
                     id: user._id,
                     uid: firebaseUser.uid,
                     role: user.role === "inst-admin" ? "institutionAdmin" : (user.role === "hod" ? "hod" : user.role),
-                    institutionId: user.institutionId,
+                    institutionId: user.institutionId?._id || user.institutionId,
                     email: firebaseUser.email,
                     hodDepartmentId: user.hodDepartmentId
                 };
                 // console.log(`[Auth] Firebase Verified: ${req.user.email} (${req.user.role})`);
                 return next();
             } catch (firebaseError) {
-                console.warn("Auth failed for both JWT and Firebase:", firebaseError.message);
+                // Log full error server-side only — never expose error codes to client
+                console.warn("Auth failed for both JWT and Firebase:", firebaseError.code, firebaseError.message);
                 const isExpired = firebaseError.code === 'auth/id-token-expired';
                 return res.status(401).json({
-                    error: isExpired ? "Token expired. Please login again." : "Invalid token. Authorization denied.",
-                    code: firebaseError.code
+                    // FIX: Removed 'code' field — Firebase error codes leak internal details
+                    error: isExpired ? "Token expired. Please login again." : "Invalid token. Authorization denied."
                 });
             }
         }

@@ -36,8 +36,8 @@ function parseStrict(text, metadata = {}) {
       continue;
     }
 
-    // Pattern 1: Question starts with number (1. or 1) or Q1. or Question 1)
-    const questionMatch = line.match(/^(?:Q(?:uestion)?\s*)?(\d+)[\.\):\s]+(.+)/i);
+    // Pattern 1: Question starts with number (e.g., 1. or 1) or Q1. or Question 1)
+    const questionMatch = line.match(/^(?:Q(?:uestion)?\s*)?(\d+)(?:[\.\):\s]+)(.+)/i);
 
     if (questionMatch) {
       // Save previous question if valid
@@ -47,33 +47,43 @@ function parseStrict(text, metadata = {}) {
       }
 
       questionCounter++;
+      // If topic or level is missing, use defaults instead of skipping
       currentQuestion = {
         category: category,
-        topic: currentTopic,
-        level: currentLevel,
+        topic: currentTopic || 'general-upload',
+        level: currentLevel || 'medium',
         question: questionMatch[2].trim(),
         options: [],
         answer: null,
-        answerText: null // Store raw answer text for verification
+        answerText: null
       };
 
       collectingQuestion = true;
-
       console.log(`📝 Found question ${questionCounter}: ${currentQuestion.question.substring(0, 50)}...`);
       continue;
     }
 
     if (!currentQuestion) continue;
 
-    // Pattern 2: Options (A. or A) or a. or a))
+    // Pattern 2: Options (e.g., A. or A) or a. or a))
+    // Improved to handle common multi-option lines if they exist
     const optionMatch = line.match(/^([A-Da-d])[\.\):\s]+(.+)/);
 
-    if (optionMatch && currentQuestion.options.length < 4) {
+    if (optionMatch) {
       collectingQuestion = false;
+      const optionLetter = optionMatch[1].toUpperCase();
       const optionText = optionMatch[2].trim();
-      currentQuestion.options.push(optionText);
-      console.log(`   Option ${currentQuestion.options.length}: ${optionText.substring(0, 40)}...`);
-      continue;
+
+      // Basic protection against duplicate options if parser is confused
+      const alreadyHasThisLetter = currentQuestion.options_letters?.includes(optionLetter);
+
+      if (!alreadyHasThisLetter && currentQuestion.options.length < 4) {
+        currentQuestion.options.push(optionText);
+        if (!currentQuestion.options_letters) currentQuestion.options_letters = [];
+        currentQuestion.options_letters.push(optionLetter);
+        console.log(`   Option ${optionLetter}: ${optionText.substring(0, 40)}...`);
+        continue;
+      }
     }
 
     // Pattern 3: Answer with letter (Answer: A or Correct: B or Ans: C or just A)
@@ -406,9 +416,8 @@ function isValidQuestion(q) {
     q.question &&
     q.question.length > 5 &&
     (hasValidOptions || hasAnswerText) &&
-    q.category &&
-    q.topic &&
-    q.level;
+    q.category;
+  // Removed strict topic/level check here as we now provide defaults
 
   if (!valid) {
     const reasons = {

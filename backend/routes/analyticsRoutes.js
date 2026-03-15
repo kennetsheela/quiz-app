@@ -23,10 +23,10 @@ router.get("/event/:eventId", verifyToken, async (req, res) => {
       analytics
     });
   } catch (error) {
-    console.error("Get analytics error:", error);
+    console.error("Analytics Error:", error);
     res.status(500).json({ 
       success: false,
-      error: error.message 
+      error: "An internal server error occurred."
     });
   }
 });

@@ -1,6 +1,7 @@
-//superAdminRoutes.js
+// superAdminRoutes.js
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 const QuestionBank = require("../models/QuestionBank");
 const Institution = require("../models/Institution");
 const User = require("../models/User");
@@ -10,65 +11,131 @@ const PlatformSettings = require("../models/PlatformSettings");
 const multer = require("multer");
 const questionPipelineService = require("../services/questionPipelineService");
 const pipelineService = require("../services/pipelineService");
+const { safeSearchRegex } = require("../utils/escapeRegex");
 
-
-// Multer configuration for memory storage (file buffers)
+// Multer: memory storage with file-type restriction
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+        const allowed = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ];
+        if (allowed.includes(file.mimetype)) return cb(null, true);
+        cb(new Error("Only PDF and DOC/DOCX files are allowed"));
+    },
 });
 
-// Middleware to verify Super Admin (hardcoded credentials)
+// ============================================================================
+// AUTH MIDDLEWARE — JWT-based (replaces plaintext password on every request)
+// ============================================================================
+
+/**
+ * verifySuperAdmin
+ * Validates the JWT from Authorization header OR HttpOnly cookie.
+ * The token must have been issued by /login below and contain role: "super-admin".
+ */
 const verifySuperAdmin = (req, res, next) => {
-    const { username, password } = req.body;
+    // 1. Check Cookie (Preferred)
+    let token = req.cookies?.adminToken;
 
-    // Check against environment variables or hardcoded values
-    const SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME || "superadmin";
-    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || "admin@2026";
+    // 2. Check Authorization Header (Fallback for non-browser clients)
+    if (!token) {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            token = authHeader.split(" ")[1];
+        }
+    }
 
-    if (username === SUPER_ADMIN_USERNAME && password === SUPER_ADMIN_PASSWORD) {
+    if (!token || token === "null" || token === "undefined") {
+        return res.status(401).json({ success: false, message: "Authentication required. Please login as Super Admin." });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
+
+        if (decoded.role !== "super-admin") {
+            console.warn(`[SuperAdmin] Role mismatch: ${decoded.role} tried to access super-admin route`);
+            return res.status(403).json({ success: false, message: "Access denied. Super admin role required." });
+        }
+
+        req.superAdmin = decoded;
         next();
-    } else {
-        res.status(401).json({ error: "Unauthorized: Invalid super admin credentials" });
+    } catch (err) {
+        if (err.name === "TokenExpiredError") {
+            return res.status(401).json({ success: false, message: "Session expired. Please login again." });
+        }
+        return res.status(401).json({ success: false, message: "Invalid token. Authorization denied." });
     }
 };
 
 // ============================================================================
-// AUTHENTICATION
+// AUTHENTICATION — /login does NOT require the middleware (it's the entry point)
 // ============================================================================
 
 // POST /api/super-admin/login
+// Issues a JWT on successful credential verification
 router.post("/login", (req, res) => {
     const { username, password } = req.body;
 
-    const SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME || "superadmin";
-    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD || "admin@2026";
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: "Username and password are required." });
+    }
 
+    const SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME;
+    const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD;
+
+    // Constant-time comparison would be ideal; for now use strict equality with env vars
     if (username === SUPER_ADMIN_USERNAME && password === SUPER_ADMIN_PASSWORD) {
-        res.json({
+        const token = jwt.sign(
+            { username, role: "super-admin" },
+            process.env.JWT_SECRET,
+            { algorithm: "HS256", expiresIn: "4h" }
+        );
+
+        // Set HttpOnly cookie for security
+        res.cookie("adminToken", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production" || process.env.COOKIE_SECURE === "true",
+            sameSite: "Strict",
+            maxAge: 4 * 60 * 60 * 1000, // 4 hours
+        });
+
+        return res.json({
             success: true,
             message: "Login successful",
-            user: { username, role: "super-admin" }
+            token, // Body token kept for backward compatibility during migration
+            user: { username, role: "super-admin" },
         });
-    } else {
-        res.status(401).json({ error: "Invalid credentials" });
     }
+
+    // Generic error — don't reveal which field was wrong
+    return res.status(401).json({ success: false, message: "Invalid credentials." });
 });
+
+// ============================================================================
+// APPLY auth middleware to ALL routes below this line
+// ============================================================================
+router.use(verifySuperAdmin);
 
 // ============================================================================
 // DASHBOARD
 // ============================================================================
 
 // GET /api/super-admin/dashboard
-router.get("/dashboard", async (req, res) => {
+router.get("/dashboard", async (req, res, next) => {
     try {
-        const totalInstitutions = await Institution.countDocuments();
-        const totalStudents = await User.countDocuments({ role: { $in: ["student", "independent"] } });
-        const totalQuestions = await QuestionBank.countDocuments();
-        const totalEvents = await Event.countDocuments();
-
-        const activeInstitutions = await Institution.countDocuments({ "subscription.status": "active" });
-        const suspendedInstitutions = await Institution.countDocuments({ "subscription.status": "suspended" });
+        const [totalInstitutions, totalStudents, totalQuestions, totalEvents,
+               activeInstitutions, suspendedInstitutions] = await Promise.all([
+            Institution.countDocuments(),
+            User.countDocuments({ role: { $in: ["student", "independent"] } }),
+            QuestionBank.countDocuments(),
+            Event.countDocuments(),
+            Institution.countDocuments({ "subscription.status": "active" }),
+            Institution.countDocuments({ "subscription.status": "suspended" }),
+        ]);
 
         res.json({
             overview: {
@@ -77,12 +144,11 @@ router.get("/dashboard", async (req, res) => {
                 suspendedInstitutions,
                 totalStudents,
                 totalQuestions,
-                totalEvents
-            }
+                totalEvents,
+            },
         });
     } catch (error) {
-        console.error("Dashboard error:", error);
-        res.status(500).json({ error: error.message });
+        next(error); // Delegates to globalErrorHandler — no error.message leakage
     }
 });
 
@@ -91,9 +157,9 @@ router.get("/dashboard", async (req, res) => {
 // ============================================================================
 
 // POST /api/super-admin/questions - Add single question
-router.post("/questions", async (req, res) => {
+router.post("/questions", async (req, res, next) => {
     try {
-        const { category, topic, level, question, options, answer, explanation, tags, createdBy } = req.body;
+        const { category, topic, level, question, options, answer, explanation, tags } = req.body;
 
         const newQuestion = new QuestionBank({
             category,
@@ -104,19 +170,18 @@ router.post("/questions", async (req, res) => {
             answer,
             explanation,
             tags: tags || [],
-            createdBy: createdBy || "super-admin"
+            createdBy: req.superAdmin.username, // Use the authenticated admin's username
         });
 
         await newQuestion.save();
-        res.status(201).json({ message: "Question added successfully", question: newQuestion });
+        res.status(201).json({ success: true, message: "Question added successfully", question: newQuestion });
     } catch (error) {
-        console.error("Add question error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
 // GET /api/super-admin/questions - List/filter questions
-router.get("/questions", async (req, res) => {
+router.get("/questions", async (req, res, next) => {
     try {
         const { category, topic, level, search, page = 1, limit = 10 } = req.query;
 
@@ -124,79 +189,73 @@ router.get("/questions", async (req, res) => {
         if (category) filter.category = category;
         if (topic) filter.topic = topic;
         if (level) filter.level = level;
-        if (search) filter.question = { $regex: search, $options: 'i' };
+        // FIX: escape user-supplied search string before using in regex (prevents ReDoS)
+        if (search) {
+            const safeRegex = safeSearchRegex(search);
+            if (safeRegex) filter.question = safeRegex;
+        }
 
-        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 10)); // cap at 100
+        const skip = (pageNum - 1) * limitNum;
 
-        const questions = await QuestionBank.find(filter)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
-
-        const total = await QuestionBank.countDocuments(filter);
+        const [questions, total] = await Promise.all([
+            QuestionBank.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+            QuestionBank.countDocuments(filter),
+        ]);
 
         res.json({
             questions,
             pagination: {
                 total,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                pages: Math.ceil(total / parseInt(limit))
-            }
+                page: pageNum,
+                limit: limitNum,
+                pages: Math.ceil(total / limitNum),
+            },
         });
     } catch (error) {
-        console.error("Get questions error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
 // PUT /api/super-admin/questions/:id - Edit question
-router.put("/questions/:id", async (req, res) => {
+router.put("/questions/:id", async (req, res, next) => {
     try {
         const { id } = req.params;
-        const updates = req.body;
+        // Whitelist updatable fields — prevents arbitrary field injection
+        const { category, topic, level, question, options, answer, explanation, tags } = req.body;
+        const updates = { category, topic, level, question, options, answer, explanation, tags };
+        // Strip undefined keys
+        Object.keys(updates).forEach(k => updates[k] === undefined && delete updates[k]);
 
-        const question = await QuestionBank.findByIdAndUpdate(id, updates, { new: true });
+        const updated = await QuestionBank.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
 
-        if (!question) {
-            return res.status(404).json({ error: "Question not found" });
-        }
+        if (!updated) return res.status(404).json({ success: false, message: "Question not found" });
 
-        res.json({ message: "Question updated successfully", question });
+        res.json({ success: true, message: "Question updated successfully", question: updated });
     } catch (error) {
-        console.error("Update question error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
 // DELETE /api/super-admin/questions/:id - Delete question
-router.delete("/questions/:id", async (req, res) => {
+router.delete("/questions/:id", async (req, res, next) => {
     try {
-        const { id } = req.params;
-
-        const question = await QuestionBank.findByIdAndDelete(id);
-
-        if (!question) {
-            return res.status(404).json({ error: "Question not found" });
-        }
-
-        res.json({ message: "Question deleted successfully" });
+        const question = await QuestionBank.findByIdAndDelete(req.params.id);
+        if (!question) return res.status(404).json({ success: false, message: "Question not found" });
+        res.json({ success: true, message: "Question deleted successfully" });
     } catch (error) {
-        console.error("Delete question error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
-// POST /api/super-admin/questions/upload - Bulk upload questions via file (PDF/DOCX)
-router.post("/questions/upload", upload.single("file"), async (req, res) => {
+// POST /api/super-admin/questions/upload - Bulk upload via PDF/DOCX
+router.post("/questions/upload", upload.single("file"), async (req, res, next) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: "No file uploaded" });
-        }
+        if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
 
         let questions = [];
-        const buffer = req.file.buffer;
-        const mimetype = req.file.mimetype;
+        const { mimetype, buffer } = req.file;
 
         if (mimetype === "application/pdf") {
             questions = await questionPipelineService.parsePdf(buffer);
@@ -206,76 +265,69 @@ router.post("/questions/upload", upload.single("file"), async (req, res) => {
         ) {
             questions = await questionPipelineService.parseDocx(buffer);
         } else {
-            return res.status(400).json({ error: "Unsupported file format. Please upload PDF or DOCX." });
+            return res.status(400).json({ success: false, message: "Unsupported file format. Please upload PDF or DOCX." });
         }
 
         res.json({
             success: true,
             count: questions.length,
-            questions: questions.map((q, idx) => ({ ...q, tempId: idx }))
+            questions: questions.map((q, idx) => ({ ...q, tempId: idx })),
         });
     } catch (error) {
-        console.error("Upload error:", error);
-        res.status(500).json({ error: "Failed to process question file" });
+        console.error("Upload error:", error.message);
+        // Don't forward parsing library internals
+        next(new Error("Failed to process question file. Please check the file format and try again."));
     }
 });
 
-// POST /api/super-admin/questions/pipeline - Process file through the full sequential pipeline
-router.post("/questions/pipeline", upload.single("file"), async (req, res) => {
+// POST /api/super-admin/questions/pipeline - Full AI pipeline
+router.post("/questions/pipeline", upload.single("file"), async (req, res, next) => {
     try {
         const { category, creatorId } = req.body;
 
-        if (!req.file) {
-            return res.status(400).json({ error: "No file uploaded" });
-        }
-
-        if (!category) {
-            return res.status(400).json({ error: "Category is required" });
-        }
+        if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
+        if (!category) return res.status(400).json({ success: false, message: "Category is required" });
 
         const result = await pipelineService.runFullPipeline(
             req.file,
             category,
-            creatorId || "super-admin"
+            req.superAdmin.username // Always use authenticated identity, not client-supplied
         );
 
         res.json(result);
     } catch (error) {
-        console.error("Pipeline error:", error);
-        res.status(500).json({ error: error.message || "Failed to process pipeline" });
+        next(error);
     }
 });
 
-
-// POST /api/super-admin/questions/bulk - Bulk import (placeholder for CSV/Excel)
-router.post("/questions/bulk", async (req, res) => {
+// POST /api/super-admin/questions/bulk - Bulk import array
+router.post("/questions/bulk", async (req, res, next) => {
     try {
         const { questions } = req.body;
 
         if (!Array.isArray(questions) || questions.length === 0) {
-            return res.status(400).json({ error: "Invalid questions array" });
+            return res.status(400).json({ success: false, message: "Invalid questions array" });
         }
 
-        // Get the current count to generate IDs manually
-        const currentCount = await QuestionBank.countDocuments();
+        if (questions.length > 500) {
+            return res.status(400).json({ success: false, message: "Maximum 500 questions per bulk upload" });
+        }
 
-        const questionsToInsert = questions.map((q, index) => {
-            const nextCount = currentCount + index + 1;
-            return {
-                ...q,
-                questionID: `Q${String(nextCount).padStart(3, '0')}`
-            };
-        });
+        const currentCount = await QuestionBank.countDocuments();
+        const questionsToInsert = questions.map((q, index) => ({
+            ...q,
+            questionID: `Q${String(currentCount + index + 1).padStart(3, "0")}`,
+        }));
 
         const results = await QuestionBank.insertMany(questionsToInsert);
 
         res.status(201).json({
+            success: true,
             message: `${results.length} questions imported successfully`,
-            count: results.length
+            count: results.length,
         });
     } catch (error) {
-        console.error("Bulk import error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
@@ -283,109 +335,82 @@ router.post("/questions/bulk", async (req, res) => {
 // INSTITUTION MANAGEMENT
 // ============================================================================
 
-// GET /api/super-admin/institutions - List all institutions
-router.get("/institutions", async (req, res) => {
+// GET /api/super-admin/institutions
+router.get("/institutions", async (req, res, next) => {
     try {
         const { status, plan, search, page = 1, limit = 10 } = req.query;
 
         const filter = {};
         if (status) filter["subscription.status"] = status;
         if (plan) filter["subscription.plan"] = plan;
-        if (search) filter.name = { $regex: search, $options: 'i' };
+        // FIX: escape search string (ReDoS prevention)
+        if (search) {
+            const safeRegex = safeSearchRegex(search);
+            if (safeRegex) filter.name = safeRegex;
+        }
 
-        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 10));
+        const skip = (pageNum - 1) * limitNum;
 
-        const institutions = await Institution.find(filter)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
-
-        const total = await Institution.countDocuments(filter);
+        const [institutions, total] = await Promise.all([
+            Institution.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+            Institution.countDocuments(filter),
+        ]);
 
         res.json({
             institutions,
-            pagination: {
-                total,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                pages: Math.ceil(total / parseInt(limit))
-            }
+            pagination: { total, page: pageNum, limit: limitNum, pages: Math.ceil(total / limitNum) },
         });
     } catch (error) {
-        console.error("Get institutions error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
-// GET /api/super-admin/institutions/:id - View institution details
-router.get("/institutions/:id", async (req, res) => {
+// GET /api/super-admin/institutions/:id
+router.get("/institutions/:id", async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const institution = await Institution.findById(req.params.id);
+        if (!institution) return res.status(404).json({ success: false, message: "Institution not found" });
 
-        const institution = await Institution.findById(id);
+        const [studentCount, eventCount] = await Promise.all([
+            User.countDocuments({ institutionId: req.params.id, role: "student" }),
+            Event.countDocuments({ institutionId: req.params.id }),
+        ]);
 
-        if (!institution) {
-            return res.status(404).json({ error: "Institution not found" });
-        }
-
-        // Get additional stats
-        const studentCount = await User.countDocuments({ institutionId: id, role: "student" });
-        const eventCount = await Event.countDocuments({ institutionId: id });
-
-        res.json({
-            institution,
-            stats: {
-                totalStudents: studentCount,
-                totalEvents: eventCount
-            }
-        });
+        res.json({ institution, stats: { totalStudents: studentCount, totalEvents: eventCount } });
     } catch (error) {
-        console.error("Get institution error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
-// PUT /api/super-admin/institutions/:id/suspend - Suspend institution
-router.put("/institutions/:id/suspend", async (req, res) => {
+// PUT /api/super-admin/institutions/:id/suspend
+router.put("/institutions/:id/suspend", async (req, res, next) => {
     try {
-        const { id } = req.params;
-
         const institution = await Institution.findByIdAndUpdate(
-            id,
+            req.params.id,
             { "subscription.status": "suspended" },
             { new: true }
         );
-
-        if (!institution) {
-            return res.status(404).json({ error: "Institution not found" });
-        }
-
-        res.json({ message: "Institution suspended successfully", institution });
+        if (!institution) return res.status(404).json({ success: false, message: "Institution not found" });
+        res.json({ success: true, message: "Institution suspended successfully", institution });
     } catch (error) {
-        console.error("Suspend institution error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
-// PUT /api/super-admin/institutions/:id/activate - Activate institution
-router.put("/institutions/:id/activate", async (req, res) => {
+// PUT /api/super-admin/institutions/:id/activate
+router.put("/institutions/:id/activate", async (req, res, next) => {
     try {
-        const { id } = req.params;
-
         const institution = await Institution.findByIdAndUpdate(
-            id,
+            req.params.id,
             { "subscription.status": "active" },
             { new: true }
         );
-
-        if (!institution) {
-            return res.status(404).json({ error: "Institution not found" });
-        }
-
-        res.json({ message: "Institution activated successfully", institution });
+        if (!institution) return res.status(404).json({ success: false, message: "Institution not found" });
+        res.json({ success: true, message: "Institution activated successfully", institution });
     } catch (error) {
-        console.error("Activate institution error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
@@ -393,65 +418,33 @@ router.put("/institutions/:id/activate", async (req, res) => {
 // ANALYTICS
 // ============================================================================
 
-// GET /api/super-admin/analytics - Platform-wide analytics
-router.get("/analytics", async (req, res) => {
+// GET /api/super-admin/analytics
+router.get("/analytics", async (req, res, next) => {
     try {
-        // Get growth data
-        const institutionGrowth = await Institution.aggregate([
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
-
-        const studentGrowth = await User.aggregate([
-            {
-                $match: { role: { $in: ["student", "independent"] } }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
-
-        // Question bank distribution
-        const questionDistribution = await QuestionBank.aggregate([
-            {
-                $group: {
-                    _id: "$category",
-                    count: { $sum: 1 }
-                }
-            }
-        ]);
-
-        const difficultyDistribution = await QuestionBank.aggregate([
-            {
-                $group: {
-                    _id: "$level",
-                    count: { $sum: 1 }
-                }
-            }
+        const [institutionGrowth, studentGrowth, questionDistribution, difficultyDistribution] = await Promise.all([
+            Institution.aggregate([
+                { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, count: { $sum: 1 } } },
+                { $sort: { _id: 1 } },
+            ]),
+            User.aggregate([
+                { $match: { role: { $in: ["student", "independent"] } } },
+                { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, count: { $sum: 1 } } },
+                { $sort: { _id: 1 } },
+            ]),
+            QuestionBank.aggregate([
+                { $group: { _id: "$category", count: { $sum: 1 } } },
+            ]),
+            QuestionBank.aggregate([
+                { $group: { _id: "$level", count: { $sum: 1 } } },
+            ]),
         ]);
 
         res.json({
-            growth: {
-                institutions: institutionGrowth,
-                students: studentGrowth
-            },
-            questionBank: {
-                byCategory: questionDistribution,
-                byDifficulty: difficultyDistribution
-            }
+            growth: { institutions: institutionGrowth, students: studentGrowth },
+            questionBank: { byCategory: questionDistribution, byDifficulty: difficultyDistribution },
         });
     } catch (error) {
-        console.error("Analytics error:", error);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
@@ -459,44 +452,56 @@ router.get("/analytics", async (req, res) => {
 // SETTINGS MANAGEMENT
 // ============================================================================
 
-// GET /api/super-admin/settings - Get all settings
-router.get("/settings", async (req, res) => {
+// GET /api/super-admin/settings
+router.get("/settings", async (req, res, next) => {
     try {
         const settings = await PlatformSettings.find();
         res.json(settings);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
-// POST /api/super-admin/settings - Update or create a setting
-router.post("/settings", async (req, res) => {
+// POST /api/super-admin/settings
+router.post("/settings", async (req, res, next) => {
     try {
         const { key, value } = req.body;
+        if (!key) return res.status(400).json({ success: false, message: "Setting key is required" });
         const setting = await PlatformSettings.findOneAndUpdate(
             { key },
             { value },
             { upsert: true, new: true }
         );
-        res.json({ message: "Setting updated", setting });
+        res.json({ success: true, message: "Setting updated", setting });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
-// PUT /api/super-admin/settings - Standardize update method
-router.put("/settings", async (req, res) => {
+// PUT /api/super-admin/settings
+router.put("/settings", async (req, res, next) => {
     try {
         const { key, value } = req.body;
+        if (!key) return res.status(400).json({ success: false, message: "Setting key is required" });
         const setting = await PlatformSettings.findOneAndUpdate(
             { key },
             { value },
             { upsert: true, new: true }
         );
-        res.json({ message: "Setting updated", setting });
+        res.json({ success: true, message: "Setting updated", setting });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 });
 
-module.exports = router;
+// Logout Route
+router.post("/logout", (req, res) => {
+    res.clearCookie("adminToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" || process.env.COOKIE_SECURE === "true",
+        sameSite: "Strict",
+    });
+    res.json({ success: true, message: "Logged out successfully" });
+});
+
+module.exports = { router, verifySuperAdmin };

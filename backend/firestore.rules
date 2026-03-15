@@ -1,18 +1,90 @@
-rules_version='2'
+rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // =========================================================================
+    // DEFAULT: Deny ALL reads and writes unless explicitly allowed below.
+    // This is the safest starting point — no time-limited rules.
+    // =========================================================================
     match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 2, 22);
+      allow read, write: if false;
     }
+
+    // =========================================================================
+    // USERS collection
+    // - A user can read and update their own profile document only.
+    // - Users cannot change their own role or institutionId (done server-side).
+    // =========================================================================
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Allow update only for safe fields — role cannot be self-assigned
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && !("role" in request.resource.data.diff(resource.data).affectedKeys())
+        && !("institutionId" in request.resource.data.diff(resource.data).affectedKeys());
+
+      // Only the server (Firebase Admin SDK) should create user documents
+      allow create: if false;
+      allow delete: if false;
+    }
+
+    // =========================================================================
+    // INSTITUTIONS collection
+    // - Only authenticated institution admins can read their own institution.
+    // - Writes happen server-side only (via backend API with Firebase Admin).
+    // =========================================================================
+    match /institutions/{institutionId} {
+      allow read: if request.auth != null
+        && (
+          // The institution's own admin
+          resource.data.adminUID == request.auth.uid
+          // Or a user whose institutionId matches (HOD, student)
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.institutionId == institutionId
+        );
+
+      // All writes must go through the backend API (Admin SDK bypasses these rules)
+      allow write: if false;
+    }
+
+    // =========================================================================
+    // EVENTS collection
+    // - Public events can be read by anyone authenticated.
+    // - Institution-scoped events can only be read by users in that institution.
+    // - Writes are handled via backend API only.
+    // =========================================================================
+    match /events/{eventId} {
+      allow read: if request.auth != null
+        && (
+          resource.data.visibility == "public"
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.institutionId
+             == resource.data.institutionId
+        );
+
+      allow write: if false;
+    }
+
+    // =========================================================================
+    // QUESTION BANK — read only for super-admins via backend, deny client access
+    // =========================================================================
+    match /questionBank/{questionId} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // ANALYTICS — server-side only
+    // =========================================================================
+    match /analytics/{docId} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // PLATFORM SETTINGS — server-side only
+    // =========================================================================
+    match /platformSettings/{docId} {
+      allow read, write: if false;
+    }
+
   }
 }

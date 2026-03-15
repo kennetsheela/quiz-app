@@ -1,14 +1,17 @@
 //hodRoutes.js
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { authenticate, allowRoles } = require("../middleware/authMiddleware");
+const { safeExactRegex } = require("../utils/escapeRegex");
 
 const hodOnly = [authenticate, allowRoles(["hod"])];
 const User = require("../models/User");
 const Department = require("../models/Department");
 const Event = require("../models/Event");
 const StudentProfile = require("../models/StudentProfile");
+const Institution = require("../models/Institution");
 const Analytics = require("../models/Analytics");
 const QuestionBank = require("../models/QuestionBank");
 const EventService = require("../services/eventService");
@@ -43,8 +46,10 @@ router.get("/dashboard", authenticate, allowRoles(["hod"]), async (req, res) => 
             return res.status(404).json({ error: "Department not found" });
         }
 
-        const nameRegex = new RegExp(`^${department.name.trim().replace(/\s+/g, '\\s+')}$`, 'i');
-        const codeRegex = new RegExp(`^${department.code.trim().replace(/\s+/g, '\\s+')}$`, 'i');
+        // FIX: Use safeExactRegex() to escape department name/code before use in RegExp
+        // Prevents ReDoS attacks if department names contain regex metacharacters
+        const nameRegex = safeExactRegex(department.name.trim());
+        const codeRegex = safeExactRegex(department.code.trim());
 
         const totalStudents = await User.countDocuments({
             institutionId: req.user.institutionId,
@@ -54,23 +59,30 @@ router.get("/dashboard", authenticate, allowRoles(["hod"]), async (req, res) => 
 
         const totalEvents = await Event.countDocuments({
             institutionId: req.user.institutionId,
-            targetDepartments: { $in: [nameRegex, codeRegex] }
+            createdByDeptName: { $in: [nameRegex, codeRegex] }
         });
 
-        // Fetch recent events targeting this department
+        // Fetch recent events created by this department
         const recentEvents = await Event.find({
             institutionId: req.user.institutionId,
-            targetDepartments: { $in: [nameRegex, codeRegex] }
+            createdByDeptName: { $in: [nameRegex, codeRegex] }
         })
             .sort({ createdAt: -1 })
             .limit(5);
 
-        // Calculate average score across all students in the department
+        // Calculate average score across all attempts for events conducted by this department
+        const deptEvents = await Event.find({ 
+            institutionId: req.user.institutionId, 
+            createdByDeptName: { $in: [nameRegex, codeRegex] } 
+        }).select("_id");
+        
+        const deptEventIds = deptEvents.map(e => e._id);
+
         const participantStats = await EventParticipant.aggregate([
             {
                 $match: {
-                    college: req.user.institutionId,
-                    department: { $in: [nameRegex, codeRegex] }
+                    college: new mongoose.Types.ObjectId(req.user.institutionId),
+                    eventId: { $in: deptEventIds }
                 }
             },
             { $unwind: "$setResults" },
@@ -97,7 +109,7 @@ router.get("/dashboard", authenticate, allowRoles(["hod"]), async (req, res) => 
         });
     } catch (error) {
         console.error("HOD dashboard error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to load dashboard." });
     }
 });
 
@@ -110,8 +122,8 @@ router.get("/students", authenticate, allowRoles(["hod"]), async (req, res) => {
             return res.status(404).json({ error: "Department not found" });
         }
 
-        const nameRegex = new RegExp(`^${department.name.trim().replace(/\s+/g, '\\s+')}$`, 'i');
-        const codeRegex = new RegExp(`^${department.code.trim().replace(/\s+/g, '\\s+')}$`, 'i');
+        const nameRegex = safeExactRegex(department.name.trim());
+        const codeRegex = safeExactRegex(department.code.trim());
 
         const students = await User.find({
             institutionId: req.user.institutionId,
@@ -124,7 +136,7 @@ router.get("/students", authenticate, allowRoles(["hod"]), async (req, res) => {
         res.json({ students });
     } catch (error) {
         console.error("Get students error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch students." });
     }
 });
 
@@ -286,7 +298,139 @@ router.post("/events", authenticate, allowRoles(["hod"]), upload.single("file"),
 
     } catch (error) {
         console.error("Create event error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to create event. Please try again." });
+    }
+});
+
+// GET /api/hod/analytics - Department-specific analytics
+router.get("/analytics", authenticate, allowRoles(["hod"]), async (req, res) => {
+    try {
+        const department = await Department.findById(req.user.hodDepartmentId);
+        if (!department) return res.status(404).json({ error: "Department not found" });
+
+        const nameRegex = safeExactRegex(department.name.trim());
+        const codeRegex = safeExactRegex(department.code.trim());
+
+        const { period, batchId, eventId, category } = req.query;
+
+        // Fetch events conducted by this department
+        const deptEvents = await Event.find({ 
+            institutionId: req.user.institutionId, 
+            createdByDeptName: { $in: [nameRegex, codeRegex] } 
+        }).select("_id");
+        const deptEventIds = deptEvents.map(e => e._id);
+
+        if (deptEventIds.length === 0 && !eventId) {
+            return res.json({ labels: [], analytics: { averageScore: 0, totalParticipants: 0, performanceHistory: [] } });
+        }
+
+        // Logic to get department-conducted analytics
+        const match = {
+            college: new mongoose.Types.ObjectId(req.user.institutionId),
+            eventId: { $in: deptEventIds }
+        };
+
+        // Filter by Period
+        if (period && period !== 'all') {
+            const days = period === 'academic' ? 365 : parseInt(period);
+            if (!isNaN(days)) {
+                const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+                match.createdAt = { $gte: since };
+            }
+        }
+
+        // Filter by Batch
+        if (batchId && batchId !== 'all') {
+            if (mongoose.Types.ObjectId.isValid(batchId)) {
+                match.batchId = new mongoose.Types.ObjectId(batchId);
+            }
+        }
+
+        // Filter by Event (ensure it's one of original dept events)
+        if (eventId && eventId !== 'all') {
+            const eId = new mongoose.Types.ObjectId(eventId);
+            if (deptEventIds.some(id => id.equals(eId))) {
+                match.eventId = eId;
+            } else {
+                // If requested event isn't conducted by this dept, return empty
+                return res.json({ labels: [], analytics: { averageScore: 0, totalParticipants: 0, performanceHistory: [] } });
+            }
+        }
+
+        const pipeline = [{ $match: match }];
+
+        // Filter by Category (requires lookup)
+        if (category && category !== 'all') {
+            pipeline.push(
+                {
+                    $lookup: {
+                        from: "events",
+                        localField: "eventId",
+                        foreignField: "_id",
+                        as: "eventDoc"
+                    }
+                },
+                { $unwind: "$eventDoc" },
+                { $match: { "eventDoc.category": new RegExp(`^${category}$`, 'i') } }
+            );
+        }
+
+        pipeline.push(
+            { $unwind: "$setResults" },
+            { $match: { "setResults.percentage": { $ne: null } } }
+        );
+
+        const analytics = await EventParticipant.aggregate([
+            ...pipeline,
+            {
+                $facet: {
+                    averageScore: [
+                        { $group: { _id: null, avg: { $avg: "$setResults.percentage" } } }
+                    ],
+                    totalParticipants: [
+                        { $count: "count" }
+                    ],
+                    performanceHistory: [
+                        {
+                            $group: {
+                                _id: {
+                                    month: { $month: "$createdAt" },
+                                    year: { $year: "$createdAt" }
+                                },
+                                score: { $avg: "$setResults.percentage" }
+                            }
+                        },
+                        { $sort: { "_id.year": 1, "_id.month": 1 } },
+                        { $limit: 12 },
+                        {
+                            $project: {
+                                _id: 0,
+                                month: {
+                                    $concat: [
+                                        { $substr: ["$_id.month", 0, -1] },
+                                        "/",
+                                        { $substr: ["$_id.year", 0, -1] }
+                                    ]
+                                },
+                                score: { $round: ["$score", 2] }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+
+        const stats = analytics[0] || {};
+        res.json({
+            analytics: {
+                averageScore: stats.averageScore?.[0]?.avg || 0,
+                totalParticipants: stats.totalParticipants?.[0]?.count || 0,
+                performanceHistory: stats.performanceHistory || []
+            }
+        });
+    } catch (error) {
+        console.error("HOD analytics error:", error);
+        res.status(500).json({ error: "Failed to fetch analytics." });
     }
 });
 
@@ -305,8 +449,8 @@ router.get("/events/:eventId/scores", authenticate, allowRoles(["hod"]), async (
         const allParticipants = await EventParticipant.find({ eventId });
 
         // Get all students in this department to cross-reference
-        const nameRegex = new RegExp(`^${department.name.trim().replace(/\s+/g, '\\s+')}$`, 'i');
-        const codeRegex = new RegExp(`^${department.code.trim().replace(/\s+/g, '\\s+')}$`, 'i');
+        const nameRegex = safeExactRegex(department.name.trim());
+        const codeRegex = safeExactRegex(department.code.trim());
         const deptStudents = await User.find({
             institutionId: req.user.institutionId,
             department: { $in: [nameRegex, codeRegex] },
@@ -343,7 +487,7 @@ router.get("/events/:eventId/scores", authenticate, allowRoles(["hod"]), async (
         res.json({ eventName: event.eventName, scores });
     } catch (error) {
         console.error("HOD event scores error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch event scores." });
     }
 });
 

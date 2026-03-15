@@ -9,6 +9,9 @@ const authController = require("../controllers/authController");
 router.post("/institution/login", authController.institutionLogin);
 router.post("/student/login", authController.studentLogin);
 
+// Logout — clears the HttpOnly cookie server-side
+router.post("/logout", authController.logout);
+
 // Middleware to verify Firebase token
 const verifyToken = async (req, res, next) => {
   try {
@@ -57,7 +60,7 @@ router.get("/profile", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Get profile error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to retrieve profile." });
   }
 });
 
@@ -156,32 +159,30 @@ router.post("/profile", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Profile save error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to save profile." });
   }
 });
 
 // Update profile (partial updates)
+// FIX: Strict whitelist — role, institutionId, batchId, uid are NOT updatable by users.
+// Only these safe, non-privileged fields are accepted.
+const ALLOWED_PROFILE_UPDATE_FIELDS = ["username", "department", "college", "city", "photoURL", "rollNumber"];
+
 router.patch("/profile", verifyToken, async (req, res) => {
   try {
-    const { username, department, college, city, photoURL, rollNumber } = req.body;
-
     const user = await User.findOne({ firebaseUid: req.user.uid });
 
     if (!user) {
       return res.status(404).json({ error: "User not found. Please create profile first." });
     }
 
-    // Update only provided fields
-    if (username !== undefined) user.username = username;
-    if (role !== undefined) user.role = role;
-    if (institutionId !== undefined) user.institutionId = institutionId;
-    if (batchId !== undefined) user.batchId = batchId;
-    if (yearId !== undefined) user.batchId = yearId;
-    if (department !== undefined) user.department = department;
-    if (college !== undefined) user.college = college;
-    if (city !== undefined) user.city = city;
-    if (rollNumber !== undefined) user.rollNumber = rollNumber;
-    if (photoURL !== undefined) user.photoURL = photoURL;
+    // Apply ONLY whitelisted fields from the request body
+    // Any attempt to set role, institutionId, batchId, or uid is silently ignored
+    ALLOWED_PROFILE_UPDATE_FIELDS.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        user[field] = req.body[field];
+      }
+    });
 
     await user.save();
 
@@ -204,7 +205,7 @@ router.patch("/profile", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Update profile error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to update profile." });
   }
 });
 
@@ -261,7 +262,7 @@ router.post("/login", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Login record error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to record login." });
   }
 });
 
@@ -272,7 +273,7 @@ router.delete("/profile", verifyToken, async (req, res) => {
     res.json({ message: "Profile deleted successfully" });
   } catch (error) {
     console.error("Delete profile error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to delete profile." });
   }
 });
 

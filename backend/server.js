@@ -1,5 +1,10 @@
-//server.js
+// server.js
 require("dotenv").config();
+
+// ── Step 1: Validate environment BEFORE anything else starts ──────────────────
+const validateEnv = require("./utils/validateEnv");
+validateEnv();
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -8,6 +13,7 @@ const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
 
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -15,7 +21,7 @@ const practiceRoutes = require("./routes/practiceRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const institutionRoutes = require("./routes/institutionRoutes");
 const batchRoutes = require("./routes/batchRoutes");
-const superAdminRoutes = require("./routes/superAdminRoutes");
+const { router: superAdminRoutes } = require("./routes/superAdminRoutes");
 const superAdminPipeline = require("./routes/superAdminPipeline");
 const hodRoutes = require("./routes/hodRoutes");
 const studentRoutes = require("./routes/studentRoutes");
@@ -23,86 +29,157 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const publicRoutes = require("./routes/publicRoutes");
 const { startCleanupScheduler } = require("./services/cleanupService");
+const { globalErrorHandler } = require("./utils/errorHandler");
 
 /* ================= APP ================= */
 const app = express();
-let server; // ✅ single shared server instance
+let server;
 
 /* ================= FIREBASE ================= */
 try {
-  // Check if FIREBASE_SERVICE_ACCOUNT env variable exists (for production)
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // Production: credentials stored as env var JSON string
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     console.log("✅ Firebase Admin initialized from environment variable");
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+    // Local dev only: load from file path in .env
+    const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    console.log("✅ Firebase Admin initialized from file (dev mode)");
   } else {
-    // Use file for local development
-    const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH || "./serviceAccountKey.json");
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    console.log("✅ Firebase Admin initialized from file");
+    console.warn("⚠️ No Firebase credentials configured. Auth features may fail.");
   }
 } catch (error) {
-  console.error("⚠️ Firebase Admin initialization skipped:", error.message);
+  console.error("⚠️ Firebase Admin initialization error:", error.message);
 }
 
-/* ================= SECURITY ================= */
-app.use(helmet());
+/* ================= SECURITY HEADERS (helmet) ================= */
+app.use(
+  helmet({
+    // Allow Firebase CDN scripts in the browser (needed for frontend firebase SDK)
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "https://www.gstatic.com",
+          "https://apis.google.com",
+        ],
+        connectSrc: [
+          "'self'",
+          "https://*.googleapis.com",
+          "https://*.firebaseio.com",
+          "wss://*.firebaseio.com",
+        ],
+        frameSrc: ["'self'", "https://*.firebaseapp.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+    // Enforce HTTPS in production
+    hsts: process.env.NODE_ENV === "production"
+      ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+      : false,
+  })
+);
 
+/* ================= RATE LIMITING ================= */
+// General API limiter — tightened from 1000 to 200 per 15 min
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
+  message: { success: false, message: "Too many requests. Please try again later." },
 });
 
+// Auth endpoints — strict: 10 failed attempts per 15 min
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 10,
   skipSuccessfulRequests: true,
+  message: { success: false, message: "Too many login attempts. Please wait 15 minutes." },
 });
 
-/* ================= CORS ================= */
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like file://, mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    const allowed = [
-      'http://localhost:3001',
-      'http://localhost:5000',
-      'https://quiz-app-3e991.web.app',
-      'https://quiz-app-3e991.firebaseapp.com',
-      'http://localhost:3000',
-      'http://localhost:5500',
-      'http://localhost:5501',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:5000',
-      'http://127.0.0.1:5500',
-      'http://127.0.0.1:5501',
-      'http://10.184.60.26:3000'
-    ];
-    if (allowed.includes(origin)) return callback(null, true);
-    return callback(null, true); // Allow all for development
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// Super admin — extra strict: 20 requests per 15 min (it's a single user)
+const superAdminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many super admin requests." },
+});
 
+/* ================= CORS ─ FIXED ================= */
+// Build allowlist from env var so it's configurable per-environment
+const allowedOriginsFromEnv = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim())
+  : [];
+
+// Hard-coded fallback for origins that are always trusted
+const ALWAYS_ALLOWED = [
+  "https://quiz-app-3e991.web.app",
+  "https://quiz-app-3e991.firebaseapp.com",
+];
+
+const DEV_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:5000",
+  "http://localhost:5500",
+  "http://localhost:5501",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5000",
+  "http://127.0.0.1:5500",
+  "http://127.0.0.1:5501",
+  "http://10.184.60.26:3000",
+];
+
+const allowedOrigins = [
+  ...ALWAYS_ALLOWED,
+  ...allowedOriginsFromEnv,
+  ...(process.env.NODE_ENV !== "production" ? DEV_ORIGINS : []),
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Requests with no origin (server-to-server, curl) allowed in dev only
+      if (!origin) {
+        if (process.env.NODE_ENV !== "production") return callback(null, true);
+        return callback(new Error("CORS: no origin header — rejected in production"));
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // ✅ FIX: No longer falls through to allow-all. Unknown origins are rejected.
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      return callback(new Error(`CORS policy: origin '${origin}' is not allowed`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+/* ================= RATE LIMIT APPLICATION ================= */
 app.use("/api", limiter);
 app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/institution/login", authLimiter);
+app.use("/api/auth/student/login", authLimiter);
 app.use("/api/events/student-login", authLimiter);
+app.use("/api/super-admin", superAdminLimiter); // Extra protection on admin routes
 
-/* ================= MIDDLEWARE ================= */
+/* ================= BODY PARSING & SANITIZATION ================= */
+app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(mongoSanitize());
+app.use(mongoSanitize()); // Strips $ and . from req.body to prevent NoSQL injection
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Serve frontend static files from backend so pages work at http://localhost:5000
+// Serve frontend static files
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
 /* ================= ROUTES ================= */
@@ -125,30 +202,24 @@ app.get("/api/health", (req, res) => {
     status: "OK",
     mongodb: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
     uptime: process.uptime(),
-    timestamp: new Date().toISOString()
-  });
-});
-
-/* ================= ERRORS ================= */
-app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
-  res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === "production"
-      ? "Internal Server Error"
-      : err.message
+    timestamp: new Date().toISOString(),
   });
 });
 
 /* ================= 404 ================= */
 app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ success: false, message: "Route not found" });
 });
 
-/* ================= SERVER START (FIXED) ================= */
+/* ================= GLOBAL ERROR HANDLER (must be last) ================= */
+// Replaces the old inline handler. Reads NODE_ENV to decide verbosity.
+app.use(globalErrorHandler);
+
+/* ================= SERVER START ================= */
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
-  if (server) return; // ✅ prevents double start
+  if (server) return;
 
   try {
     await connectDB();
@@ -157,8 +228,7 @@ async function startServer() {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
       console.log(`🌐 API Base URL: http://localhost:${PORT}`);
-
-      startCleanupScheduler(); // ✅ preserved
+      startCleanupScheduler();
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err);
@@ -188,7 +258,7 @@ function gracefulShutdown() {
   });
 
   setTimeout(() => {
-    console.error("⚠️ Force shutdown");
+    console.error("⚠️ Force shutdown after timeout");
     process.exit(1);
   }, 10000);
 }

@@ -60,7 +60,7 @@ router.post(
       });
     } catch (error) {
       console.error("Create event error:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Failed to create event. Please try again." });
     }
   }
 );
@@ -77,7 +77,7 @@ router.get("/", async (req, res) => {
     res.json({ events });
   } catch (error) {
     console.error("Get events error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch events." });
   }
 });
 
@@ -92,7 +92,7 @@ router.get("/creator/:creatorId", anyUser, isolateInstitution, async (req, res) 
     res.json({ success: true, events });
   } catch (error) {
     console.error("Get events by creator error:", error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: "Failed to fetch events for this creator." });
   }
 });
 
@@ -112,7 +112,7 @@ router.get("/:eventId", async (req, res) => {
     res.json({ event });
   } catch (error) {
     console.error("Get event error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch event details." });
   }
 });
 
@@ -181,8 +181,7 @@ router.get("/:eventId/check-participation/:email", async (req, res) => {
     console.error('❌ Error checking participation:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: 'Server error'
     });
   }
 });
@@ -258,7 +257,7 @@ router.post("/student-login", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Student login error:", error);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: error.message.includes("Login failed") ? error.message : "Student login failed. Please check your credentials." });
   }
 });
 
@@ -282,7 +281,7 @@ router.get("/:eventId/active-set", async (req, res) => {
     res.json({ activeSet });
   } catch (error) {
     console.error("Get active set error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch active set information." });
   }
 });
 
@@ -335,7 +334,7 @@ router.post("/start-set", authenticate, async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error("Start set error:", error);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: "Failed to start quiz set." });
   }
 });
 
@@ -369,7 +368,7 @@ router.post("/submit-set", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Submit set error:", error);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: "Failed to submit quiz set." });
   }
 });
 
@@ -393,7 +392,7 @@ router.post("/toggle-set", staffOnly, async (req, res) => {
     });
   } catch (error) {
     console.error("Toggle set error:", error);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: "Failed to update set status." });
   }
 });
 
@@ -441,7 +440,7 @@ router.get("/participants/:participantId", staffOnly, async (req, res) => {
     res.json({ participant });
   } catch (error) {
     console.error("Get participant error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch participant details." });
   }
 });
 
@@ -548,7 +547,7 @@ router.get("/:eventId/results/:participantId", authenticate, async (req, res) =>
 
   } catch (error) {
     console.error("Get results error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch quiz results." });
   }
 });
 
@@ -561,7 +560,7 @@ router.get("/:eventId/stats", staffOnly, async (req, res) => {
     res.json({ stats });
   } catch (error) {
     console.error("Get stats error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch event statistics." });
   }
 });
 
@@ -581,7 +580,7 @@ router.delete("/:eventId", adminOnly, async (req, res) => {
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
     console.error("Delete event error:", error);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: "Failed to delete event. Please check your credentials." });
   }
 });
 
@@ -620,7 +619,7 @@ router.get(
       res.json(result);
     } catch (error) {
       console.error("Check time error:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Failed to check remaining time." });
     }
   }
 );
@@ -751,7 +750,7 @@ router.get("/:eventId/take", authenticate, async (req, res) => {
 
   } catch (error) {
     console.error("Take event error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to load event for participation." });
   }
 });
 
@@ -761,7 +760,7 @@ router.post("/:eventId/violation", authenticate, async (req, res) => {
     console.warn(`[Proctoring] Violation by ${req.user.email} in ${req.params.eventId}: ${req.body.reason}`);
     res.json({ success: true });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "Failed to log violation." });
   }
 });
 

@@ -164,7 +164,7 @@ router.get("/trend", instAdminOnly, async (req, res) => {
         res.json({ labels, datasets });
     } catch (err) {
         console.error("Trend Error:", err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Failed to fetch trend data." });
     }
 });
 
@@ -217,7 +217,8 @@ router.get("/heatmap", instAdminOnly, async (req, res) => {
 
         res.json(formatted);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Heatmap Error:", err);
+        res.status(500).json({ error: "Failed to fetch heatmap data." });
     }
 });
 
@@ -270,7 +271,8 @@ router.get("/batch-comparison", instAdminOnly, async (req, res) => {
 
         res.json(formatted);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Batch Comparison Error:", err);
+        res.status(500).json({ error: "Failed to fetch batch comparison data." });
     }
 });
 
@@ -354,7 +356,8 @@ router.get("/summary", instAdminOnly, async (req, res) => {
         });
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Summary Error:", err);
+        res.status(500).json({ error: "Failed to fetch summary data." });
     }
 });
 

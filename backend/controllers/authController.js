@@ -1,8 +1,21 @@
+// controllers/authController.js
 const User = require("../models/User");
 const { generateToken } = require("../utils/jwtUtils");
 
+// Helper: determine cookie options based on environment
+const cookieOptions = () => ({
+    httpOnly: true,   // Cannot be accessed by JavaScript — prevents XSS token theft
+    secure: process.env.COOKIE_SECURE === "true" || process.env.NODE_ENV === "production",
+    sameSite: "Strict", // Prevents CSRF
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours in ms (matches JWT expiry)
+    path: "/",
+});
+
 /**
- * Login for Institution Admin
+ * Login for Institution Admin / HOD
+ * FIX: Token is now set as an HttpOnly cookie in addition to being in the response body.
+ * The frontend should prefer the cookie; the body token is kept for backward compatibility
+ * during the migration period, then can be removed.
  */
 const institutionLogin = async (req, res) => {
     try {
@@ -18,7 +31,7 @@ const institutionLogin = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(401).json({ error: "Invalid credentials or unauthorized role" });
+            return res.status(401).json({ error: "Invalid credentials" });
         }
 
         const isMatch = await user.comparePassword(password);
@@ -26,25 +39,30 @@ const institutionLogin = async (req, res) => {
             return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        // Generate JWT
         const role = user.role === "inst-admin" ? "institutionAdmin" : "hod";
         const token = generateToken({
             userId: user._id,
-            id: user._id, // compatibility
-            uid: user.firebaseUid || user._id.toString(), // compatibility with req.user.uid
-            role: role,
+            id: user._id,
+            uid: user.firebaseUid || user._id.toString(),
+            role,
             institutionId: user.institutionId,
-            hodDepartmentId: user.hodDepartmentId // for HODs
-        }, "1d");
+            hodDepartmentId: user.hodDepartmentId
+        }, process.env.JWT_EXPIRES_IN || "1d");
+
+        // FIX: Set token as HttpOnly cookie — this is the secure transport mechanism.
+        // The browser will send this cookie automatically on every subsequent request.
+        res.cookie("token", token, cookieOptions());
 
         res.json({
             message: "Login successful",
+            // Returning the token in body too during migration — remove once frontend
+            // is fully migrated to cookie-based auth (credentials: 'include')
             token,
             user: {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                role: role,
+                role,
                 institutionId: user.institutionId
             }
         });
@@ -68,7 +86,7 @@ const studentLogin = async (req, res) => {
         const user = await User.findOne({ email: email.toLowerCase(), role: "student" });
 
         if (!user) {
-            return res.status(401).json({ error: "Invalid credentials or role" });
+            return res.status(401).json({ error: "Invalid credentials" });
         }
 
         const isMatch = await user.comparePassword(password);
@@ -76,18 +94,23 @@ const studentLogin = async (req, res) => {
             return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        // Generate JWT
         const token = generateToken({
             userId: user._id,
-            id: user._id, // compatibility
-            uid: user.firebaseUid || user._id.toString(), // compatibility with req.user.uid
+            id: user._id,
+            uid: user.firebaseUid || user._id.toString(),
             role: "student",
             institutionId: user.institutionId
-        }, "4h");
+        }, process.env.STUDENT_JWT_EXPIRES_IN || "4h");
+
+        // Set shorter-lived cookie for students
+        res.cookie("token", token, {
+            ...cookieOptions(),
+            maxAge: 4 * 60 * 60 * 1000, // 4 hours
+        });
 
         res.json({
             message: "Login successful",
-            token,
+            token, // Keep in body during migration period
             user: {
                 id: user._id,
                 username: user.username,
@@ -103,7 +126,17 @@ const studentLogin = async (req, res) => {
     }
 };
 
-module.exports = {
-    institutionLogin,
-    studentLogin
+/**
+ * Logout — clears the HttpOnly cookie server-side
+ */
+const logout = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.COOKIE_SECURE === "true" || process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+        path: "/",
+    });
+    res.json({ message: "Logged out successfully" });
 };
+
+module.exports = { institutionLogin, studentLogin, logout };

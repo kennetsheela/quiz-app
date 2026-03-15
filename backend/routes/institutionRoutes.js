@@ -1,6 +1,7 @@
 //institutionRoutes.js
 const express = require("express");
 const mongoose = require("mongoose");
+const admin = require("firebase-admin");
 const router = express.Router();
 const Institution = require("../models/Institution");
 const Department = require("../models/Department");
@@ -13,6 +14,7 @@ const EventService = require("../services/eventService");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 const { authenticate, allowRoles, isolateInstitution } = require("../middleware/authMiddleware");
+const { safeSearchRegex, safeExactRegex } = require("../utils/escapeRegex");
 
 const instAdminOnly = [authenticate, allowRoles(["institutionAdmin"])];
 const staffOnly = [authenticate, allowRoles(["institutionAdmin", "hod"])];
@@ -227,16 +229,15 @@ router.post("/login", authenticate, async (req, res) => {
     }
 });
 
-// ─── Public Registration (no auth required) ──────────────────────────────────
-// BUG FIX: guard against missing adminUID before creating User
-router.post("/register", async (req, res) => {
+// ─── Public Registration (requires Firebase auth to prevent UID spoofing) ──────
+// FIX: Added authenticate middleware. adminUID is now taken from the verified token,
+// not from the request body. This prevents any user claiming another user's UID.
+router.post("/register", authenticate, async (req, res) => {
     try {
-        const { name, type, adminUID, email, phone, location, subscription } = req.body;
+        const { name, type, email, phone, location, subscription } = req.body;
 
-        // Guard: adminUID is required here since there's no auth middleware
-        if (!adminUID) {
-            return res.status(400).json({ error: "adminUID is required for registration" });
-        }
+        // FIX: Always use the server-verified UID from the JWT/Firebase token
+        const adminUID = req.user.uid;
 
         const existing = await Institution.findOne({ $or: [{ email }, { name }] });
         if (existing) {
@@ -246,19 +247,35 @@ router.post("/register", async (req, res) => {
         const institution = new Institution({ name, type, adminUID, email, phone, location, subscription });
         await institution.save();
 
-        const adminUser = new User({
-            firebaseUid: adminUID, // safe — adminUID is validated above
-            email,
-            username: name,
-            role: "inst-admin",
-            institutionId: institution._id
-        });
-        await adminUser.save();
+        // FIX: Use findOneAndUpdate with upsert to prevent Duplicate Key errors
+        // and ensure the user record is correctly linked to the new institution.
+        const adminUser = await User.findOneAndUpdate(
+            { firebaseUid: adminUID },
+            {
+                email,
+                username: name,
+                role: "inst-admin",
+                institutionId: institution._id
+            },
+            { upsert: true, new: true }
+        );
 
         res.status(201).json({ message: "Institution registered successfully", institution });
     } catch (error) {
-        console.error("Registration error:", error);
-        res.status(500).json({ error: "Registration failed: " + error.message });
+        // Detailed logging on server for debugging
+        console.error("Institution Registration Detailed Error:", {
+            message: error.message,
+            stack: error.stack,
+            body: req.body,
+            user: req.user
+        });
+        
+        // TEMPORARY: Return full error to client for faster debugging
+        res.status(500).json({ 
+            error: "Registration failed.", 
+            details: error.message,
+            stack: error.stack
+        });
     }
 });
 
@@ -1161,21 +1178,9 @@ router.post("/:id/analytics/filter", instAdminOnly, async (req, res) => {
             else if (scoreRange === 'below50') basePipeline.push({ $match: { "setResults.percentage": { $lt: 50 } } });
         }
 
-        // Join with User to get batch info
-        basePipeline.push({
-            $lookup: {
-                from: "users",
-                localField: "email",
-                foreignField: "email",
-                as: "userData"
-            }
-        }, {
-            $addFields: { userInfo: { $arrayElemAt: ["$userData", 0] } }
-        });
-
         if (batchId && batchId !== 'All Batches') {
             if (mongoose.Types.ObjectId.isValid(batchId)) {
-                basePipeline.push({ $match: { "userInfo.batchId": new mongoose.Types.ObjectId(batchId) } });
+                basePipeline.push({ $match: { "batchId": new mongoose.Types.ObjectId(batchId) } });
             }
         }
 
@@ -1218,15 +1223,15 @@ router.post("/:id/analytics/filter", instAdminOnly, async (req, res) => {
         const results = facetResult[0].table;
 
         // Process Table Data
-        const batchIds = [...new Set(results.filter(p => p.userInfo?.batchId).map(p => p.userInfo.batchId.toString()))];
+        const batchIds = [...new Set(results.filter(p => p.batchId).map(p => p.batchId.toString()))];
         const batchDocs = await Batch.find({ _id: { $in: batchIds } }).select("_id batchID").lean();
         const batchNameMap = {};
         batchDocs.forEach(b => { batchNameMap[b._id.toString()] = b.batchID; });
 
         const participants = results.map((p, i) => {
             let bVal = "—";
-            if (p.userInfo?.batchId) {
-                const bIdStr = p.userInfo.batchId.toString();
+            if (p.batchId) {
+                const bIdStr = p.batchId.toString();
                 bVal = batchNameMap[bIdStr] || bIdStr.slice(-6);
             }
             return {
@@ -1424,6 +1429,15 @@ router.post("/:id/departments/:deptId/grant-access", instAdminOnly, async (req, 
             },
             { upsert: true, new: true }
         );
+
+        // SYNC: Update Department with HOD info if role is hod
+        if (role === "hod") {
+            await Department.findByIdAndUpdate(req.params.deptId, {
+                hodName: user.username,
+                hodEmail: user.email
+            });
+        }
+
         res.json({ message: "Access granted", user: { email: user.email, role: user.role } });
     } catch (error) {
         console.error("Grant access error:", error);
@@ -1465,7 +1479,7 @@ router.post("/:id/departments/:deptId/set-password", instAdminOnly, async (req, 
             }
         }
 
-        // 4. Update/Upsert MongoDB User record
+        // 2. Upsert user record
         const user = await User.findOneAndUpdate(
             { email: email.toLowerCase() },
             {
@@ -1479,6 +1493,13 @@ router.post("/:id/departments/:deptId/set-password", instAdminOnly, async (req, 
             },
             { upsert: true, new: true }
         );
+
+        // SYNC: Update Department with HOD info
+        await Department.findByIdAndUpdate(req.params.deptId, {
+            hodUID: firebaseUser.uid,
+            hodEmail: user.email,
+            hodName: user.username
+        });
 
         res.json({ message: "Password updated successfully", email: user.email });
     } catch (error) {

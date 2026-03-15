@@ -1,31 +1,31 @@
+// utils/jwtUtils.js
 const jwt = require("jsonwebtoken");
 
 /**
- * Generate a JWT token
- * @param {Object} payload - The payload to sign
- * @param {String} expiresIn - Expiry time (e.g., '1d', '4h')
- * @returns {String} - The signed JWT
+ * Generate a signed JWT token.
+ * @param {Object} payload - Data to embed (userId, role, institutionId, etc.)
+ * @param {String} expiresIn  - e.g. '1d', '4h', '15m'
+ * @returns {String} Signed JWT
  */
 const generateToken = (payload, expiresIn = "1d") => {
     return jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: expiresIn,
+        algorithm: "HS256",   // Explicitly set — prevents algorithm confusion
+        expiresIn,
     });
 };
 
 /**
- * Verify a JWT token
- * @param {String} token - The token to verify
- * @returns {Object} - The decoded payload
+ * Verify a JWT token.
+ * Throws if expired, tampered, or using a different algorithm.
+ * @param {String} token
+ * @returns {Object} Decoded payload
  */
 const verifyToken = (token) => {
-    try {
-        return jwt.verify(token, process.env.JWT_SECRET);
-    } catch (error) {
-        throw error;
-    }
+    // FIX: Pass explicit algorithms array so tokens signed with
+    // "alg: none" or RS256 (key confusion attack) are rejected outright.
+    return jwt.verify(token, process.env.JWT_SECRET, {
+        algorithms: ["HS256"],
+    });
 };
 
-module.exports = {
-    generateToken,
-    verifyToken,
-};
+module.exports = { generateToken, verifyToken };

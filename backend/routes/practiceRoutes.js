@@ -26,7 +26,7 @@ router.get("/sets", authenticate, async (req, res) => {
     res.json({ sets });
   } catch (error) {
     console.error("Get sets error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch practice sets." });
   }
 });
 
@@ -78,8 +78,8 @@ router.get("/sets/:setId/questions", authenticate, async (req, res) => {
   } catch (error) {
     console.error("❌ Get questions error:", error);
     res.status(500).json({
-      error: error.message,
-      details: "Failed to fetch questions for the practice set"
+      error: "Failed to fetch questions for the practice set",
+      details: "An internal server error occurred."
     });
   }
 });
@@ -157,7 +157,7 @@ router.post("/sets/start", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Start set error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to start practice set." });
   }
 });
 
@@ -311,8 +311,8 @@ router.post("/sets/submit", authenticate, async (req, res) => {
   } catch (error) {
     console.error("❌ [Backend] Submit set error:", error);
     res.status(500).json({
-      error: error.message,
-      details: "Failed to submit quiz answers"
+      error: "Failed to submit quiz answers",
+      details: "An internal server error occurred."
     });
   }
 });
@@ -363,7 +363,7 @@ router.get("/progress", authenticate, async (req, res) => {
     res.json({ progress: formattedProgress });
   } catch (error) {
     console.error("❌ Get progress error:", error);
-    res.status(500).json({ error: error.message, details: "Failed to fetch progress data" });
+    res.status(500).json({ error: "Failed to fetch progress data." });
   }
 });
 
@@ -376,7 +376,7 @@ router.get("/categories/:category/topics", async (req, res) => {
     res.json({ topics });
   } catch (error) {
     console.error("Get topics error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch topics." });
   }
 });
 
@@ -391,7 +391,7 @@ router.get("/topics/:topic/levels", async (req, res) => {
     res.json({ levels });
   } catch (error) {
     console.error("Get levels error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch levels." });
   }
 });
 
@@ -409,7 +409,7 @@ router.get("/categories", async (req, res) => {
     res.json({ categories: result });
   } catch (error) {
     console.error("Get categories error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to fetch categories." });
   }
 });
 
@@ -467,8 +467,8 @@ router.post("/custom-questions", authenticate, async (req, res) => {
   } catch (error) {
     console.error("❌ Custom questions error:", error);
     res.status(500).json({
-      error: error.message,
-      details: "Failed to fetch custom questions"
+      error: "Failed to fetch custom questions",
+      details: "An internal server error occurred."
     });
   }
 });
@@ -552,8 +552,8 @@ router.post("/custom-quiz/submit", authenticate, async (req, res) => {
   } catch (error) {
     console.error("❌ [Backend] Submit custom quiz error:", error);
     res.status(500).json({
-      error: error.message,
-      details: "Failed to submit quiz"
+      error: "Failed to submit quiz",
+      details: "An internal server error occurred."
     });
   }
 });

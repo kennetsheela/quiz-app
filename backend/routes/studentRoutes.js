@@ -84,7 +84,7 @@ router.post("/login", authenticate, async (req, res) => {
         });
     } catch (error) {
         console.error("Student login error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Student login failed. Please try again." });
     }
 });
 
@@ -197,7 +197,7 @@ router.get("/profile", authenticate, async (req, res) => {
         res.json({ user, profile: profileInfo });
     } catch (error) {
         console.error("Get profile error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch student profile." });
     }
 });
 
@@ -290,7 +290,7 @@ router.get("/events/available", authenticate, async (req, res) => {
         res.json({ events });
     } catch (error) {
         console.error("Get available events error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch available events." });
     }
 });
 
@@ -312,7 +312,7 @@ router.get("/progress/year-wise", authenticate, async (req, res) => {
         res.json({ yearWisePerformance: profile.yearWisePerformance });
     } catch (error) {
         console.error("Get year-wise progress error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch year-wise performance data." });
     }
 });
 
@@ -334,7 +334,7 @@ router.get("/rankings", authenticate, async (req, res) => {
         res.json({ rankings: profile.rankings });
     } catch (error) {
         console.error("Get rankings error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch rankings." });
     }
 });
 

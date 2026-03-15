@@ -16,6 +16,7 @@ const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const mongoose = require("mongoose");
+const { verifySuperAdmin } = require("./superAdminRoutes");
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 const QuestionBank = require("../models/QuestionBank");
@@ -112,6 +113,8 @@ async function generatePracticeSets(category) {
 }
 
 // ─── POST /questions/pipeline ─────────────────────────────────────────────────
+router.use(verifySuperAdmin); // Protect all pipeline routes
+
 router.post(
   "/questions/pipeline",
   upload.single("file"),
@@ -179,7 +182,22 @@ router.post(
         ).map((q) => q.question.trim().toLowerCase())
       );
 
-      const fresh = parsed
+      // Deduplicate within the uploaded file itself first
+      const uniqueInBatch = [];
+      const batchSeen = new Set();
+
+      for (const q of parsed) {
+        const text = (q.question || "").trim().toLowerCase();
+        if (!batchSeen.has(text)) {
+          batchSeen.add(text);
+          uniqueInBatch.push(q);
+        } else {
+          console.warn(`⚠️ Skipping duplicate question within file: "${text.substring(0, 50)}..."`);
+        }
+      }
+
+      // Filter against database existing questions
+      const freshQuestions = uniqueInBatch
         .filter(q => {
           const hasAnswer = q.answer !== null && q.answer !== undefined && String(q.answer).trim() !== "";
           if (!hasAnswer && q.question) {
@@ -187,15 +205,22 @@ router.post(
           }
           return hasAnswer;
         })
-        .filter(q => !existingTexts.has((q.question || "").trim().toLowerCase()))
-        .map(q => ({
-          ...q,
-          createdBy: req.user?.uid || "system-pipeline" // Ensure createdBy is present
-        }));
+        .filter(q => !existingTexts.has((q.question || "").trim().toLowerCase()));
+
+      const duplicateCount = parsedCount - freshQuestions.length;
 
       let loadedCount = 0;
-      if (fresh.length > 0) {
-        console.log(`   Filtered to ${fresh.length} fresh questions for insertion`);
+      if (freshQuestions.length > 0) {
+        console.log(`   Filtered to ${freshQuestions.length} fresh questions for insertion`);
+
+        // MANUALLY GENERATE QuestionIDs to avoid Mongo race conditions/hooks issues
+        const currentTotal = await QuestionBank.countDocuments();
+        const fresh = freshQuestions.map((q, index) => ({
+          ...q,
+          questionID: `Q${String(currentTotal + index + 1).padStart(3, '0')}`,
+          createdBy: "super-admin"
+        }));
+
         try {
           const result = await QuestionBank.insertMany(fresh, { ordered: false });
           loadedCount = result.length;
@@ -218,10 +243,11 @@ router.post(
 
       return res.json({
         status: "success",
-        parsedCount,
-        loadedCount,
-        setsGenerated,
-        category,
+        category: category,
+        parsedCount: Number(parsedCount),
+        loadedCount: Number(loadedCount),
+        duplicateCount: Number(duplicateCount),
+        setsGenerated: Number(setsGenerated),
         elapsed: `${elapsed}s`,
       });
     } catch (err) {

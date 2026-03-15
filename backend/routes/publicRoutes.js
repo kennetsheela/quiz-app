@@ -12,7 +12,8 @@ router.get("/institutions", async (req, res) => {
         const institutions = await Institution.find({ "subscription.status": "active" }, "name _id type");
         res.json(institutions);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Public institution fetch error:", error);
+        res.status(500).json({ error: "Failed to fetch institutions." });
     }
 });
 
@@ -22,7 +23,8 @@ router.get("/institutions/:id/departments", async (req, res) => {
         const depts = await Department.find({ institutionId: req.params.id }, "name code _id");
         res.json(depts || []);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Public department fetch error:", error);
+        res.status(500).json({ error: "Failed to fetch departments." });
     }
 });
 
@@ -45,7 +47,7 @@ router.get("/institutions/:id/batches", async (req, res) => {
         res.json(batches || []);
     } catch (error) {
         console.error("Public batch fetch error:", error);
-        res.status(500).json({ error: "Failed to fetch batches: " + error.message });
+        res.status(500).json({ error: "Failed to fetch batches. Please try again later." });
     }
 });
 
@@ -56,7 +58,8 @@ router.get("/settings/:key", async (req, res) => {
         if (!setting) return res.json({ value: "" });
         res.json({ value: setting.value });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Public settings fetch error:", error);
+        res.status(500).json({ error: "Failed to fetch settings." });
     }
 });
 
