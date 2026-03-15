@@ -429,6 +429,7 @@
                 // Create Firebase user
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const adminUID = userCredential.user.uid;
+                const token = await userCredential.user.getIdToken();
 
                 // Prepare institution data
                 const institutionData = {
@@ -454,8 +455,12 @@
                 // Save to backend
                 const response = await fetch(`${API_BASE}/institutions/register`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(institutionData)
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(institutionData),
+                    credentials: 'include'
                 });
 
                 if (response.ok) {

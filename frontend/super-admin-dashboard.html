@@ -1915,12 +1915,11 @@ A: Contact support@aptiogen.com with details.</textarea>
   <script>
     /* ── Config ───────────────────────────────────────────────────── */
     const API_BASE = 'http://localhost:5000/api';
-    const authToken = sessionStorage.getItem('superAdminAuth') || '';
+    const authToken = localStorage.getItem('superAdminToken') || '';
 
     /* ── Auth guard ───────────────────────────────────────────────── */
     if (!authToken) {
-      // Commented out for standalone demo; uncomment in production:
-      // window.location.href = 'super-admin-login.html';
+      window.location.href = 'super-admin-login.html';
     }
 
     /* ── Theme ────────────────────────────────────────────────────── */
@@ -1992,8 +1991,11 @@ A: Contact support@aptiogen.com with details.</textarea>
     /* ── Logout ───────────────────────────────────────────────────── */
     function logout() {
       if (!confirm('Are you sure you want to logout?')) return;
-      sessionStorage.removeItem('superAdminAuth');
-      window.location.href = 'super-admin-login.html';
+      localStorage.removeItem('superAdminToken');
+      // Also try to clear cookie via backend
+      fetch(`${API_BASE}/super-admin/logout`, { method: 'POST', credentials: 'include' }).finally(() => {
+        window.location.href = 'super-admin-login.html';
+      });
     }
 
     /* ── Modal Helpers ────────────────────────────────────────────── */
@@ -2010,7 +2012,10 @@ A: Contact support@aptiogen.com with details.</textarea>
     ════════════════════════════════════════════════════════════════ */
     async function loadDashboard() {
       try {
-        const r = await fetch(`${API_BASE}/super-admin/dashboard`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/dashboard`, { 
+          headers: authHeaders(),
+          credentials: 'include' 
+        });
         const data = await r.json();
         if (!r.ok) throw new Error(data.error || 'Failed');
         const ov = data.overview;
@@ -2067,7 +2072,10 @@ A: Contact support@aptiogen.com with details.</textarea>
       document.getElementById('questionsTable').style.display = 'none';
 
       try {
-        const r = await fetch(`${API_BASE}/super-admin/questions?${params}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/questions?${params}`, { 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         const data = await r.json();
         if (!r.ok) throw new Error(data.error);
         renderQuestions(data.questions);
@@ -2117,7 +2125,10 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     async function editQuestion(id) {
       try {
-        const r = await fetch(`${API_BASE}/super-admin/questions?search=${id}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/questions?search=${id}`, { 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         const data = await r.json();
         if (r.ok && data.questions.length) {
           const q = data.questions[0];
@@ -2142,7 +2153,11 @@ A: Contact support@aptiogen.com with details.</textarea>
     async function deleteQuestion(id) {
       if (!confirm('Delete this question?')) return;
       try {
-        const r = await fetch(`${API_BASE}/super-admin/questions/${id}`, { method: 'DELETE', headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/questions/${id}`, { 
+          method: 'DELETE', 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         r.ok ? (alert('Deleted.'), loadQuestions(qPage)) : alert('Failed to delete.');
       } catch (e) { alert('Error: ' + e.message); }
     }
@@ -2173,7 +2188,12 @@ A: Contact support@aptiogen.com with details.</textarea>
       const method = qId ? 'PUT' : 'POST';
 
       try {
-        const r = await fetch(url, { method, headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const r = await fetch(url, { 
+          method, 
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' }, 
+          body: JSON.stringify(payload),
+          credentials: 'include'
+        });
         if (r.ok) {
           alert(qId ? 'Question updated.' : 'Question added.');
           closeModal('questionModal');
@@ -2325,7 +2345,8 @@ A: Contact support@aptiogen.com with details.</textarea>
         const response = await fetch(`${API_BASE}/super-admin/questions/pipeline`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${authToken}` },
-          body: formData
+          body: formData,
+          credentials: 'include'
         });
 
         clearTimeout(stepTimer1);
@@ -2349,11 +2370,16 @@ A: Contact support@aptiogen.com with details.</textarea>
 
         // Success alert
         setTimeout(() => {
+          const dups = result.duplicateCount || 0;
+          const msg = dups > 0
+            ? `\n  • Duplicates skipped: ${dups} (already in database)`
+            : '';
+
           alert(
             `🎉 Pipeline completed successfully!\n\n` +
             `  • Category          : ${result.category}\n` +
             `  • Questions parsed  : ${result.parsedCount}\n` +
-            `  • Questions loaded  : ${result.loadedCount}\n` +
+            `  • Questions loaded  : ${result.loadedCount}${msg}\n` +
             `  • Practice sets     : ${result.setsGenerated}\n` +
             `  • Time taken        : ${result.elapsed}\n\n` +
             `Questions are now live in Explore and Quiz pages.`
@@ -2436,7 +2462,10 @@ A: Contact support@aptiogen.com with details.</textarea>
       const params = new URLSearchParams({ page: 1, limit: 50, ...(status && { status }), ...(plan && { plan }), ...(search && { search }) });
 
       try {
-        const r = await fetch(`${API_BASE}/super-admin/institutions?${params}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions?${params}`, { 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         if (!r.ok) throw new Error(`Server error ${r.status}`);
         const data = await r.json();
         const list = data.institutions ?? [];
@@ -2498,7 +2527,10 @@ A: Contact support@aptiogen.com with details.</textarea>
       document.getElementById('instModalBody').innerHTML = '<div style="text-align:center;padding:30px;"><span class="spinner"></span> Loading…</div>';
       openModal('instModal');
       try {
-        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}`, { 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         if (!r.ok) throw new Error(`Server error ${r.status}`);
         const data = await r.json();
         const inst = data.institution, stats = data.stats;
@@ -2522,7 +2554,11 @@ A: Contact support@aptiogen.com with details.</textarea>
     async function suspendInst(id) {
       if (!confirm('Suspend this institution?')) return;
       try {
-        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, { method: 'PUT', headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, { 
+          method: 'PUT', 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         r.ok ? (alert('Suspended.'), loadInstitutions()) : alert('Failed.');
       } catch (e) { alert(e.message); }
     }
@@ -2530,7 +2566,11 @@ A: Contact support@aptiogen.com with details.</textarea>
     async function activateInst(id) {
       if (!confirm('Activate this institution?')) return;
       try {
-        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, { method: 'PUT', headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, { 
+          method: 'PUT', 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         r.ok ? (alert('Activated.'), loadInstitutions()) : alert('Failed.');
       } catch (e) { alert(e.message); }
     }
@@ -2568,7 +2608,10 @@ A: Contact support@aptiogen.com with details.</textarea>
       });
 
       try {
-        const r = await fetch(`${API_BASE}/super-admin/analytics`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/analytics`, { 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         if (!r.ok) throw new Error(`Server error ${r.status}`);
         const data = await r.json();
         const defs = chartDefaults();
@@ -2732,7 +2775,8 @@ A: Contact support@aptiogen.com with details.</textarea>
         const r = await fetch(`${API_BASE}/super-admin/settings`, {
           method: 'PUT',
           headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: type, value: content })
+          body: JSON.stringify({ key: type, value: content }),
+          credentials: 'include'
         });
         r.ok ? alert(`${type} saved successfully!`) : alert('Failed to save.');
       } catch (e) { alert('Error: ' + e.message); }
@@ -2740,7 +2784,10 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     async function loadAllContent() {
       try {
-        const r = await fetch(`${API_BASE}/super-admin/settings`, { headers: authHeaders() });
+        const r = await fetch(`${API_BASE}/super-admin/settings`, { 
+          headers: authHeaders(),
+          credentials: 'include'
+        });
         if (!r.ok) return;
         const settings = await r.json();
         const idMap = { studentTerms: 'studentTermsContent', instituteTerms: 'instituteTermsContent', privacy: 'privacyContent', faqs: 'faqsContent' };

@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOD Dashboard — AptioGen</title>
+    <script>
+        // --- IMMEDIATE ROLE CHECK (NO FLASH) ---
+        (function() {
+            const role = localStorage.getItem('role');
+            if (role && (role === 'inst-admin' || role === 'institutionAdmin')) {
+                window.location.href = 'institution-dashboard.html';
+                document.documentElement.style.display = 'none';
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
@@ -588,8 +598,105 @@
         }
 
         .toggle-icon.green {
-            background: #ecfdf5;
+            background: #f0fdf4;
             color: var(--success);
+        }
+
+        /* ===================== FILTERS ===================== */
+        .filter-bar {
+            background: var(--surface);
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            align-items: flex-end;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 140px;
+            flex: 1;
+        }
+
+        .filter-group label {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-2);
+            letter-spacing: 0.05em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Analytics Layout Refinement */
+        .analytics-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .ana-top-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .ana-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .ana-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ana-sidebar {
+            position: sticky;
+            top: 84px;
+        }
+
+        .ana-main {
+            min-height: 400px;
+        }
+
+        .metric-card.compact {
+            padding: 18px 20px;
+        }
+
+        .metric-card.compact .metric-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+
+        .metric-card.compact .metric-val {
+            font-size: 20px;
         }
 
         .toggle-text strong {
@@ -957,32 +1064,92 @@
         </div>
 
         <section id="analytics" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <div>
-                    <h2>Department Analytics</h2>
-                    <p>Insights for your department's performance.</p>
-                </div>
+            <div style="margin-bottom: 32px;">
+                <h2 style="font-family: 'Syne', sans-serif; font-weight: 800; font-size: 28px; margin-bottom: 4px;">Department Analytics</h2>
+                <p style="color: var(--text-2); font-size: 15px;">Advanced insights and performance tracking for your department.</p>
             </div>
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <div class="metric-icon blue"><i class="fa-solid fa-medal"></i></div>
-                    <div>
-                        <div class="metric-val" id="topScore">-</div>
-                        <div class="metric-label">Avg Score (%)</div>
+            <div class="analytics-container">
+                <!-- KPI TOP ROW -->
+                <div class="ana-top-row">
+                    <div class="metric-card compact">
+                        <div class="metric-icon blue"><i class="fa-solid fa-medal"></i></div>
+                        <div>
+                            <div class="metric-val" id="topScore">-</div>
+                            <div class="metric-label">Average Score (%)</div>
+                        </div>
+                    </div>
+                    <div class="metric-card compact">
+                        <div class="metric-icon orange"><i class="fa-solid fa-users"></i></div>
+                        <div>
+                            <div class="metric-val" id="totalParticipantsCount">-</div>
+                            <div class="metric-label">Total Participants</div>
+                        </div>
                     </div>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-icon orange"><i class="fa-solid fa-users"></i></div>
-                    <div>
-                        <div class="metric-val" id="totalParticipantsCount">-</div>
-                        <div class="metric-label">Participants</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <h4 style="margin-bottom: 20px;">Performance Charts</h4>
-                <div style="height: 300px;">
-                    <canvas id="hodAnalyticsChart"></canvas>
+
+                <!-- SIDE-BY-SIDE LAYOUT -->
+                <div class="ana-layout">
+                    <!-- Sidebar: Filters -->
+                    <aside class="ana-sidebar">
+                        <div class="card" style="padding: 24px;">
+                            <h4 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-2); margin-bottom: 20px;">
+                                <i class="fa-solid fa-sliders"></i> Filter Insights
+                            </h4>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div class="filter-group">
+                                    <label>Time Period</label>
+                                    <select class="form-control" id="anaPeriod">
+                                        <option value="7">Last 7 Days</option>
+                                        <option value="30" selected>Last 30 Days</option>
+                                        <option value="90">Last 3 Months</option>
+                                        <option value="365">Academic Year</option>
+                                        <option value="all">All Time</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Batch</label>
+                                    <select class="form-control" id="anaBatch">
+                                        <option value="all">All Batches</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Category</label>
+                                    <select class="form-control" id="anaCategory">
+                                        <option value="all">All Categories</option>
+                                        <option value="Aptitude">Aptitude</option>
+                                        <option value="Reasoning">Reasoning</option>
+                                        <option value="Coding">Coding</option>
+                                        <option value="Technical">Technical</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Specific Event</label>
+                                    <select class="form-control" id="anaEvent">
+                                        <option value="all">All Events</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="loadAnalytics()" style="margin-top: 8px; justify-content: center;">
+                                    <i class="fa-solid fa-sync"></i> Refresh Analytics
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Main: Chart -->
+                    <main class="ana-main">
+                        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h4 style="margin: 0;">Performance Trends</h4>
+                                <div style="font-size: 12px; color: var(--text-2); display: flex; gap: 16px; align-items: center;">
+                                    <span><span style="display: inline-block; width: 10px; height: 10px; background: #3b82f6; border-radius: 2px; margin-right: 4px;"></span> Score</span>
+                                </div>
+                            </div>
+                            <div style="flex: 1; min-height: 400px; position: relative;">
+                                <canvas id="hodAnalyticsChart"></canvas>
+                            </div>
+                        </div>
+                    </main>
                 </div>
             </div>
         </section>
@@ -999,6 +1166,34 @@
                     </button>
                 </div>
             </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Report Period</label>
+                    <select class="form-control" id="repPeriod">
+                        <option value="30">Last 30 Days</option>
+                        <option value="90">Last 3 Months</option>
+                        <option value="365">Academic Year</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Filter by Batch</label>
+                    <select class="form-control" id="repBatch">
+                        <option value="all">All Batches</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select class="form-control" id="repCategory">
+                        <option value="all">All Categories</option>
+                        <option value="Aptitude">Aptitude</option>
+                        <option value="Reasoning">Reasoning</option>
+                        <option value="Coding">Coding</option>
+                        <option value="Technical">Technical</option>
+                    </select>
+                </div>
+            </div>
+
             <div id="reportOutput" class="card" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h4 id="reportTitle">Department Performance Report</h4>
@@ -1316,6 +1511,21 @@
         const API_BASE = API_CONFIG.API_URL;
         let currentUser = null;
 
+        // ── Token helper: supports JWT (localStorage) and Firebase ────────────
+        async function getToken() {
+            const localToken = localStorage.getItem('token');
+            if (localToken) return localToken;
+            if (auth.currentUser) return await auth.currentUser.getIdToken();
+            return null;
+        }
+
+        // ── JWT role decoder ──────────────────────────────────────────────────
+        function parseJwtRole(token) {
+            try {
+                return JSON.parse(atob(token.split('.')[1])).role || null;
+            } catch { return null; }
+        }
+
         // Navigation
         function showSection(id, btn) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1335,29 +1545,80 @@
             });
         });
 
+        // ── Logout: clears both JWT and Firebase session ──────────────────────
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            auth.signOut().then(() => { window.location.href = 'institution-login.html'; });
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('institutionId');
+            auth.signOut().catch(() => { }).finally(() => {
+                window.location.href = 'institution-login.html';
+            });
         });
 
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'institution-login.html';
+        // ── Auth init: JWT first, then Firebase fallback ──────────────────────
+        async function initAuth() {
+            const localToken = localStorage.getItem('token');
+            if (localToken) {
+                // Validate role from JWT payload
+                const role = parseJwtRole(localToken);
+                if (role === 'institutionAdmin' || role === 'inst-admin') {
+                    // Institution admin ended up here — send them to correct dashboard
+                    window.location.href = 'institution-dashboard.html';
+                    return;
+                }
+                // Valid HOD JWT or Firebase user (role is null in payload) — boot dashboard
+                currentUser = { isLocal: true };
+                fetchDashboardData(localToken);
                 return;
             }
-            currentUser = user;
-            const token = await user.getIdToken();
-            fetchDashboardData(token);
-        });
+
+            // No JWT — fall back to Firebase auth
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    window.location.href = 'institution-login.html';
+                    return;
+                }
+                currentUser = user;
+                const token = await user.getIdToken();
+                fetchDashboardData(token);
+            });
+        }
+
+        initAuth();
 
         async function fetchDashboardData(token) {
             try {
                 const res = await fetch(`${API_BASE}/hod/dashboard`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (res.status === 401) {
+                    console.warn('[HOD] Unauthorized - clearing token and redirecting');
+                    localStorage.removeItem('token');
+                    window.location.href = 'institution-login.html';
+                    return;
+                }
+                if (res.status === 403) {
+                    console.warn('[HOD] Forbidden - checking profile for redirection');
+                    // Check profile to see where to send them
+                    const profRes = await fetch(`${API_BASE}/auth/profile`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (profRes.ok) {
+                        const prof = await profRes.json();
+                        if (prof.role === 'inst-admin' || prof.role === 'institutionAdmin') {
+                            window.location.href = 'institution-dashboard.html';
+                            return;
+                        } else if (prof.role === 'student' || prof.role === 'independent') {
+                            window.location.href = 'explore.html';
+                            return;
+                        }
+                    }
+                    window.location.href = 'institution-login.html';
+                    return;
+                }
                 if (!res.ok) throw new Error('HOD Auth Failed');
                 const data = await res.json();
 
-                // Update UI
                 document.getElementById('hodDeptTitle').textContent = `${data.department.name} Dashboard`;
                 document.getElementById('hodInstName').textContent = data.department.institutionId?.name || 'AptioGen Institution';
                 document.getElementById('totalStudents').textContent = data.stats.totalStudents;
@@ -1374,14 +1635,21 @@
 
                 // Load recent events
                 renderRecentEvents(data.recentEvents || []);
+                
+                // Populate filters
+                populateFilterDropdowns(data.department?.institutionId?._id || data.department?.institutionId, data.recentEvents || []);
             } catch (err) {
-                console.error(err);
+                console.error('[HOD Dashboard Init Error]', err);
+                // On critical error, don't leave user on a broken page
+                if (err.message.includes('HOD Auth Failed')) {
+                    window.location.href = 'institution-login.html';
+                }
             }
         }
 
         async function loadStudents() {
             try {
-                const token = await auth.currentUser.getIdToken();
+                const token = await getToken();
                 const res = await fetch(`${API_BASE}/hod/students`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1526,7 +1794,7 @@
             const method = document.querySelector('.method-card.selected')?.id?.replace('mcard_', '') || 'random';
 
             try {
-                const token = await auth.currentUser.getIdToken();
+                const token = await getToken();
                 const proctoring = {
                     fullscreen: document.getElementById('pFullscreen').checked,
                     tabLock: document.getElementById('pTabLock').checked,
@@ -1683,7 +1951,7 @@
             const opts = document.getElementById('batchOpts');
             opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">Loading batches...</div>';
             try {
-                const token = await auth.currentUser.getIdToken();
+                const token = await getToken();
                 // Fetch via HOD dashboard to get institution context
                 const dashRes = await fetch(`${API_BASE}/hod/dashboard`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -1716,7 +1984,7 @@
         // Events
         async function loadEvents() {
             try {
-                const token = await auth.currentUser.getIdToken();
+                const token = await getToken();
                 const res = await fetch(`${API_BASE}/hod/dashboard`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1761,7 +2029,7 @@
             modal.style.display = 'flex';
 
             try {
-                const token = await auth.currentUser.getIdToken();
+                const token = await getToken();
                 const res = await fetch(`${API_BASE}/hod/events/${eventId}/scores`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1807,10 +2075,17 @@
             document.getElementById('scoresModal').style.display = 'none';
         };
 
-        async function loadAnalytics() {
+        window.loadAnalytics = async function() {
             try {
-                const token = await auth.currentUser.getIdToken();
-                const res = await fetch(`${API_BASE}/hod/analytics`, {
+                const token = await getToken();
+                const period = document.getElementById('anaPeriod').value;
+                const batchId = document.getElementById('anaBatch').value;
+                const category = document.getElementById('anaCategory').value;
+                const eventId = document.getElementById('anaEvent').value;
+
+                const params = new URLSearchParams({ period, batchId, category, eventId });
+                
+                const res = await fetch(`${API_BASE}/hod/analytics?${params}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
@@ -1820,6 +2095,11 @@
                 document.getElementById('totalParticipantsCount').textContent = stats.totalParticipants || 0;
 
                 const ctx = document.getElementById('hodAnalyticsChart').getContext('2d');
+                
+                // Destroy previous chart instance if it exists
+                const existingChart = Chart.getChart("hodAnalyticsChart");
+                if (existingChart) existingChart.destroy();
+
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -1844,18 +2124,60 @@
 
         window.generateHODReport = async () => {
             try {
-                const token = await auth.currentUser.getIdToken();
-                const res = await fetch(`${API_BASE}/hod/dashboard`, {
+                const token = await getToken();
+                const period = document.getElementById('repPeriod').value;
+                const batchId = document.getElementById('repBatch').value;
+                const category = document.getElementById('repCategory').value;
+
+                const params = new URLSearchParams({ period, batchId, category });
+                
+                // Using analytics endpoint for report data since it supports the same filters
+                const res = await fetch(`${API_BASE}/hod/analytics?${params}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                const stats = data.analytics || {};
 
                 document.getElementById('reportOutput').style.display = 'block';
-                document.getElementById('repTotalEvents').textContent = data.stats.totalEvents;
-                document.getElementById('repAvgScore').textContent = data.stats.averageScore ? data.stats.averageScore.toFixed(2) + '%' : '0%';
+                document.getElementById('repTotalEvents').textContent = stats.totalParticipants > 0 ? 'Filtered Data' : '—'; // Placeholder
+                document.getElementById('repAvgScore').textContent = stats.averageScore ? stats.averageScore.toFixed(2) + '%' : '0%';
+                
+                // Re-fetch dashboard for total events count if needed, or just use stats
+                const dashRes = await fetch(`${API_BASE}/hod/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const dashData = await dashRes.json();
+                document.getElementById('repTotalEvents').textContent = dashData.stats.totalEvents;
 
                 showToast('Report generated successfully');
             } catch (err) { console.error(err); }
+        }
+
+        async function populateFilterDropdowns(instId, events) {
+            try {
+                const token = await getToken();
+                
+                // 1. Populate Batches
+                const batchRes = await fetch(`${API_BASE}/institutions/${instId}/batches/active`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const batchData = await batchRes.json();
+                const batches = batchData.batches || [];
+                
+                const anaBatch = document.getElementById('anaBatch');
+                const repBatch = document.getElementById('repBatch');
+                
+                const batchOptions = batches.map(b => `<option value="${b._id}">${b.batchID || b.name}</option>`).join('');
+                anaBatch.innerHTML += batchOptions;
+                repBatch.innerHTML += batchOptions;
+
+                // 2. Populate Events
+                const anaEvent = document.getElementById('anaEvent');
+                anaEvent.innerHTML += events.map(e => `<option value="${e._id}">${e.eventName}</option>`).join('');
+                
+            } catch (err) {
+                console.error('[Filter Populate Error]', err);
+            }
         }
 
         window.exportReportPDF = () => {

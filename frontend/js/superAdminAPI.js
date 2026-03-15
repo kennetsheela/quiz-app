@@ -16,6 +16,7 @@ async function apiRequest(endpoint, options = {}) {
 
     const config = {
         ...options,
+        credentials: 'include',
         headers: {
             ...defaultHeaders,
             ...options.headers

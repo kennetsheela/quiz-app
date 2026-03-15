@@ -288,13 +288,21 @@
 
         // ── Role-based redirect ────────────────────────────────────────────
         function redirectByRole(role) {
+            // Normalize: JWT controller returns 'institutionAdmin' for inst-admins
+            const normalized = role === 'institutionAdmin' ? 'inst-admin' : role;
+            
+            // Save role for immediate redirection checks on subsequent page loads
+            localStorage.setItem('role', normalized);
+            
             const routes = {
                 'super-admin': 'super-admin-dashboard.html',
                 'inst-admin': 'institution-dashboard.html',
                 'hod': 'hod-dashboard.html',
                 'student': 'student-dashboard.html'
             };
-            window.location.href = routes[role] || 'student-dashboard.html';
+            const target = routes[normalized] || 'student-dashboard.html';
+            if (window.location.pathname.endsWith(target)) return;
+            window.location.href = target;
         }
 
         // ── Auth state check ───────────────────────────────────────────────
@@ -305,21 +313,28 @@
                     user.getIdToken(false),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
                 ]);
-                const instRes = await fetch(`${API_BASE_URL}/institutions/my`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (instRes.ok) {
-                    const instData = await instRes.json();
-                    if (instData.institution?._id) localStorage.setItem('institutionId', instData.institution._id);
-                    redirectByRole('inst-admin');
-                    return;
-                }
+                // Always fetch the actual profile role first — never assume role from /institutions/my
+                // (HODs also belong to an institution but must go to hod-dashboard)
                 const profileRes = await fetch(`${API_BASE_URL}/auth/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
                 });
                 if (profileRes.ok) {
                     const profile = await profileRes.json();
-                    if (profile?.role && profile.role !== 'student') redirectByRole(profile.role);
+                    const role = profile?.role;
+                    if (!role || role === 'student') return; // not an institution user
+                    // For inst-admin, also cache the institutionId
+                    if (role === 'inst-admin') {
+                        const instRes = await fetch(`${API_BASE_URL}/institutions/my`, {
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            credentials: 'include'
+                        });
+                        if (instRes.ok) {
+                            const instData = await instRes.json();
+                            if (instData.institution?._id) localStorage.setItem('institutionId', instData.institution._id);
+                        }
+                    }
+                    redirectByRole(role);
                 }
             } catch (error) {
                 console.warn('⚠️ Session restore failed:', error.message);
@@ -342,7 +357,8 @@
                 const jwtLoginRes = await fetch(`${API_BASE_URL}/auth/institution/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
                 });
 
                 if (jwtLoginRes.ok) {
@@ -361,7 +377,8 @@
                     const token = await userCredential.user.getIdToken();
 
                     const instRes = await fetch(`${API_BASE_URL}/institutions/my`, {
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        credentials: 'include'
                     });
 
                     if (instRes.ok) {
@@ -369,7 +386,19 @@
                         if (instData.institution?._id) localStorage.setItem('institutionId', instData.institution._id);
                         // Store the Firebase token as 'token' for consistency in subsequent requests
                         localStorage.setItem('token', token);
-                        redirectByRole('inst-admin');
+
+                        // Fetch profile to get role
+                        const profileRes = await fetch(`${API_BASE_URL}/auth/profile`, {
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            credentials: 'include'
+                        });
+                        if (profileRes.ok) {
+                            const profile = await profileRes.json();
+                            redirectByRole(profile.role);
+                        } else {
+                            // Fallback if profile fetch fails
+                            redirectByRole('inst-admin');
+                        }
                     } else {
                         const errorData = await instRes.json().catch(() => ({}));
                         throw new Error(errorData.error || `Server error: ${instRes.status}`);
@@ -431,6 +460,7 @@
                     document.getElementById('regPass').value
                 );
                 const adminUID = userCredential.user.uid;
+                const token = await userCredential.user.getIdToken();
 
                 const institutionData = {
                     name: document.getElementById('instName').value.trim(),
@@ -458,13 +488,20 @@
 
                 const response = await fetch(`${API_BASE_URL}/institutions/register`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(institutionData)
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(institutionData),
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Failed to create institution record');
+                    const errorData = await response.json();
+                    let errMsg = errorData.error || 'Registration failed';
+                    if (errorData.details) errMsg += '\n\nDetails: ' + errorData.details;
+                    alert(errMsg);
+                    return; // Stop further execution if registration failed
                 }
 
                 const data = await response.json();

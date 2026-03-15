@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Institution Dashboard — AptioGen</title>
+    <script>
+        // --- IMMEDIATE ROLE CHECK (NO FLASH) ---
+        (function() {
+            const role = localStorage.getItem('role');
+            if (role && (role === 'hod')) {
+                window.location.href = 'hod-dashboard.html';
+                document.documentElement.style.display = 'none';
+            }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
@@ -3400,6 +3410,13 @@
         }
 
         // ======================== INIT ========================
+        // Decode JWT role without a library
+        function parseJwtRole(token) {
+            try {
+                return JSON.parse(atob(token.split('.')[1])).role || null;
+            } catch { return null; }
+        }
+
         async function init() {
             try {
                 // Use unified auth helper
@@ -3407,6 +3424,32 @@
 
                 // Get fresh token (supports both Firebase and Local JWT)
                 authToken = await getFreshToken();
+
+                // ── Role guard: HODs must use hod-dashboard, not this page ──
+                let jwtRole = authToken ? parseJwtRole(authToken) : null;
+
+                // If it's a Firebase token (no role), fetch profile to confirm
+                if (jwtRole === null && authToken) {
+                    try {
+                        const profRes = await fetch(`${API_BASE}/auth/profile`, {
+                            headers: { 'Authorization': `Bearer ${authToken}` }
+                        });
+                        if (profRes.ok) {
+                            const prof = await profRes.json();
+                            jwtRole = prof.role;
+                        }
+                    } catch (e) { console.error("Profile check failed:", e); }
+                }
+
+                if (jwtRole === 'hod') {
+                    console.log('[RoleGuard] Redirecting HOD to hod-dashboard.html');
+                    window.location.href = 'hod-dashboard.html';
+                    return;
+                } else if (jwtRole === 'student' || jwtRole === 'independent') {
+                    console.log('[RoleGuard] Redirecting student to explore.html');
+                    window.location.href = 'explore.html';
+                    return;
+                }
 
                 // 1. Load institution data
                 // Try to get institutionId from localStorage first
@@ -5322,6 +5365,9 @@
                 const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
                 await getAuth().signOut();
             } catch { }
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('institutionId');
             sessionStorage.clear();
             window.location.href = 'institution-login.html';
         });
