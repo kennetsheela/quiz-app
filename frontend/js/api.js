@@ -1,8 +1,9 @@
 //api.js
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import API_CONFIG from "./config.js";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = API_CONFIG.API_URL;
 
 // Feature flag to use localStorage fallback when backend is unavailable
 const USE_FALLBACK = false;

@@ -235,7 +235,8 @@
     </div>
   </div>
   <script type="module">
-    const API_BASE_URL = 'http://localhost:5000/api';
+    import API_CONFIG from "./js/config.js";
+    const API_BASE_URL = API_CONFIG.API_URL;
 
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
     import { practiceAPI } from "./js/api.js";

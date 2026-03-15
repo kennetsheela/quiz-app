@@ -13,12 +13,8 @@ const getApiBaseUrl = () => {
         return 'http://localhost:5000';
     }
 
-    // Support for Firebase hosting
-    if (hostname.includes('web.app') || hostname.includes('firebaseapp.com')) {
-        return window.location.origin;
-    }
-
-    return 'http://localhost:5000'; // Default fallback
+    // Default for production: Use the current origin
+    return window.location.origin;
 };
 
 const BASE_URL = getApiBaseUrl();
