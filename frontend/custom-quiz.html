@@ -492,10 +492,9 @@
 
   <script type="module">
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
-    import API_CONFIG from "./js/config.js";
 
     // ✅ FIXED: API_BASE_URL moved inside script, not at top of HTML
-    const API_BASE_URL = API_CONFIG.API_URL;
+    const API_BASE_URL = 'http://localhost:5000/api';
 
     // Quiz state
     let quizConfig = null;
