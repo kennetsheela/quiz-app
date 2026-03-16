@@ -178,17 +178,14 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Requests with no origin (server-to-server, curl) allowed in dev only
-      if (!origin) {
-        if (process.env.NODE_ENV !== "production") return callback(null, true);
-        return callback(new Error("CORS: no origin header — rejected in production"));
-      }
+      // No Origin header = request from server, health checker, curl, etc. (not a browser).
+      // CORS is a browser-only mechanism — always allow these through.
+      if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // ✅ FIX: No longer falls through to allow-all. Unknown origins are rejected.
       console.warn(`[CORS] Blocked origin: ${origin}`);
       return callback(new Error(`CORS policy: origin '${origin}' is not allowed`));
     },
@@ -197,6 +194,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 
 /* ================= RATE LIMIT APPLICATION ================= */
 app.use("/api", limiter);
