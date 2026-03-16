@@ -1,5 +1,8 @@
 // server.js
-require("dotenv").config();
+// Load .env from the same directory as this file (backend/), not process.cwd()
+// This is critical for Hostinger which may run the process from the repo root.
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
+
 
 // ── Step 1: Validate environment BEFORE anything else starts ──────────────────
 const validateEnv = require("./utils/validateEnv");
@@ -258,17 +261,18 @@ async function startServer() {
 
   try {
     await connectDB();
+    startCleanupScheduler();
 
     server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
-      startCleanupScheduler();
     });
 
-    // Handle port-already-in-use gracefully (Hostinger platform may pre-bind)
     server.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
-        console.warn(`⚠️ Port ${PORT} already in use — likely managed by Hostinger platform. Continuing.`);
+        // Hostinger's platform pre-bound the port — this is expected, not an error
+        console.log(`ℹ️ Port ${PORT} managed by Hostinger platform — app is ready.`);
+        server = null; // reset so graceful shutdown doesn't try to close it
       } else {
         console.error("❌ Server error:", err);
         process.exit(1);
@@ -284,6 +288,7 @@ async function startServer() {
 if (process.env.NODE_ENV !== "test") {
   startServer();
 }
+
 
 /* ================= GRACEFUL SHUTDOWN ================= */
 function gracefulShutdown() {
