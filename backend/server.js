@@ -37,12 +37,18 @@ let server;
 
 /* ================= FIREBASE ================= */
 try {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    // Production: credentials stored as Base64 encoded JSON string (better for Hostinger)
+    const jsonString = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+    const serviceAccount = JSON.parse(jsonString);
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    console.log("✅ Firebase Admin initialized from Base64 environment variable");
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     // Production: credentials stored as env var JSON string
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     console.log("✅ Firebase Admin initialized from environment variable");
-  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH && process.env.NODE_ENV !== 'production') {
     // Local dev only: load from file path in .env
     const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
     admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
@@ -118,6 +124,7 @@ const allowedOriginsFromEnv = process.env.ALLOWED_ORIGINS
 
 // Hard-coded fallback for origins that are always trusted
 const ALWAYS_ALLOWED = [
+  "https://slategray-skunk-723064.hostingersite.com",
   "https://quiz-app-3e991.web.app",
   "https://quiz-app-3e991.firebaseapp.com",
 ];
