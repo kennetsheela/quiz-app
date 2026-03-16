@@ -41,7 +41,7 @@ let server;
 /* ================= FIREBASE ================= */
 try {
   if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL &&
-      (process.env.FIREBASE_PRIVATE_KEY_BASE64 || process.env.FIREBASE_PRIVATE_KEY)) {
+    (process.env.FIREBASE_PRIVATE_KEY_BASE64 || process.env.FIREBASE_PRIVATE_KEY)) {
     // ✅ PRIMARY (Hostinger): individual env vars
     // FIREBASE_PRIVATE_KEY_BASE64 = Base64 of just the private key (safe for Hostinger UI)
     // FIREBASE_PRIVATE_KEY        = raw key with \n (works locally via dotenv)
@@ -155,8 +155,8 @@ const allowedOriginsFromEnv = process.env.ALLOWED_ORIGINS
 // Hard-coded fallback for origins that are always trusted
 const ALWAYS_ALLOWED = [
   "https://slategray-skunk-723064.hostingersite.com",
-  "https://quiz-app-3e991.web.app",
-  "https://quiz-app-3e991.firebaseapp.com",
+  "https://aptiogen-56f98.web.app",
+  "https://aptiogen-56f98.firebaseapp.com",
 ];
 
 const DEV_ORIGINS = [
@@ -254,15 +254,19 @@ app.use(globalErrorHandler);
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
-  if (server) {
-    console.warn("⚠️ startServer() called more than once — skipping.");
-    return;
-  }
+  if (server) return;
 
   try {
+    const envPath = require("path").join(__dirname, ".env");
+    console.log(`🔍 Checking for .env at: ${envPath}`);
+    console.log(`📂 Current Working Directory: ${process.cwd()}`);
+
     await connectDB();
     startCleanupScheduler();
 
+    // In many hosting environments (like Hostinger/Passenger), 
+    // the platform handles the listen() call and expects us to just export the app.
+    // However, we still call it as a fallback for standard Node environments.
     server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
@@ -270,24 +274,22 @@ async function startServer() {
 
     server.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
-        // Hostinger's platform pre-bound the port — this is expected, not an error
-        console.log(`ℹ️ Port ${PORT} managed by Hostinger platform — app is ready.`);
-        server = null; // reset so graceful shutdown doesn't try to close it
+        console.log(`ℹ️ Port ${PORT} already in use/managed by platform. Server is active.`);
+        server = null; 
       } else {
-        console.error("❌ Server error:", err);
-        process.exit(1);
+        console.error("❌ Server startup error:", err);
       }
     });
 
   } catch (err) {
     console.error("❌ Failed to start server:", err);
-    process.exit(1);
   }
 }
 
 if (process.env.NODE_ENV !== "test") {
   startServer();
 }
+
 
 
 /* ================= GRACEFUL SHUTDOWN ================= */
