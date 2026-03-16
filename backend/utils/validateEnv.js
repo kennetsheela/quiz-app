@@ -13,12 +13,25 @@ const REQUIRED_VARS = [
 
 // Optional but warn if missing
 const RECOMMENDED_VARS = [
-    "FIREBASE_SERVICE_ACCOUNT",
     "PORT",
 ];
 
 const MIN_JWT_SECRET_LENGTH = 32; // 256 bits minimum
 const MIN_ADMIN_PASSWORD_LENGTH = 12;
+
+function hasFirebaseCredentials() {
+    // Option 1: individual env vars (new preferred method)
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+        return true;
+    }
+    // Option 2: Base64 encoded JSON
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) return true;
+    // Option 3: raw JSON string
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) return true;
+    // Option 4: file path (dev only)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) return true;
+    return false;
+}
 
 function validateEnv() {
     const errors = [];
@@ -76,11 +89,11 @@ function validateEnv() {
         }
     }
 
-    // 5. Warn if running in production with development-mode settings
+    // 5. Warn if running in production with no Firebase credentials configured at all
     if (process.env.NODE_ENV === "production") {
-        if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+        if (!hasFirebaseCredentials()) {
             warnings.push(
-                `⚠️  FIREBASE_SERVICE_ACCOUNT not set. Falling back to file-based service account — not recommended for production.`
+                `⚠️  No Firebase credentials configured (FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT_BASE64, etc.). Auth features will fail.`
             );
         }
     }

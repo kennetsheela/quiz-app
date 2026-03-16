@@ -37,19 +37,37 @@ let server;
 
 /* ================= FIREBASE ================= */
 try {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    // Production: credentials stored as Base64 encoded JSON string (better for Hostinger)
+  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+    // ✅ PRIMARY (Hostinger): individual env vars — no JSON, no Base64, no special char issues
+    const serviceAccount = {
+      type: "service_account",
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+      // Replace literal \n strings with real newlines (handles both Hostinger UI and dotenv)
+      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID,
+      auth_uri: "https://accounts.google.com/o/oauth2/auth",
+      token_uri: "https://oauth2.googleapis.com/token",
+      auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+      client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+      universe_domain: "googleapis.com",
+    };
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    console.log("✅ Firebase Admin initialized from individual environment variables");
+  } else if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    // Fallback: Base64 encoded JSON
     const jsonString = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
     const serviceAccount = JSON.parse(jsonString);
     admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     console.log("✅ Firebase Admin initialized from Base64 environment variable");
   } else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    // Production: credentials stored as env var JSON string
+    // Fallback: raw JSON string
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-    console.log("✅ Firebase Admin initialized from environment variable");
+    console.log("✅ Firebase Admin initialized from JSON environment variable");
   } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH && process.env.NODE_ENV !== 'production') {
-    // Local dev only: load from file path in .env
+    // Local dev only: load from file
     const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
     admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     console.log("✅ Firebase Admin initialized from file (dev mode)");
