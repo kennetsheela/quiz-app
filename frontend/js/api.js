@@ -2,7 +2,13 @@
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const API_BASE_URL = "http://localhost:5000/api";
+// Auto-detect environment: local dev → localhost, everything else → Hostinger backend
+const HOSTINGER_BACKEND = "https://slategray-skunk-723064.hostingersite.com";
+const API_BASE_URL = (() => {
+  const h = window.location.hostname;
+  const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '';
+  return isLocal ? 'http://localhost:5000/api' : `${HOSTINGER_BACKEND}/api`;
+})();
 
 // Feature flag to use localStorage fallback when backend is unavailable
 const USE_FALLBACK = false;

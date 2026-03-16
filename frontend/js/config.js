@@ -13,12 +13,12 @@ const getApiBaseUrl = () => {
         return 'http://localhost:5000';
     }
 
-    // Support for Firebase hosting
+    // Firebase Hosting → backend is on Hostinger, NOT window.location.origin
     if (hostname.includes('web.app') || hostname.includes('firebaseapp.com')) {
-        return window.location.origin;
+        return 'https://slategray-skunk-723064.hostingersite.com';
     }
 
-    return 'http://localhost:5000'; // Default fallback
+    return window.location.origin; // Final fallback: use current origin (essential for Hostinger/Production)
 };
 
 const BASE_URL = getApiBaseUrl();
