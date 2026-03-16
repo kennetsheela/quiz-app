@@ -1,16 +1,20 @@
 // server.js
-// Load .env from the same directory as this file (backend/), not process.cwd()
-// This is critical for Hostinger which may run the process from the repo root.
-require("dotenv").config({ path: require("path").join(__dirname, ".env") });
-
+const path = require("path");
+// Load environment variables from .env in the same directory as server.js
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 // ── Step 1: Validate environment BEFORE anything else starts ──────────────────
 const validateEnv = require("./utils/validateEnv");
 validateEnv();
 
 const express = require("express");
+const app = express();
+
+// ✅ NEW: Trust the first proxy (Essential for Hostinger/Passenger/Cloudflare)
+// This fixes the 'X-Forwarded-For' crash you see in the logs.
+app.set('trust proxy', 1);
+
 const cors = require("cors");
-const path = require("path");
 const admin = require("firebase-admin");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
@@ -34,8 +38,6 @@ const publicRoutes = require("./routes/publicRoutes");
 const { startCleanupScheduler } = require("./services/cleanupService");
 const { globalErrorHandler } = require("./utils/errorHandler");
 
-/* ================= APP ================= */
-const app = express();
 let server;
 
 /* ================= FIREBASE ================= */
