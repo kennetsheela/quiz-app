@@ -257,34 +257,27 @@ async function startServer() {
   if (server) return;
 
   try {
+    // Debug info for Hostinger troubleshooting
     const envPath = require("path").join(__dirname, ".env");
-    console.log(`🔍 Checking for .env at: ${envPath}`);
-    console.log(`📂 Current Working Directory: ${process.cwd()}`);
+    console.log(`[DEBUG] __dirname: ${__dirname}`);
+    console.log(`[DEBUG] process.cwd(): ${process.cwd()}`);
+    console.log(`[DEBUG] Attempting to load .env from: ${envPath}`);
 
     await connectDB();
     startCleanupScheduler();
 
-    // In many hosting environments (like Hostinger/Passenger), 
-    // the platform handles the listen() call and expects us to just export the app.
-    // However, we still call it as a fallback for standard Node environments.
-    server = app.listen(PORT, "0.0.0.0", () => {
+    // On Hostinger, 'Passenger' usually handles the port and intercepts .listen()
+    // We call it simply; Passenger will handle the rest.
+    server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
-    });
-
-    server.on("error", (err) => {
-      if (err.code === "EADDRINUSE") {
-        console.log(`ℹ️ Port ${PORT} already in use/managed by platform. Server is active.`);
-        server = null; 
-      } else {
-        console.error("❌ Server startup error:", err);
-      }
+      console.log(`📍 Mode: ${process.env.NODE_ENV || "development"}`);
     });
 
   } catch (err) {
-    console.error("❌ Failed to start server:", err);
+    console.error("❌ Critical Startup Error:", err);
   }
 }
+
 
 if (process.env.NODE_ENV !== "test") {
   startServer();
