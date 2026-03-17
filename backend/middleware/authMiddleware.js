@@ -9,13 +9,18 @@ const User = require("../models/User");
 const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
-        console.log("[AuthMiddleware] Received authorization header:", authHeader ? authHeader.substring(0, 20) + "..." : "NONE");
-
-        if (!authHeader || !authHeader.startsWith("Bearer ") || authHeader.split(" ")[1] === "null" || authHeader.split(" ")[1] === "undefined") {
+        let token = null;
+        if (authHeader && authHeader.startsWith("Bearer ") && authHeader.split(" ")[1] !== "null" && authHeader.split(" ")[1] !== "undefined") {
+            token = authHeader.split(" ")[1];
+        } else if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+            // console.log("[AuthMiddleware] Using token from HttpOnly cookie");
+        }
+        
+        if (!token) {
+            console.warn("[AuthMiddleware] No token found in header or cookie");
             return res.status(401).json({ error: "No token provided. Authorization denied." });
         }
-
-        const token = authHeader.split(" ")[1];
 
         // 1. Try verifying as local JWT
         try {

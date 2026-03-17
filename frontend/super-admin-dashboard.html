@@ -1912,9 +1912,11 @@ A: Contact support@aptiogen.com with details.</textarea>
   </div>
 
   <!-- ═══ JAVASCRIPT ════════════════════════════════════════════════ -->
-  <script>
+  <script type="module">
+    import API_CONFIG from './js/config.js';
+
     /* ── Config ───────────────────────────────────────────────────── */
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = API_CONFIG.API_URL;
     const authToken = localStorage.getItem('superAdminToken') || '';
 
     /* ── Auth guard ───────────────────────────────────────────────── */
@@ -1934,7 +1936,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       document.documentElement.classList.remove('dark');
       document.getElementById('themeIcon').className = 'fa-solid fa-moon';
     }
-    function toggleTheme() {
+    window.toggleTheme = function() {
       const isDark = document.documentElement.classList.contains('dark');
       isDark ? applyLight() : applyDark();
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
@@ -1942,7 +1944,7 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     /* ── Sidebar ──────────────────────────────────────────────────── */
     let sidebarCollapsed = false;
-    function toggleSidebar() {
+    window.toggleSidebar = function() {
       sidebarCollapsed = !sidebarCollapsed;
       document.getElementById('sidebar').classList.toggle('collapsed', sidebarCollapsed);
       document.getElementById('toggleIcon').className = sidebarCollapsed ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
@@ -1960,7 +1962,7 @@ A: Contact support@aptiogen.com with details.</textarea>
     };
     const pageLoaded = {};
 
-    function navigate(pageId) {
+    window.navigate = function(pageId) {
       // Update nav items
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.toggle('active', el.dataset.page === pageId);
@@ -1989,18 +1991,25 @@ A: Contact support@aptiogen.com with details.</textarea>
     });
 
     /* ── Logout ───────────────────────────────────────────────────── */
-    function logout() {
+    window.logout = async function() {
       if (!confirm('Are you sure you want to logout?')) return;
       localStorage.removeItem('superAdminToken');
-      // Also try to clear cookie via backend
-      fetch(`${API_BASE}/super-admin/logout`, { method: 'POST', credentials: 'include' }).finally(() => {
-        window.location.href = 'super-admin-login.html';
-      });
+      
+      try {
+        await fetch(`${API_BASE}/super-admin/logout`, { 
+          method: 'POST', 
+          credentials: 'include' 
+        });
+      } catch (e) {
+        console.warn('Backend logout failed', e);
+      }
+      
+      window.location.href = 'super-admin-login.html';
     }
 
     /* ── Modal Helpers ────────────────────────────────────────────── */
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    window.openModal = (id) => { document.getElementById(id).classList.add('active'); };
+    window.closeModal = (id) => { document.getElementById(id).classList.remove('active'); };
 
     // Close on backdrop click
     document.querySelectorAll('.modal').forEach(m => {

@@ -92,8 +92,13 @@ function validateEnv() {
     // 5. Warn if running in production with no Firebase credentials configured at all
     if (process.env.NODE_ENV === "production") {
         if (!hasFirebaseCredentials()) {
+            const missing = [];
+            if (!process.env.FIREBASE_PROJECT_ID) missing.push("FIREBASE_PROJECT_ID");
+            if (!process.env.FIREBASE_CLIENT_EMAIL) missing.push("FIREBASE_CLIENT_EMAIL");
+            if (!process.env.FIREBASE_PRIVATE_KEY && !process.env.FIREBASE_PRIVATE_KEY_BASE64) missing.push("FIREBASE_PRIVATE_KEY (or BASE64)");
+            
             warnings.push(
-                `⚠️  No Firebase credentials configured (FIREBASE_PROJECT_ID, FIREBASE_SERVICE_ACCOUNT_BASE64, etc.). Auth features will fail.`
+                `⚠️  Firebase credentials incomplete: Missing [${missing.join(", ")}]. Auth features will fail.`
             );
         }
     }

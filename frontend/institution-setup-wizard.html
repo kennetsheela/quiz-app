@@ -240,7 +240,8 @@
 
                 // Fetch Departments
                 const deptResp = await fetch(`${API_BASE}/institutions/${institutionId}/departments`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
                 });
                 if (deptResp.ok) {
                     const data = await deptResp.json();
@@ -250,7 +251,8 @@
 
                 // Fetch Batches
                 const batchResp = await fetch(`${API_BASE}/institutions/${institutionId}/batches`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
                 });
                 if (batchResp.ok) {
                     const data = await batchResp.json();
@@ -294,7 +296,8 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify(deptData)
+                        body: JSON.stringify(deptData),
+                        credentials: 'include'
                     });
 
                     if (response.ok) {
@@ -345,7 +348,8 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify(batchData)
+                        body: JSON.stringify(batchData),
+                        credentials: 'include'
                     });
 
                     if (response.ok) {
@@ -383,7 +387,8 @@
                 const token = await getFreshToken();
                 const response = await fetch(url, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -534,7 +539,8 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
                 });
 
                 if (response.ok) {

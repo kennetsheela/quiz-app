@@ -69,7 +69,7 @@ export const settingsAPI = {
      * Load a single setting by key (public)
      */
     async getPublicSetting(key) {
-        const response = await fetch(`${API_BASE}/public/settings/${key}`);
+        const response = await fetch(`${API_BASE}/public/settings/${key}`, { credentials: 'include' });
         return await response.json();
     },
 

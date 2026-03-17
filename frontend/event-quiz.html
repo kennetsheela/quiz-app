@@ -356,10 +356,10 @@
     </footer>
 
     <script type="module">
-        import { BASE_URL } from './js/config.js';
+        import API_CONFIG from './js/config.js';
         import { auth } from './js/firebase.js';
 
-        const API_BASE = `${BASE_URL}/api`;
+        const API_BASE = API_CONFIG.API_URL;
         const urlParams = new URLSearchParams(window.location.search);
         let eventId = urlParams.get('eventId');
 
@@ -419,7 +419,8 @@
             try {
                 const idToken = await auth.currentUser.getIdToken();
                 const res = await fetch(`${API_BASE}/events/${eventId}/take`, {
-                    headers: { 'Authorization': `Bearer ${idToken}` }
+                    headers: { 'Authorization': `Bearer ${idToken}` },
+                    credentials: 'include'
                 });
 
                 if (!res.ok) {
@@ -581,6 +582,7 @@
                 const idToken = await auth.currentUser.getIdToken();
                 fetch(`${API_BASE}/events/${eventId}/violation`, {
                     method: 'POST',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${idToken}`
@@ -634,6 +636,7 @@
                 const idToken = await auth.currentUser.getIdToken();
                 const res = await fetch(`${API_BASE}/events/${eventId}/submit`, {
                     method: 'POST',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${idToken}`

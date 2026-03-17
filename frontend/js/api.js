@@ -2,13 +2,8 @@
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Auto-detect environment: local dev → localhost, everything else → Hostinger backend
-const HOSTINGER_BACKEND = "https://slategray-skunk-723064.hostingersite.com";
-const API_BASE_URL = (() => {
-  const h = window.location.hostname;
-  const isLocal = h === 'localhost' || h === '127.0.0.1' || h === '';
-  return isLocal ? 'http://localhost:5000/api' : `${HOSTINGER_BACKEND}/api`;
-})();
+import API_CONFIG from "./config.js";
+const API_BASE_URL = API_CONFIG.API_URL;
 
 // Feature flag to use localStorage fallback when backend is unavailable
 const USE_FALLBACK = false;
@@ -51,6 +46,7 @@ async function apiCall(endpoint, options = {}) {
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
+      credentials: "include",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -239,17 +235,17 @@ export const practiceAPI = {
 
   getProgress: () => apiCall("/practice/progress"),
 
-  getCategories: () => fetch(`${API_BASE_URL}/practice/categories`).then(r => r.json()),
+  getCategories: () => fetch(`${API_BASE_URL}/practice/categories`, { credentials: "include" }).then(r => r.json()),
 
   getTopics: (category) =>
-    fetch(`${API_BASE_URL}/practice/categories/${category}/topics`).then(r => r.json())
+    fetch(`${API_BASE_URL}/practice/categories/${category}/topics`, { credentials: "include" }).then(r => r.json())
 };
 
 // Event APIs
 export const eventAPI = {
   getAll: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/events`);
+      const response = await fetch(`${API_BASE_URL}/events`, { credentials: "include" });
       if (!response.ok) {
         throw new Error("Failed to fetch events");
       }
@@ -262,7 +258,7 @@ export const eventAPI = {
 
   getAllEvents: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/events`);
+      const response = await fetch(`${API_BASE_URL}/events`, { credentials: "include" });
       if (!response.ok) {
         throw new Error("Failed to fetch events");
       }
@@ -275,7 +271,7 @@ export const eventAPI = {
 
   getEvent: async (eventId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/events/${eventId}`);
+      const response = await fetch(`${API_BASE_URL}/events/${eventId}`, { credentials: "include" });
       if (!response.ok) {
         throw new Error("Failed to fetch event");
       }
@@ -290,6 +286,7 @@ export const eventAPI = {
     const token = await getAuthToken();
     const response = await fetch(`${API_BASE_URL}/events/create`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Authorization": `Bearer ${token}`
       },
@@ -318,6 +315,7 @@ export const eventAPI = {
         `${API_BASE_URL}/events/${eventId}/check-participation/${encodedEmail}`,
         {
           method: 'GET',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           }
@@ -341,7 +339,7 @@ export const eventAPI = {
   getActiveSet: async (eventId) => {
     try {
       console.log("Fetching active set for event:", eventId);
-      const response = await fetch(`${API_BASE_URL}/events/${eventId}/active-set`);
+      const response = await fetch(`${API_BASE_URL}/events/${eventId}/active-set`, { credentials: "include" });
 
       if (!response.ok) {
         const error = await response.json();

@@ -236,8 +236,8 @@
   </div>
 
   <script type="module">
-    import { BASE_URL } from "./js/config.js";
-    const API_BASE_URL = `${BASE_URL}/api`;
+    import API_CONFIG from './js/config.js';
+    const API_BASE_URL = API_CONFIG.API_URL;
 
     import { requireAuth, setupLogoutButton } from "./js/auth.js";
     import { practiceAPI } from "./js/api.js";
@@ -263,7 +263,7 @@
     // Load topics on page load
     async function loadTopics() {
       try {
-        const response = await fetch(`${API_BASE_URL}/practice/categories/${CATEGORY}/topics`);
+        const response = await fetch(`${API_BASE_URL}/practice/categories/${CATEGORY}/topics`, { credentials: 'include' });
         const data = await response.json();
 
         if (data.topics.length === 0) {

@@ -289,7 +289,8 @@
 
                 const token = await user.getIdToken();
                 const response = await fetch(`${BASE_URL}/api/events/${eventId}/results/${attemptId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
                 });
 
                 if (!response.ok) throw new Error('Failed to fetch results');

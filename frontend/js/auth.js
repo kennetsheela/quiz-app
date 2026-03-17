@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import API_CONFIG from "./config.js";
 
 // ── Auth Check ────────────────────────────────────────────────────────────────
 /**
@@ -54,7 +55,7 @@ export async function logout() {
     // FIX: No longer clearing token from localStorage
     // The HttpOnly cookie is cleared server-side via a logout API call
     try {
-      await fetch("/api/auth/logout", {
+      await fetch(`${API_CONFIG.API_URL}/auth/logout`, {
         method: "POST",
         credentials: "include", // Sends the HttpOnly cookie so server can clear it
       });

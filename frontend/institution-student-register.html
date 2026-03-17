@@ -310,7 +310,7 @@
         async function fetchInstitutions() {
             instLoader.classList.add("active");
             try {
-                const res = await fetch(`${API_BASE}/public/institutions`);
+                const res = await fetch(`${API_BASE}/public/institutions`, { credentials: 'include' });
                 const data = await res.json();
                 instSelect.innerHTML = '<option value="">-- Choose Institution --</option>';
                 data.forEach(inst => {
@@ -336,7 +336,7 @@
             if (instId) {
                 deptLoader.classList.add("active");
                 try {
-                    const res = await fetch(`${API_BASE}/public/institutions/${instId}/departments`);
+                    const res = await fetch(`${API_BASE}/public/institutions/${instId}/departments`, { credentials: 'include' });
                     const depts = await res.json();
                     depts.forEach(d => {
                         const opt = document.createElement("option");
@@ -361,7 +361,7 @@
             if (deptId) {
                 batchLoader.classList.add("active");
                 try {
-                    const res = await fetch(`${API_BASE}/public/institutions/${instId}/batches`);
+                    const res = await fetch(`${API_BASE}/public/institutions/${instId}/batches`, { credentials: 'include' });
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
                     const batches = await res.json();
@@ -421,7 +421,7 @@
             modal.classList.add("active");
 
             try {
-                const res = await fetch(`${API_BASE}/public/settings/${key}`);
+                const res = await fetch(`${API_BASE}/public/settings/${key}`, { credentials: 'include' });
                 const data = await res.json();
 
                 if (data.value) {

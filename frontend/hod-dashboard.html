@@ -1507,16 +1507,52 @@
         import { initTheme } from './js/theme.js';
         import { auth } from './js/firebase.js';
         import API_CONFIG from './js/config.js';
+        import { requireAuth, getFreshToken } from './js/auth.js';
 
         const API_BASE = API_CONFIG.API_URL;
-        let currentUser = null;
 
-        // ── Token helper: supports JWT (localStorage) and Firebase ────────────
-        async function getToken() {
-            const localToken = localStorage.getItem('token');
-            if (localToken) return localToken;
-            if (auth.currentUser) return await auth.currentUser.getIdToken();
-            return null;
+        // State
+        let institutionId = null;
+        let authToken = null;
+        let currentUser = null;
+        let hodMsState = { batch: [] };
+        let hodWizardStep = 1;
+        const HOD_WIZARD_STEPS = 4;
+
+        // ── Helper: Unified API Fetch ─────────────────────────────────────────
+        async function apiFetch(path, opts = {}, retry = true) {
+            try {
+                const freshToken = await getFreshToken();
+                if (freshToken) authToken = freshToken;
+
+                const url = `${API_BASE}${path}`;
+                const headers = {
+                    'Authorization': `Bearer ${authToken}`,
+                    ...(opts.headers || {})
+                };
+                if (!(opts.body instanceof FormData)) {
+                    headers['Content-Type'] = 'application/json';
+                }
+
+                const response = await fetch(url, { ...opts, headers, credentials: 'include' });
+
+                if (response.status === 401 && retry) {
+                    const refreshedToken = await getFreshToken(true);
+                    if (refreshedToken) {
+                        authToken = refreshedToken;
+                        return apiFetch(path, opts, false);
+                    }
+                }
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || `API Error ${response.status}`);
+                }
+                return response.json();
+            } catch (error) {
+                console.error(`[API] Fetch Error (${path}):`, error.message);
+                throw error;
+            }
         }
 
         // ── JWT role decoder ──────────────────────────────────────────────────
@@ -1546,79 +1582,64 @@
         });
 
         // ── Logout: clears both JWT and Firebase session ──────────────────────
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            localStorage.removeItem('institutionId');
-            auth.signOut().catch(() => { }).finally(() => {
+        // ── Logout ───────────────────────────────────────────────────────────
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                // Clear local markers
+                sessionStorage.clear();
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                localStorage.removeItem('institutionId');
+
+                // Call server logout to clear HttpOnly cookie
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                }).catch(e => console.warn('Server logout failed:', e));
+
+                // Firebase sign out
+                try {
+                    const { signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    await signOut(auth);
+                } catch (e) { }
+
                 window.location.href = 'institution-login.html';
-            });
+            } catch (err) {
+                console.error('Logout error:', err);
+                window.location.href = 'institution-login.html';
+            }
         });
 
-        // ── Auth init: JWT first, then Firebase fallback ──────────────────────
-        async function initAuth() {
-            const localToken = localStorage.getItem('token');
-            if (localToken) {
-                // Validate role from JWT payload
-                const role = parseJwtRole(localToken);
-                if (role === 'institutionAdmin' || role === 'inst-admin') {
-                    // Institution admin ended up here — send them to correct dashboard
+        // ── Dashboard Init ───────────────────────────────────────────────────
+        async function init() {
+            try {
+                // Use unified auth helper
+                const user = await requireAuth('institution-login.html');
+                
+                // Get fresh token
+                authToken = await getFreshToken();
+
+                // ── Role guard: Ensure HOD only ──
+                let jwtRole = authToken ? parseJwtRole(authToken) : null;
+                // If it's a Firebase token (no role), fetch profile to confirm
+                if (jwtRole === null && authToken) {
+                    try {
+                        const prof = await apiFetch('/auth/profile');
+                        jwtRole = prof.role;
+                    } catch (e) { console.error("Profile check failed:", e); }
+                }
+
+                if (jwtRole === 'institutionAdmin' || jwtRole === 'inst-admin') {
                     window.location.href = 'institution-dashboard.html';
                     return;
-                }
-                // Valid HOD JWT or Firebase user (role is null in payload) — boot dashboard
-                currentUser = { isLocal: true };
-                fetchDashboardData(localToken);
-                return;
-            }
-
-            // No JWT — fall back to Firebase auth
-            auth.onAuthStateChanged(async (user) => {
-                if (!user) {
-                    window.location.href = 'institution-login.html';
+                } else if (jwtRole === 'student' || jwtRole === 'independent') {
+                    window.location.href = 'explore.html';
                     return;
                 }
-                currentUser = user;
-                const token = await user.getIdToken();
-                fetchDashboardData(token);
-            });
-        }
 
-        initAuth();
-
-        async function fetchDashboardData(token) {
-            try {
-                const res = await fetch(`${API_BASE}/hod/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.status === 401) {
-                    console.warn('[HOD] Unauthorized - clearing token and redirecting');
-                    localStorage.removeItem('token');
-                    window.location.href = 'institution-login.html';
-                    return;
-                }
-                if (res.status === 403) {
-                    console.warn('[HOD] Forbidden - checking profile for redirection');
-                    // Check profile to see where to send them
-                    const profRes = await fetch(`${API_BASE}/auth/profile`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (profRes.ok) {
-                        const prof = await profRes.json();
-                        if (prof.role === 'inst-admin' || prof.role === 'institutionAdmin') {
-                            window.location.href = 'institution-dashboard.html';
-                            return;
-                        } else if (prof.role === 'student' || prof.role === 'independent') {
-                            window.location.href = 'explore.html';
-                            return;
-                        }
-                    }
-                    window.location.href = 'institution-login.html';
-                    return;
-                }
-                if (!res.ok) throw new Error('HOD Auth Failed');
-                const data = await res.json();
-
+                // Load HOD data
+                const data = await apiFetch('/hod/dashboard');
+                
                 document.getElementById('hodDeptTitle').textContent = `${data.department.name} Dashboard`;
                 document.getElementById('hodInstName').textContent = data.department.institutionId?.name || 'AptioGen Institution';
                 document.getElementById('totalStudents').textContent = data.stats.totalStudents;
@@ -1626,9 +1647,9 @@
                 document.getElementById('avgScore').textContent = data.stats.averageScore ? data.stats.averageScore.toFixed(1) + '%' : '—';
 
                 // Update profile info
-                const user = data.user;
-                if (user) {
-                    const name = user.username || user.name || 'HOD User';
+                const userData = data.user;
+                if (userData) {
+                    const name = userData.username || userData.name || 'HOD User';
                     document.getElementById('hodName').textContent = name;
                     document.getElementById('hodInitial').textContent = name.charAt(0).toUpperCase();
                 }
@@ -1637,23 +1658,22 @@
                 renderRecentEvents(data.recentEvents || []);
                 
                 // Populate filters
-                populateFilterDropdowns(data.department?.institutionId?._id || data.department?.institutionId, data.recentEvents || []);
+                institutionId = data.department?.institutionId?._id || data.department?.institutionId;
+                populateFilterDropdowns(institutionId, data.recentEvents || []);
+
             } catch (err) {
                 console.error('[HOD Dashboard Init Error]', err);
-                // On critical error, don't leave user on a broken page
-                if (err.message.includes('HOD Auth Failed')) {
+                if (err.message !== 'Not authenticated') {
                     window.location.href = 'institution-login.html';
                 }
             }
         }
 
+        init();
+
         async function loadStudents() {
             try {
-                const token = await getToken();
-                const res = await fetch(`${API_BASE}/hod/students`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
+                const data = await apiFetch('/hod/students');
                 const tbody = document.getElementById('studentsTbody');
 
                 if (!data.students || data.students.length === 0) {
@@ -1696,9 +1716,6 @@
         document.getElementById('openCreateEventBtn').addEventListener('click', () => openModal('createEventModal'));
 
         // ======================== HOD EVENT WIZARD ========================
-        let hodWizardStep = 1;
-        const HOD_WIZARD_STEPS = 4;
-        const hodMsState = { batch: [] };
         const hodWizardNextLabels = [
             'Next: Access &amp; Targeting <i class="fa-solid fa-arrow-right"></i>',
             'Next: Quiz Logic <i class="fa-solid fa-arrow-right"></i>',
@@ -1794,7 +1811,6 @@
             const method = document.querySelector('.method-card.selected')?.id?.replace('mcard_', '') || 'random';
 
             try {
-                const token = await getToken();
                 const proctoring = {
                     fullscreen: document.getElementById('pFullscreen').checked,
                     tabLock: document.getElementById('pTabLock').checked,
@@ -1827,39 +1843,26 @@
                     proctoring
                 };
 
-                let fetchOptions;
-
+                let res;
                 if (method === 'upload') {
-                    // Use FormData to send both the JSON event data and the file
                     const fileInput = document.getElementById('wEvtFile');
                     const formData = new FormData();
                     formData.append('file', fileInput.files[0]);
-                    // Send eventData as a JSON string in the 'data' field
                     formData.append('data', JSON.stringify(eventData));
-                    fetchOptions = {
+                    res = await apiFetch(`/hod/events`, {
                         method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}` }, // NO Content-Type — browser sets multipart boundary
                         body: formData
-                    };
+                    });
                 } else {
-                    // JSON for random/set methods
-                    fetchOptions = {
+                    res = await apiFetch(`/hod/events`, {
                         method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify(eventData)
-                    };
+                    });
                 }
 
-                const res = await fetch(`${API_BASE}/hod/events`, fetchOptions);
-
-                if (res.ok) {
-                    closeModal('createEventModal');
-                    loadEvents();
-                    showToast('🚀 Event created successfully!');
-                } else {
-                    const err = await res.json();
-                    alert('Error: ' + (err.error || 'Failed to create event'));
-                }
+                closeModal('createEventModal');
+                loadEvents();
+                showToast('🚀 Event created successfully!');
             } catch (err) {
                 console.error(err);
                 alert('Failed to create event: ' + err.message);
@@ -1951,19 +1954,13 @@
             const opts = document.getElementById('batchOpts');
             opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">Loading batches...</div>';
             try {
-                const token = await getToken();
-                // Fetch via HOD dashboard to get institution context
-                const dashRes = await fetch(`${API_BASE}/hod/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const dashData = await dashRes.json();
-                const instId = dashData.department?.institutionId?._id || dashData.department?.institutionId;
-                if (!instId) { opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">No institution found</div>'; return; }
+                if (!institutionId) {
+                    const dashData = await apiFetch('/hod/dashboard');
+                    institutionId = dashData.department?.institutionId?._id || dashData.department?.institutionId;
+                }
+                if (!institutionId) { opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">No institution found</div>'; return; }
 
-                const batchRes = await fetch(`${API_BASE}/institutions/${instId}/batches/active`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const batchData = await batchRes.json();
+                const batchData = await apiFetch(`/institutions/${institutionId}/batches/active`);
                 const batches = batchData.batches || [];
                 if (batches.length === 0) {
                     opts.innerHTML = '<div style="padding:10px;color:var(--text-2);font-size:13px">No active batches found</div>';
@@ -1971,7 +1968,7 @@
                 }
                 opts.innerHTML = batches.map(b => `
                     <div class="ms-option" onclick="toggleHodBatch('${b._id}', '${b.batchID || b.name}')">
-                        <input type="checkbox" id="hbCK_${b._id}" style="accent-color:var(--primary)">
+                        <input type="checkbox" id="hbCK_${b._id}" ${hodMsState.batch.some(x => x.id === b._id) ? 'checked' : ''} style="accent-color:var(--primary)">
                         ${b.batchID || b.name}
                     </div>
                 `).join('');
@@ -1984,11 +1981,7 @@
         // Events
         async function loadEvents() {
             try {
-                const token = await getToken();
-                const res = await fetch(`${API_BASE}/hod/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
+                const data = await apiFetch('/hod/dashboard');
                 const tbody = document.getElementById('eventsTbody');
 
                 const events = data.recentEvents;
@@ -2029,13 +2022,7 @@
             modal.style.display = 'flex';
 
             try {
-                const token = await getToken();
-                const res = await fetch(`${API_BASE}/hod/events/${eventId}/scores`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-
-                if (!res.ok) throw new Error(data.error || 'Failed to fetch scores');
+                const data = await apiFetch(`/hod/events/${eventId}/scores`);
 
                 const scores = data.scores || [];
                 if (scores.length === 0) {
@@ -2077,7 +2064,6 @@
 
         window.loadAnalytics = async function() {
             try {
-                const token = await getToken();
                 const period = document.getElementById('anaPeriod').value;
                 const batchId = document.getElementById('anaBatch').value;
                 const category = document.getElementById('anaCategory').value;
@@ -2085,10 +2071,7 @@
 
                 const params = new URLSearchParams({ period, batchId, category, eventId });
                 
-                const res = await fetch(`${API_BASE}/hod/analytics?${params}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
+                const data = await apiFetch(`/hod/analytics?${params}`);
                 const stats = data.analytics || {};
 
                 document.getElementById('topScore').textContent = stats.averageScore ? stats.averageScore.toFixed(2) + '%' : '0%';
@@ -2133,7 +2116,8 @@
                 
                 // Using analytics endpoint for report data since it supports the same filters
                 const res = await fetch(`${API_BASE}/hod/analytics?${params}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
                 });
                 const data = await res.json();
                 const stats = data.analytics || {};
@@ -2144,7 +2128,8 @@
                 
                 // Re-fetch dashboard for total events count if needed, or just use stats
                 const dashRes = await fetch(`${API_BASE}/hod/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    credentials: 'include'
                 });
                 const dashData = await dashRes.json();
                 document.getElementById('repTotalEvents').textContent = dashData.stats.totalEvents;
@@ -2155,13 +2140,8 @@
 
         async function populateFilterDropdowns(instId, events) {
             try {
-                const token = await getToken();
-                
                 // 1. Populate Batches
-                const batchRes = await fetch(`${API_BASE}/institutions/${instId}/batches/active`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const batchData = await batchRes.json();
+                const batchData = await apiFetch(`/institutions/${instId}/batches/active`);
                 const batches = batchData.batches || [];
                 
                 const anaBatch = document.getElementById('anaBatch');

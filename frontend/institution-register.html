@@ -502,7 +502,7 @@
             modal.classList.add("active");
 
             try {
-                const res = await fetch(`${API_BASE}/public/settings/${key}`);
+                const res = await fetch(`${API_BASE}/public/settings/${key}`, { credentials: 'include' });
                 const data = await res.json();
 
                 if (data.value) {

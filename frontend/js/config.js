@@ -9,16 +9,12 @@ const getApiBaseUrl = () => {
         hostname.startsWith('192.168.') ||
         hostname.startsWith('10.');
 
-    if (isLocal) {
-        return 'http://localhost:5000';
-    }
+    const url = isLocal ? 'http://localhost:5000' : 
+                (hostname.includes('web.app') || hostname.includes('firebaseapp.com')) ? 'https://slategray-skunk-723064.hostingersite.com' : 
+                window.location.origin;
 
-    // Firebase Hosting → backend is on Hostinger, NOT window.location.origin
-    if (hostname.includes('web.app') || hostname.includes('firebaseapp.com')) {
-        return 'https://slategray-skunk-723064.hostingersite.com';
-    }
-
-    return window.location.origin; // Final fallback: use current origin (essential for Hostinger/Production)
+    console.log(`[API_CONFIG] Host: ${hostname}, API Base: ${url}`);
+    return url;
 };
 
 const BASE_URL = getApiBaseUrl();

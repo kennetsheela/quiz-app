@@ -406,7 +406,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
-        import { BASE_URL } from './js/config.js';
+        import API_CONFIG from './js/config.js';
         import { initTheme } from './js/theme.js';
         import { auth } from './js/firebase.js';
         import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -415,7 +415,7 @@
         // Clear any stale event redirection state
         sessionStorage.removeItem('pendingEventId');
 
-        const API_BASE = `${BASE_URL}/api`;
+        const API_BASE = API_CONFIG.API_URL;
         let studentData = null;
         let profileData = null;
         let perfChart = null;
@@ -433,7 +433,8 @@
             try {
                 const idToken = await user.getIdToken();
                 const response = await fetch(`${API_BASE}/students/profile`, {
-                    headers: { 'Authorization': `Bearer ${idToken}` }
+                    headers: { 'Authorization': `Bearer ${idToken}` },
+                    credentials: 'include'
                 });
                 if (response.ok) {
                     const data = await response.json();
@@ -481,7 +482,8 @@
         async function fetchEvents() {
             const idToken = await getIdToken();
             const response = await fetch(`${API_BASE}/students/events/available`, {
-                headers: { 'Authorization': `Bearer ${idToken}` }
+                headers: { 'Authorization': `Bearer ${idToken}` },
+                credentials: 'include'
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
@@ -754,9 +756,25 @@
         // =================== UTILS ===================
 
         window.logout = async () => {
-            await signOut(auth);
-            sessionStorage.removeItem('studentInfo');
-            window.location.href = 'student-login.html';
+            try {
+                // Clear local session markers
+                sessionStorage.clear();
+                localStorage.removeItem('token');
+                
+                // Call server logout to clear HttpOnly cookies
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                }).catch(e => console.warn('Server logout failed:', e));
+
+                // Firebase sign out
+                await signOut(auth);
+                
+                window.location.href = 'student-login.html';
+            } catch (err) {
+                console.error('Logout error:', err);
+                window.location.href = 'student-login.html';
+            }
         };
 
         window.startEvent = (id) => {

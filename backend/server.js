@@ -86,6 +86,10 @@ try {
     console.log("✅ Firebase Admin initialized from file (dev mode)");
   } else {
     console.warn("⚠️ No Firebase credentials configured. Auth features may fail.");
+    console.log(`[DEBUG] FIREBASE_PROJECT_ID: ${process.env.FIREBASE_PROJECT_ID ? "PRESENT" : "MISSING"}`);
+    console.log(`[DEBUG] FIREBASE_CLIENT_EMAIL: ${process.env.FIREBASE_CLIENT_EMAIL ? "PRESENT" : "MISSING"}`);
+    console.log(`[DEBUG] FIREBASE_PRIVATE_KEY: ${process.env.FIREBASE_PRIVATE_KEY ? "PRESENT" : "MISSING"}`);
+    console.log(`[DEBUG] FIREBASE_PRIVATE_KEY_BASE64: ${process.env.FIREBASE_PRIVATE_KEY_BASE64 ? "PRESENT" : "MISSING"}`);
   }
 } catch (error) {
   console.error("⚠️ Firebase Admin initialization error:", error.message);
@@ -232,6 +236,24 @@ app.use("/api/students", studentRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/report", reportRoutes);
 app.use("/api/public", publicRoutes);
+
+/* ================= ROOT ================= */
+app.get("/", (req, res) => {
+  res.send(`
+    <style>
+      body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #1e293b; }
+      .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); text-align: center; max-width: 400px; }
+      h1 { color: #3b82f6; margin-bottom: 0.5rem; }
+      p { color: #64748b; line-height: 1.5; }
+      .status { display: inline-block; padding: 0.25rem 0.75rem; background: #dcfce7; color: #166534; border-radius: 9999px; font-weight: 600; font-size: 0.875rem; margin-top: 1rem; }
+    </style>
+    <div class="card">
+      <h1>AptioGen API</h1>
+      <p>The backend server is running and healthy on Hostinger.</p>
+      <div class="status">● ACTIVE</div>
+    </div>
+  `);
+});
 
 /* ================= HEALTH ================= */
 app.get("/api/health", (req, res) => {
