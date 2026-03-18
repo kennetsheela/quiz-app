@@ -1,11 +1,11 @@
 # ── LiteSpeed/Apache CORS Fix for Hostinger Node.js ──────────────────────
 #
-# IMPORTANT: mod_headers directives MUST come before RewriteEngine for 
-# LiteSpeed to apply them to internally-generated (RewriteRule) responses.
+# KEY: mod_headers MUST come before RewriteEngine for LiteSpeed to apply
+# them to internally-generated (RewriteRule R=204) responses.
 #
 
 <IfModule mod_headers.c>
-    # These headers apply to ALL responses including OPTIONS rewrite below
+    # Applied to ALL responses including the OPTIONS 204 below
     Header always set Access-Control-Allow-Origin "https://aptiogen-56f98.web.app"
     Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE, PATCH"
     Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
@@ -19,6 +19,6 @@ RewriteEngine On
 RewriteCond %{HTTP:Authorization} ^(.+)$
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
 
-# Handle OPTIONS preflight: return 200 with headers above already set
+# Handle OPTIONS preflight: 204 No Content with CORS headers set above
 RewriteCond %{REQUEST_METHOD} ^OPTIONS$
-RewriteRule .* - [R=200,L]
+RewriteRule .* - [R=204,L]
