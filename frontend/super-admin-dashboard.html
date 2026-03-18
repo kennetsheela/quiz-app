@@ -2019,7 +2019,7 @@ A: Contact support@aptiogen.com with details.</textarea>
     /* ════════════════════════════════════════════════════════════════
        DASHBOARD
     ════════════════════════════════════════════════════════════════ */
-    async function loadDashboard() {
+    window.loadDashboard = async function() {
       try {
         const r = await fetch(`${API_BASE}/super-admin/dashboard`, { 
           headers: authHeaders(),
@@ -2070,7 +2070,7 @@ A: Contact support@aptiogen.com with details.</textarea>
     ════════════════════════════════════════════════════════════════ */
     let qPage = 1, qSearchTimeout, extractedQuestions = [];
 
-    async function loadQuestions(page = 1) {
+    window.loadQuestions = async function(page = 1) {
       qPage = page;
       const category = document.getElementById('qCategoryFilter').value;
       const level = document.getElementById('qLevelFilter').value;
@@ -2120,19 +2120,19 @@ A: Contact support@aptiogen.com with details.</textarea>
       document.getElementById('qPagination').innerHTML = html;
     }
 
-    function handleQSearch() {
+    window.handleQSearch = function() {
       clearTimeout(qSearchTimeout);
       qSearchTimeout = setTimeout(() => loadQuestions(), 500);
     }
 
-    function openAddModal() {
+    window.openAddModal = function() {
       document.getElementById('qModalTitle').textContent = 'Add Question';
       document.getElementById('questionForm').reset();
       document.getElementById('questionId').value = '';
       openModal('questionModal');
     }
 
-    async function editQuestion(id) {
+    window.editQuestion = async function(id) {
       try {
         const r = await fetch(`${API_BASE}/super-admin/questions?search=${id}`, { 
           headers: authHeaders(),
@@ -2159,7 +2159,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       } catch (e) { alert('Failed to load question: ' + e.message); }
     }
 
-    async function deleteQuestion(id) {
+    window.deleteQuestion = async function(id) {
       if (!confirm('Delete this question?')) return;
       try {
         const r = await fetch(`${API_BASE}/super-admin/questions/${id}`, { 
@@ -2216,7 +2216,7 @@ A: Contact support@aptiogen.com with details.</textarea>
 
     // ─── Bulk Upload ─────────────────────────────────────────────────────────────
 
-    function openUploadModal() {
+    window.openUploadModal = function() {
       // Reset all state
       document.getElementById('uploadStatus').style.display = 'none';
       document.getElementById('uploadError').style.display = 'none';
@@ -2294,7 +2294,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       if (stepEl) stepEl.style.color = '#ef4444';
     }
 
-    async function processUpload() {
+    window.processUpload = async function() {
       const file = document.getElementById('fileInput').files[0];
       const category = document.getElementById('uploadCategory').value;
 
@@ -2464,7 +2464,7 @@ A: Contact support@aptiogen.com with details.</textarea>
     ════════════════════════════════════════════════════════════════ */
     let instSearchTimeout;
 
-    async function loadInstitutions() {
+    window.loadInstitutions = async function() {
       const status = document.getElementById('instStatusFilter').value;
       const plan = document.getElementById('instPlanFilter').value;
       const search = document.getElementById('instSearch').value;
@@ -2527,12 +2527,12 @@ A: Contact support@aptiogen.com with details.</textarea>
       }).join('')}</div>`;
     }
 
-    function handleInstSearch() {
+    window.handleInstSearch = function() {
       clearTimeout(instSearchTimeout);
       instSearchTimeout = setTimeout(() => loadInstitutions(), 500);
     }
 
-    async function viewInstDetails(id) {
+    window.viewInstDetails = async function(id) {
       document.getElementById('instModalBody').innerHTML = '<div style="text-align:center;padding:30px;"><span class="spinner"></span> Loading…</div>';
       openModal('instModal');
       try {
@@ -2560,7 +2560,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       }
     }
 
-    async function suspendInst(id) {
+    window.suspendInst = async function(id) {
       if (!confirm('Suspend this institution?')) return;
       try {
         const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/suspend`, { 
@@ -2572,7 +2572,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       } catch (e) { alert(e.message); }
     }
 
-    async function activateInst(id) {
+    window.activateInst = async function(id) {
       if (!confirm('Activate this institution?')) return;
       try {
         const r = await fetch(`${API_BASE}/super-admin/institutions/${id}/activate`, { 
@@ -2609,7 +2609,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       if (chartInstances[key]) { chartInstances[key].destroy(); delete chartInstances[key]; }
     }
 
-    async function loadAnalytics() {
+    window.loadAnalytics = async function() {
       document.getElementById('analyticsBanner').classList.remove('show');
       ['Inst', 'Stu', 'Cat', 'Diff'].forEach(id => {
         document.getElementById('sk' + id).style.display = 'block';
@@ -2777,7 +2777,7 @@ A: Contact support@aptiogen.com with details.</textarea>
       });
     });
 
-    async function saveContent(type) {
+    window.saveContent = async function(type) {
       const idMap = { studentTerms: 'studentTermsContent', instituteTerms: 'instituteTermsContent', privacy: 'privacyContent', faqs: 'faqsContent' };
       const content = document.getElementById(idMap[type]).value;
       try {
