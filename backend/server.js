@@ -49,6 +49,12 @@ const allowedOrigins = [
   ...(process.env.NODE_ENV !== "production" ? DEV_ORIGINS : []),
 ];
 
+// ── UNIVERSAL DEBUG LOGGER ──
+app.use((req, res, next) => {
+  console.log(`[DEBUG] ${new Date().toISOString()} | ${req.method} ${req.url} | Origin: ${req.headers.origin || 'None'}`);
+  next();
+});
+
 // ── EXTREME CORS MIDDLEWARE (Manual fallback for Hostinger/LiteSpeed) ──
 app.use((req, res, next) => {
   const origin = req.headers.origin;
