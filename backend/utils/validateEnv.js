@@ -24,8 +24,9 @@ function hasFirebaseCredentials() {
     if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
         return true;
     }
-    // Option 2: Base64 encoded JSON
+    // Option 2: Base64 encoded JSON (or split parts)
     if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) return true;
+    if (process.env.FIREBASE_PRIVATE_KEY_B64_1 && process.env.FIREBASE_PRIVATE_KEY_B64_2) return true;
     // Option 3: raw JSON string
     if (process.env.FIREBASE_SERVICE_ACCOUNT) return true;
     // Option 4: file path (dev only)
@@ -95,7 +96,11 @@ function validateEnv() {
             const missing = [];
             if (!process.env.FIREBASE_PROJECT_ID) missing.push("FIREBASE_PROJECT_ID");
             if (!process.env.FIREBASE_CLIENT_EMAIL) missing.push("FIREBASE_CLIENT_EMAIL");
-            if (!process.env.FIREBASE_PRIVATE_KEY && !process.env.FIREBASE_PRIVATE_KEY_BASE64) missing.push("FIREBASE_PRIVATE_KEY (or BASE64)");
+            if (!process.env.FIREBASE_PRIVATE_KEY && 
+                !process.env.FIREBASE_PRIVATE_KEY_BASE64 && 
+                !(process.env.FIREBASE_PRIVATE_KEY_B64_1 && process.env.FIREBASE_PRIVATE_KEY_B64_2)) {
+                missing.push("FIREBASE_PRIVATE_KEY (raw, BASE64, or B64_1 through B64_4)");
+            }
             
             warnings.push(
                 `⚠️  Firebase credentials incomplete: Missing [${missing.join(", ")}]. Auth features will fail.`

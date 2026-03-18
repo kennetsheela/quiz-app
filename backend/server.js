@@ -48,9 +48,22 @@ try {
     // FIREBASE_PRIVATE_KEY_BASE64 = Base64 of just the private key (safe for Hostinger UI)
     // FIREBASE_PRIVATE_KEY        = raw key with \n (works locally via dotenv)
     let privateKey;
-    if (process.env.FIREBASE_PRIVATE_KEY_BASE64) {
-      privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_BASE64, 'base64').toString('utf8');
-    } else {
+    let b64 = process.env.FIREBASE_PRIVATE_KEY_BASE64;
+    
+    // Join split variables if they exist (to bypass tiny Hostinger UI length limits)
+    if (!b64) {
+      let joined = "";
+      for (let i = 1; i <= 10; i++) {
+        const part = process.env[`FIREBASE_PRIVATE_KEY_B64_${i}`];
+        if (part) joined += part;
+        else break;
+      }
+      if (joined) b64 = joined;
+    }
+
+    if (b64) {
+      privateKey = Buffer.from(b64, 'base64').toString('utf8');
+    } else if (process.env.FIREBASE_PRIVATE_KEY) {
       privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
     }
     const serviceAccount = {
@@ -89,7 +102,10 @@ try {
     console.log(`[DEBUG] FIREBASE_PROJECT_ID: ${process.env.FIREBASE_PROJECT_ID ? "PRESENT" : "MISSING"}`);
     console.log(`[DEBUG] FIREBASE_CLIENT_EMAIL: ${process.env.FIREBASE_CLIENT_EMAIL ? "PRESENT" : "MISSING"}`);
     console.log(`[DEBUG] FIREBASE_PRIVATE_KEY: ${process.env.FIREBASE_PRIVATE_KEY ? "PRESENT" : "MISSING"}`);
-    console.log(`[DEBUG] FIREBASE_PRIVATE_KEY_BASE64: ${process.env.FIREBASE_PRIVATE_KEY_BASE64 ? "PRESENT" : "MISSING"}`);
+    console.log(`[DEBUG] FIREBASE_PRIVATE_KEY_B64_1: ${process.env.FIREBASE_PRIVATE_KEY_B64_1 ? "PRESENT" : "MISSING"}`);
+    console.log(`[DEBUG] FIREBASE_PRIVATE_KEY_B64_2: ${process.env.FIREBASE_PRIVATE_KEY_B64_2 ? "PRESENT" : "MISSING"}`);
+    console.log(`[DEBUG] FIREBASE_PRIVATE_KEY_B64_3: ${process.env.FIREBASE_PRIVATE_KEY_B64_3 ? "PRESENT" : "MISSING"}`);
+    console.log(`[DEBUG] FIREBASE_PRIVATE_KEY_B64_4: ${process.env.FIREBASE_PRIVATE_KEY_B64_4 ? "PRESENT" : "MISSING"}`);
   }
 } catch (error) {
   console.error("⚠️ Firebase Admin initialization error:", error.message);
