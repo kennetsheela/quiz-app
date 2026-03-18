@@ -1,0 +1,12 @@
+<IfModule mod_headers.c>
+    # ── Force CORS headers at server level ────────────────────────────────
+    Header always set Access-Control-Allow-Origin "https://aptiogen-56f98.web.app"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE, PATCH"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    Header always set Access-Control-Allow-Credentials "true"
+</IfModule>
+
+# Handle OPTIONS preflight immediately
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=204,L]
