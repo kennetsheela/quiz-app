@@ -433,7 +433,7 @@
                 display: block !important;
                 background: white;
                 border-radius: 10px;
-                margin: 0 10px 10px;
+                margin: 0 10px 24px; /* Increased bottom margin */
                 padding: 12px;
                 box-shadow: 0 1px 5px rgba(0, 0, 0, .06);
             }
@@ -590,7 +590,7 @@
     <!-- Header -->
     <header class="appbar">
         <div style="display:flex;align-items:center;gap:8px">
-            <h2>AptioGen</h2>
+            <h2>AptioGen v2.1</h2>
             <div class="badge badge-orange" id="eventBadge">Live Event</div>
         </div>
         <div class="timer-badge">
@@ -639,26 +639,26 @@
                 <i class="fa-solid fa-check-double"></i> Submit Quiz
             </button>
         </aside>
+        <!-- Mobile inline navigator (visible below question on mobile) -->
+        <div class="mob-nav-panel">
+            <h4>Question Navigator</h4>
+            <div class="question-nav" id="questionNavMob"></div>
+            <div class="legend-row">
+                <div class="legend-item"><div class="nav-dot answered"   style="width:10px;height:10px;min-height:0;aspect-ratio:1"></div> Answered</div>
+                <div class="legend-item"><div class="nav-dot marked"     style="width:10px;height:10px;min-height:0;aspect-ratio:1"></div> Tagged</div>
+                <div class="legend-item"><div class="nav-dot unanswered" style="width:10px;height:10px;min-height:0;aspect-ratio:1"></div> Unanswered</div>
+            </div>
+            <div class="action-row">
+                <button class="btn btn-outline-warning w-100" id="btnMarkForReviewMob">
+                    <i class="fa-solid fa-bookmark"></i> Mark for Review
+                </button>
+                <button class="btn w-100" id="btnSubmitQuizMob" style="background:#10b981;border-color:#10b981;color:white;font-weight:600">
+                    <i class="fa-solid fa-check-double"></i> Submit
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- Mobile inline navigator (visible below question on mobile) -->
-    <div class="mob-nav-panel">
-        <h4>Question Navigator</h4>
-        <div class="question-nav" id="questionNavMob"></div>
-        <div class="legend-row">
-            <div class="legend-item"><div class="nav-dot answered"   style="width:10px;height:10px;min-height:0;aspect-ratio:1"></div> Answered</div>
-            <div class="legend-item"><div class="nav-dot marked"     style="width:10px;height:10px;min-height:0;aspect-ratio:1"></div> Tagged</div>
-            <div class="legend-item"><div class="nav-dot unanswered" style="width:10px;height:10px;min-height:0;aspect-ratio:1"></div> Unanswered</div>
-        </div>
-        <div class="action-row">
-            <button class="btn btn-outline-warning w-100" id="btnMarkForReviewMob">
-                <i class="fa-solid fa-bookmark"></i> Mark for Review
-            </button>
-            <button class="btn w-100" id="btnSubmitQuizMob" style="background:#10b981;border-color:#10b981;color:white;font-weight:600">
-                <i class="fa-solid fa-check-double"></i> Submit
-            </button>
-        </div>
-    </div>
 
     <!-- Footer Navigation -->
     <footer class="quiz-footer">
@@ -912,12 +912,13 @@
         }
 
         // ── Submission ──────────────────────────────
-        window.confirmSubmit = () => {
+        function confirmSubmit() {
             const unanswered = quizData.questions.length - Object.keys(answers).length;
             let msg = 'Are you sure you want to submit your quiz?';
             if (unanswered > 0) msg += `\n\nYou have ${unanswered} unanswered question(s).`;
             if (confirm(msg)) submitQuiz();
-        };
+        }
+        window.confirmSubmit = confirmSubmit;
 
         async function submitQuiz() {
             clearInterval(timerInterval);

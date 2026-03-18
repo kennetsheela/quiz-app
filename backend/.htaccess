@@ -1,0 +1,23 @@
+<IfModule mod_headers.c>
+    # ── CORS for Hostinger/LiteSpeed ──────────────────────────────────────
+    # Capture the Origin header if it matches our allowlist
+    SetEnvIf Origin "https://aptiogen-56f98.web.app" ACCESS_CONTROL_ALLOW_ORIGIN=$0
+    SetEnvIf Origin "https://aptiogen-56f98.firebaseapp.com" ACCESS_CONTROL_ALLOW_ORIGIN=$0
+    SetEnvIf Origin "https://slategray-skunk-723064.hostingersite.com" ACCESS_CONTROL_ALLOW_ORIGIN=$0
+    
+    # Set the Access-Control-Allow-Origin header ONLY if it matched
+    Header always set Access-Control-Allow-Origin %{ACCESS_CONTROL_ALLOW_ORIGIN}e env=ACCESS_CONTROL_ALLOW_ORIGIN
+    
+    # Common CORS headers
+    Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT, PATCH"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Max-Age "3600"
+</IfModule>
+
+# ── Intercept OPTIONS requests ──────────────────────────────────────────
+# This ensures that even if Node.js is slow or crashing, the browser gets 
+# a valid CORS response for the preflight check.
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=204,L]

@@ -10,10 +10,6 @@ validateEnv();
 const express = require("express");
 const app = express();
 
-// ✅ NEW: Trust the first proxy (Essential for Hostinger/Passenger/Cloudflare)
-// This fixes the 'X-Forwarded-For' crash you see in the logs.
-app.set('trust proxy', 1);
-
 const cors = require("cors");
 const admin = require("firebase-admin");
 const rateLimit = require("express-rate-limit");
@@ -21,6 +17,77 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+
+/* ================= CORS ─ ROBUSTIFIED (MOVED TO TOP) ================= */
+// Build allowlist from env var so it's configurable per-environment
+const CONST_ALLOWED_ORIGINS = [
+  "https://slategray-skunk-723064.hostingersite.com",
+  "https://aptiogen-56f98.web.app",
+  "https://aptiogen-56f98.firebaseapp.com",
+];
+
+const DEV_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:5000",
+  "http://localhost:5500",
+  "http://localhost:5501",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5000",
+  "http://127.0.0.1:5500",
+  "http://127.0.0.1:5501",
+  "http://10.184.60.26:3000",
+];
+
+const envOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [
+  ...CONST_ALLOWED_ORIGINS,
+  ...envOrigins,
+  ...(process.env.NODE_ENV !== "production" ? DEV_ORIGINS : []),
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      const normalizedOrigin = origin.trim().toLowerCase();
+      const isAllowed = allowedOrigins.some(o => o.trim().toLowerCase() === normalizedOrigin);
+      if (isAllowed) return callback(null, true);
+      console.warn(`[CORS] Request blocked for origin: ${origin}`);
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization", 
+      "X-Requested-With", 
+      "Accept", 
+      "Origin",
+      "Access-Control-Request-Method",
+      "Access-Control-Request-Headers"
+    ],
+    exposedHeaders: ["Set-Cookie"]
+  })
+);
+
+// CORS Diagnostic Route
+app.get("/api/cors-test", (req, res) => {
+  res.json({
+    message: "CORS Diagnostic",
+    origin: req.headers.origin || "None",
+    allowedOrigins,
+    nodeEnv: process.env.NODE_ENV
+  });
+});
+
+// ✅ NEW: Trust the first proxy (Essential for Hostinger/Passenger/Cloudflare)
+// This fixes the 'X-Forwarded-For' crash you see in the logs.
+app.set('trust proxy', 1);
 
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -168,79 +235,7 @@ const superAdminLimiter = rateLimit({
   message: { success: false, message: "Too many super admin requests." },
 });
 
-/* ================= CORS ─ ROBUSTIFIED ================= */
-// Build allowlist from env var so it's configurable per-environment
-const CONST_ALLOWED_ORIGINS = [
-  "https://slategray-skunk-723064.hostingersite.com",
-  "https://aptiogen-56f98.web.app",
-  "https://aptiogen-56f98.firebaseapp.com",
-];
-
-const DEV_ORIGINS = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:5000",
-  "http://localhost:5500",
-  "http://localhost:5501",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:5000",
-  "http://127.0.0.1:5500",
-  "http://127.0.0.1:5501",
-  "http://10.184.60.26:3000",
-];
-
-const envOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim()).filter(Boolean)
-  : [];
-
-const allowedOrigins = [
-  ...CONST_ALLOWED_ORIGINS,
-  ...envOrigins,
-  ...(process.env.NODE_ENV !== "production" ? DEV_ORIGINS : []),
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // 1. No Origin header (server-side, curl, etc.)
-      if (!origin) return callback(null, true);
-
-      // 2. Exact match check
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-
-      // 3. Case-insensitive and trimmed check (robustness for different browsers)
-      const normalizedOrigin = origin.trim().toLowerCase();
-      const isAllowed = allowedOrigins.some(o => o.trim().toLowerCase() === normalizedOrigin);
-
-      if (isAllowed) {
-        return callback(null, true);
-      }
-
-      // 4. Blocked origin diagnostic logging
-      console.warn(`[CORS] Request blocked for origin: ${origin}`);
-      
-      // Return false instead of an Error object. 
-      // If we pass an Error, the 'cors' middleware calls next(err), 
-      // which skips to our error handler. Ironically, error handlers often 
-      // return responses WITHOUT CORS headers, making debugging impossible.
-      // Returning 'false' simply denies the CORS headers for this request.
-      return callback(null, false);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type", 
-      "Authorization", 
-      "X-Requested-With", 
-      "Accept", 
-      "Origin",
-      "Access-Control-Request-Method",
-      "Access-Control-Request-Headers"
-    ],
-    // Essential for cross-origin cookies to work reliably
-    exposedHeaders: ["Set-Cookie"]
-  })
-);
+/* CORS block moved to top */
 
 
 /* ================= RATE LIMIT APPLICATION ================= */

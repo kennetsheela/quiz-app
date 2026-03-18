@@ -116,9 +116,13 @@ function validateEnv() {
 
     // Print errors and exit if fatal
     if (errors.length > 0) {
-        console.error("\n🚨 Environment Validation FAILED — App cannot start:");
+        console.error("\n" + "=".repeat(50));
+        console.error("🚨 FATAL: Environment Validation FAILED");
+        console.error("The application cannot start because of the following issues:");
         errors.forEach(e => console.error(`   ${e}`));
-        console.error("\nFix the above issues in your .env file and restart.\n");
+        console.error("=".repeat(50));
+        console.error("Fix the issues in your Hostinger environment variables or .env file and restart.");
+        console.error("=".repeat(50) + "\n");
         process.exit(1);
     }
 
