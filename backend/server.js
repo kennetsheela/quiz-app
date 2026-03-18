@@ -43,7 +43,7 @@ let server;
 /* ================= FIREBASE ================= */
 try {
   if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL &&
-    (process.env.FIREBASE_PRIVATE_KEY_BASE64 || process.env.FIREBASE_PRIVATE_KEY)) {
+    (process.env.FIREBASE_PRIVATE_KEY_BASE64 || process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_B64_1)) {
     // ✅ PRIMARY (Hostinger): individual env vars
     // FIREBASE_PRIVATE_KEY_BASE64 = Base64 of just the private key (safe for Hostinger UI)
     // FIREBASE_PRIVATE_KEY        = raw key with \n (works locally via dotenv)
