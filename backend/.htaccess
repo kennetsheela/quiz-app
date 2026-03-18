@@ -1,27 +1,11 @@
 # ── Hostinger/LiteSpeed Fixes ──────────────────────────────────────────
 
-# 1. Ensure Authorization Header is passed to Node.js
+# 1. Ensure Authorization Header is passed to Node.js (LiteSpeed strips it otherwise)
 RewriteEngine On
 RewriteCond %{HTTP:Authorization} ^(.+)$
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
 
-# 2. Disable Cache for API to avoid stale headers
-<IfModule mod_headers.c>
-    Header always set X-LiteSpeed-Cache-Control "no-cache"
-    
-    # Capture the Origin header if it matches our allowlist
-    SetEnvIf Origin "https?://aptiogen-56f98\.web\.app" ACCESS_CONTROL_ALLOW_ORIGIN=$0
-    SetEnvIf Origin "https?://aptiogen-56f98\.firebaseapp\.com" ACCESS_CONTROL_ALLOW_ORIGIN=$0
-    SetEnvIf Origin "https?://slategray-skunk-723064\.hostingersite\.com" ACCESS_CONTROL_ALLOW_ORIGIN=$0
-    
-    # Set CORS headers
-    Header always set Access-Control-Allow-Origin %{ACCESS_CONTROL_ALLOW_ORIGIN}e env=ACCESS_CONTROL_ALLOW_ORIGIN
-    Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT, PATCH"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, Accept, Origin"
-    Header always set Access-Control-Allow-Credentials "true"
-    Header always set Access-Control-Max-Age "3600"
-</IfModule>
-
-# 3. Handle OPTIONS preflight immediately
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=204,L]
+# NOTE: Do NOT intercept OPTIONS here.
+# If OPTIONS is caught by RewriteRule and returned as 204, Apache/LiteSpeed
+# sends the 204 WITHOUT CORS headers, which is what causes the CORS error.
+# Let all requests (including OPTIONS) pass through to Node.js instead.
