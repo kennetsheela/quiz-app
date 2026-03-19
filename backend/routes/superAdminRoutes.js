@@ -106,7 +106,7 @@ router.post("/login", (req, res) => {
         return res.json({
             success: true,
             message: "Login successful",
-            token, // Body token kept for backward compatibility during migration
+            // Token is delivered via HttpOnly cookie only — not in body (prevents JS access)
             user: { username, role: "super-admin" },
         });
     }

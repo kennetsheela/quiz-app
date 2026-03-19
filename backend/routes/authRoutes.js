@@ -113,15 +113,8 @@ router.post("/profile", verifyToken, async (req, res) => {
           username,
           firstName: req.body.firstName || "",
           lastName: req.body.lastName || "",
-          // Only update role if provided and not already HOD/Admin (to prevent accidental downgrade)
-          // But usually role comes from pendingProfile which is correct.
-          role: role || "student",
-          institutionId: institutionId || null,
-          batchId: batchId || yearId || null,
-          department: department || "",
-          college: college || "",
-          city: city || "",
-          rollNumber: rollNumber || "",
+          // NOTE: role and institutionId are NOT updated here.
+          // They are set server-side only during institution/student registration flows.
           photoURL: userPhotoURL,
           provider: userProvider,
           lastLogin: new Date()
@@ -147,11 +140,6 @@ router.post("/profile", verifyToken, async (req, res) => {
         email: user.email,
         role: user.role,
         institutionId: user.institutionId,
-        batchId: user.batchId,
-        department: user.department,
-        college: user.college,
-        city: user.city,
-        rollNumber: user.rollNumber,
         photoURL: user.photoURL,
         provider: user.provider,
         createdAt: user.createdAt

@@ -49,11 +49,13 @@ const allowedOrigins = [
   ...(process.env.NODE_ENV !== "production" ? DEV_ORIGINS : []),
 ];
 
-// ── UNIVERSAL DEBUG LOGGER ──
-app.use((req, res, next) => {
-  console.log(`[DEBUG] ${new Date().toISOString()} | ${req.method} ${req.url} | Origin: ${req.headers.origin || 'None'}`);
-  next();
-});
+// ── REQUEST LOGGER (development only) ──
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    console.log(`[DEBUG] ${new Date().toISOString()} | ${req.method} ${req.url} | Origin: ${req.headers.origin || 'None'}`);
+    next();
+  });
+}
 
 // ── EXTREME CORS MIDDLEWARE (Manual fallback for Hostinger/LiteSpeed) ──
 app.use((req, res, next) => {
@@ -76,26 +78,23 @@ app.use((req, res, next) => {
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      // ... matching logic already covered by extreme middleware
-      callback(null, true); 
+      if (!origin) return callback(null, true); // allow same-origin / server-to-server
+      const isAllowed = allowedOrigins.some(
+        o => o.trim().toLowerCase() === origin.trim().toLowerCase()
+      );
+      if (isAllowed) return callback(null, true);
+      // Log and reject unlisted origins
+      console.warn(`[CORS] Rejected origin: ${origin}`);
+      callback(new Error(`Origin ${origin} not permitted by CORS policy`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["*"], // Be extremely permissive for debug
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
     exposedHeaders: ["Set-Cookie"]
   })
 );
 
-// CORS Diagnostic Route
-app.get("/api/cors-test", (req, res) => {
-  res.json({
-    message: "CORS Diagnostic",
-    origin: req.headers.origin || "None",
-    allowedOrigins,
-    nodeEnv: process.env.NODE_ENV
-  });
-});
+// CORS diagnostic removed — it exposed internal config (allowedOrigins, NODE_ENV) publicly.
 
 // ✅ NEW: Trust the first proxy (Essential for Hostinger/Passenger/Cloudflare)
 // This fixes the 'X-Forwarded-For' crash you see in the logs.

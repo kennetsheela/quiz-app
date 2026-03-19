@@ -12,7 +12,19 @@ const EventParticipant = require("../models/EventParticipant");
 const QuestionBank = require("../models/QuestionBank");
 const EventService = require("../services/eventService");
 const multer = require("multer");
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const allowed = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (allowed.includes(file.mimetype)) return cb(null, true);
+    cb(new Error("Only PDF and DOC/DOCX files are allowed"));
+  },
+});
 const { authenticate, allowRoles, isolateInstitution } = require("../middleware/authMiddleware");
 const { safeSearchRegex, safeExactRegex } = require("../utils/escapeRegex");
 
@@ -57,7 +69,7 @@ router.post("/", authenticate, async (req, res) => {
         res.status(201).json({ message: "Institution registered successfully", institution: inst });
     } catch (error) {
         console.error("Institution registration error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to register institution. Please try again." });
     }
 });
 
@@ -73,7 +85,7 @@ router.get("/my", authenticate, async (req, res) => {
         }
         res.json({ institution: inst });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch institution details." });
     }
 });
 
@@ -86,7 +98,7 @@ router.get("/:id", authenticate, isolateInstitution, async (req, res) => {
         }
         res.json({ institution: inst });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to fetch institution details." });
     }
 });
 
@@ -103,7 +115,7 @@ router.post("/:institutionId/departments", instAdminOnly, isolateInstitution, as
         );
         res.status(201).json({ department: dept });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to save department." });
     }
 });
 
@@ -211,7 +223,7 @@ router.post("/setup", instAdminOnly, async (req, res) => {
         res.json({ message: "Setup completed successfully", institution: inst });
     } catch (error) {
         console.error("Setup error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Setup failed. Please try again." });
     }
 });
 
@@ -225,7 +237,7 @@ router.post("/login", authenticate, async (req, res) => {
         res.json({ message: "Login successful", institution: inst });
     } catch (error) {
         console.error("Institution login error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Login failed. Please try again." });
     }
 });
 
@@ -262,20 +274,12 @@ router.post("/register", authenticate, async (req, res) => {
 
         res.status(201).json({ message: "Institution registered successfully", institution });
     } catch (error) {
-        // Detailed logging on server for debugging
-        console.error("Institution Registration Detailed Error:", {
+        console.error("Institution Registration Error:", {
             message: error.message,
             stack: error.stack,
-            body: req.body,
-            user: req.user
+            user: req.user?.uid
         });
-        
-        // TEMPORARY: Return full error to client for faster debugging
-        res.status(500).json({ 
-            error: "Registration failed.", 
-            details: error.message,
-            stack: error.stack
-        });
+        res.status(500).json({ error: "Registration failed. Please try again." });
     }
 });
 
@@ -311,7 +315,7 @@ router.put("/:id", instAdminOnly, async (req, res) => {
         res.json({ message: "Profile updated successfully", institution: updatedInst });
     } catch (error) {
         console.error("Profile update error:", error);
-        res.status(500).json({ error: "Failed to update profile: " + error.message });
+        res.status(500).json({ error: "Failed to update institution profile." });
     }
 });
 
@@ -337,7 +341,7 @@ router.delete("/:id/departments/:deptId", instAdminOnly, async (req, res) => {
         res.json({ message: "Department deleted successfully" });
     } catch (error) {
         console.error("Delete department error:", error);
-        res.status(500).json({ error: "Failed to delete department: " + error.message });
+        res.status(500).json({ error: "Failed to delete department." });
     }
 });
 
@@ -423,7 +427,7 @@ router.post("/:id/batches", instAdminOnly, async (req, res) => {
         res.status(201).json({ batch: batchData });
     } catch (error) {
         console.error("Add batch error:", error);
-        res.status(500).json({ error: "Failed to add batch: " + error.message });
+        res.status(500).json({ error: "Failed to add batch." });
     }
 });
 
@@ -496,10 +500,16 @@ router.get("/:id/events", instAdminOnly, async (req, res) => {
         }
         const { status, type, category, search } = req.query;
         const query = { institutionId };
-        if (status) query.status = status; // Keep as provided or capitalize
-        if (category) query.category = new RegExp(category, "i");
+        if (status) query.status = status;
+        if (category) {
+            const safeCategory = safeSearchRegex(category);
+            if (safeCategory) query.category = safeCategory;
+        }
         if (type) query.isPublic = (type.toLowerCase() === "public");
-        if (search) query.eventName = new RegExp(search, "i");
+        if (search) {
+            const safeSearch = safeSearchRegex(search);
+            if (safeSearch) query.eventName = safeSearch;
+        }
 
         const events = await Event.find(query).sort({ createdAt: -1 }).select(
             "eventName category visibility isPublic startTime status participantCount createdAt createdByDeptName institutionName"
@@ -702,7 +712,7 @@ router.post("/:id/events", instAdminOnly, upload.single('file'), async (req, res
         });
     } catch (error) {
         console.error("Create event error:", error);
-        res.status(500).json({ error: error.message || "Failed to create event" });
+        res.status(500).json({ error: "Failed to create event." });
     }
 });
 
@@ -724,7 +734,7 @@ router.patch("/:id/events/:eventId/status", instAdminOnly, async (req, res) => {
 
         res.json({ message: `Event status updated to ${status}`, status: event.status });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Failed to update event status." });
     }
 });
 
@@ -1087,7 +1097,7 @@ router.delete("/:id/batches/:batchId", instAdminOnly, async (req, res) => {
         res.json({ message: "Batch deleted successfully" });
     } catch (error) {
         console.error("Delete batch error:", error);
-        res.status(500).json({ error: "Failed to delete batch: " + error.message });
+        res.status(500).json({ error: "Failed to delete batch." });
     }
 });
 
@@ -1401,7 +1411,7 @@ router.get("/:id/departments/:deptId/access", authenticate, async (req, res) => 
         });
     } catch (error) {
         console.error("Fetch access list error:", error);
-        res.status(500).json({ error: "Failed to fetch access list: " + error.message });
+        res.status(500).json({ error: "Failed to fetch access list." });
     }
 });
 
@@ -1441,7 +1451,7 @@ router.post("/:id/departments/:deptId/grant-access", instAdminOnly, async (req, 
         res.json({ message: "Access granted", user: { email: user.email, role: user.role } });
     } catch (error) {
         console.error("Grant access error:", error);
-        res.status(500).json({ error: "Failed to grant access: " + error.message });
+        res.status(500).json({ error: "Failed to grant access." });
     }
 });
 
@@ -1504,7 +1514,7 @@ router.post("/:id/departments/:deptId/set-password", instAdminOnly, async (req, 
         res.json({ message: "Password updated successfully", email: user.email });
     } catch (error) {
         console.error("Set password error:", error);
-        res.status(500).json({ error: "Failed to set password: " + error.message });
+        res.status(500).json({ error: "Failed to set password." });
     }
 });
 
@@ -1535,7 +1545,7 @@ router.delete("/:id/departments/:deptId/revoke-access", instAdminOnly, async (re
         res.json({ message: "Access revoked" });
     } catch (error) {
         console.error("Revoke access error:", error);
-        res.status(500).json({ error: "Failed to revoke access: " + error.message });
+        res.status(500).json({ error: "Failed to revoke access." });
     }
 });
 
@@ -1606,7 +1616,7 @@ router.post("/:id/students", instAdminOnly, async (req, res) => {
         res.status(201).json({ student });
     } catch (error) {
         console.error("Add student error:", error);
-        res.status(500).json({ error: "Failed to add student: " + error.message });
+        res.status(500).json({ error: "Failed to add student." });
     }
 });
 
