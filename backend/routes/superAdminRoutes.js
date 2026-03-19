@@ -95,18 +95,18 @@ router.post("/login", (req, res) => {
             { algorithm: "HS256", expiresIn: "4h" }
         );
 
-        // Set HttpOnly cookie for security
+        // Set HttpOnly cookie for browser clients on the same origin
         res.cookie("adminToken", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production" || process.env.COOKIE_SECURE === "true",
-            sameSite: "Strict",
+            secure: true, // Always secure — required for SameSite=None
+            sameSite: "None", // Cross-origin (Firebase frontend → Hostinger backend)
             maxAge: 4 * 60 * 60 * 1000, // 4 hours
         });
 
         return res.json({
             success: true,
             message: "Login successful",
-            // Token is delivered via HttpOnly cookie only — not in body (prevents JS access)
+            token, // Needed for cross-origin clients (Firebase→Hostinger) where SameSite cookie can't be relied on alone
             user: { username, role: "super-admin" },
         });
     }
@@ -498,8 +498,8 @@ router.put("/settings", async (req, res, next) => {
 router.post("/logout", (req, res) => {
     res.clearCookie("adminToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production" || process.env.COOKIE_SECURE === "true",
-        sameSite: "Strict",
+        secure: true,
+        sameSite: "None",
     });
     res.json({ success: true, message: "Logged out successfully" });
 });

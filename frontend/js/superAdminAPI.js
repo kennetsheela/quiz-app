@@ -7,7 +7,9 @@ const API_BASE = API_CONFIG.API_URL;
  * Robust API helper for Super Admin
  */
 async function apiRequest(endpoint, options = {}) {
-    const token = localStorage.getItem('superAdminToken');
+    // Prefer HttpOnly cookie (sent automatically when credentials:'include').
+    // Fallback: sessionStorage token sent as Bearer (needed for cross-origin Firebase→Hostinger).
+    const token = sessionStorage.getItem('superAdminToken');
     const isFormData = options.body instanceof FormData;
     const defaultHeaders = {
         ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
@@ -46,13 +48,14 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 export const auth = {
-    isLoggedIn: () => !!localStorage.getItem('superAdminToken'),
-    getToken: () => localStorage.getItem('superAdminToken'),
+    isLoggedIn: () => !!sessionStorage.getItem('superAdminToken'),
+    getToken: () => sessionStorage.getItem('superAdminToken'),
     login: (token) => {
-        localStorage.setItem('superAdminToken', token);
+        // sessionStorage: cleared automatically when tab/browser closes
+        if (token) sessionStorage.setItem('superAdminToken', token);
     },
     logout: () => {
-        localStorage.removeItem('superAdminToken');
+        sessionStorage.removeItem('superAdminToken');
         window.location.href = 'super-admin-login.html';
     }
 };
