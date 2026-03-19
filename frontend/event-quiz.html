@@ -954,11 +954,8 @@
             submitQuiz();
         }
 
-        // ── Hard-remove sidebar on mobile (defeats any CSS override from common.css) ──
-        if (window.innerWidth <= 768) {
-            const sidebar = document.querySelector('.sidebar-area');
-            if (sidebar) sidebar.remove();
-        }
+        // Sidebar is hidden on mobile via CSS (display:none). Do NOT remove it from the DOM
+        // because btnSubmitQuiz / btnMarkForReview live inside it and are referenced by JS.
     </script>
 </body>
 </html>
