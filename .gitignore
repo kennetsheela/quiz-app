@@ -40,7 +40,12 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 
-# Backend specific files — serviceAccountKey.json must NEVER be committed
+# Secrets — NEVER commit these
+.env
+**/.env
+*.env
+
+# Backend specific files
 backend/serviceAccountKey.json
 **/serviceAccountKey.json
 backend/uploads/
@@ -49,8 +54,8 @@ backend/data/
 backend/coverage/
 backend/node_modules/
 
-# NOTE: backend/.env IS intentionally committed so Hostinger deploys it via GitHub.
-# The raw serviceAccountKey.json is still excluded above.
+# ⚠️ DO NOT commit .env files. Use Hostinger hPanel → Advanced → Environment Variables
+# to set secrets directly in the hosting environment.
 
 # OS files
 .DS_Store
