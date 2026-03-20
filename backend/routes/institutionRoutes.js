@@ -20,9 +20,12 @@ const upload = multer({
       "application/pdf",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",          // .txt files (used by event wizard upload option)
     ];
     if (allowed.includes(file.mimetype)) return cb(null, true);
-    cb(new Error("Only PDF and DOC/DOCX files are allowed"));
+    // Use cb(null, false) — NOT cb(new Error()) — so multer skips the file
+    // without aborting the entire multipart body parse (which would crash the route)
+    cb(null, false);
   },
 });
 const { authenticate, allowRoles, isolateInstitution } = require("../middleware/authMiddleware");
