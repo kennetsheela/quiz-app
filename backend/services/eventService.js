@@ -8,15 +8,22 @@ const parseStrict = require("../utils/parseStrict");
 
 // ✅ Parse questions from file buffer and store in MongoDB
 async function parseQuestionsFromFile(file, metadata = {}) {
-  const ext = file.originalname.toLowerCase().endsWith('.pdf') ? '.pdf' : '.docx';
+  const filename = file.originalname.toLowerCase();
+  const isPdf  = filename.endsWith('.pdf');
+  const isTxt  = filename.endsWith('.txt');
   let textContent = "";
 
   try {
-    if (ext === ".pdf") {
+    if (isPdf) {
       const data = await pdfParse(file.buffer);
       textContent = data.text;
       console.log(`📄 Extracted ${data.text.length} characters from PDF`);
+    } else if (isTxt) {
+      // Plain-text files — read buffer directly as UTF-8
+      textContent = file.buffer.toString('utf-8');
+      console.log(`📄 Read ${textContent.length} characters from TXT`);
     } else {
+      // Default: treat as DOCX
       const result = await mammoth.extractRawText({ buffer: file.buffer });
       textContent = result.value;
       console.log(`📄 Extracted ${textContent.length} characters from DOCX`);

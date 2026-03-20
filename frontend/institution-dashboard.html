@@ -3175,7 +3175,11 @@
                 </div>
             </div>
             <div class="modal-footer"
-                style="padding:16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+                style="padding:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+                <button class="btn btn-secondary" id="exportCsvBtn" onclick="exportParticipantsCSV()"
+                    style="display:none;gap:6px">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                </button>
                 <button class="btn btn-secondary" onclick="closeModal('participantsModal')">Close</button>
             </div>
         </div>
@@ -3598,15 +3602,23 @@
             }
         };
 
+        // ── Participants data cache for CSV export ──
+        let currentParticipants = [];
+        let currentEventName = '';
+
         window.showEventSetsModal = async (eventId, name) => {
+            currentEventName = name;
+            currentParticipants = [];
             document.getElementById('pModalTitle').textContent = `Participants: ${name}`;
             document.getElementById('pModalSubtitle').textContent = 'Fetching real-time data from assessment records...';
             document.getElementById('pModalTbody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px"><div class="spinner"></div><p style="margin-top:10px">Loading participants...</p></td></tr>';
+            document.getElementById('exportCsvBtn').style.display = 'none';
             openModal('participantsModal');
 
             try {
                 const data = await apiFetch(`/institutions/${institutionId}/events/${eventId}/participants`);
                 const participants = data.participants || [];
+                currentParticipants = participants;
                 const tbody = document.getElementById('pModalTbody');
 
                 if (participants.length === 0) {
@@ -3625,9 +3637,37 @@
                     </tr>
                 `).join('');
                 document.getElementById('pModalSubtitle').textContent = `Total participants: ${participants.length}`;
+                document.getElementById('exportCsvBtn').style.display = 'flex';
             } catch (err) {
                 document.getElementById('pModalTbody').innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:40px">Failed to load: ${err.message}</td></tr>`;
             }
+        };
+
+        window.exportParticipantsCSV = () => {
+            if (!currentParticipants.length) return;
+            const esc = v => `"${String(v || 'N/A').replace(/"/g, '""')}"`;
+            const headers = ['Rank', 'Roll No', 'Name', 'Department', 'Year', 'Score', 'Time Spent'];
+            const rows = currentParticipants.map((p, i) => [
+                i + 1,
+                esc(p.rollNo),
+                esc(p.name),
+                esc(p.department),
+                esc(`${p.year || 'N/A'} Year`),
+                esc(p.score),
+                esc(p.timeSpent)
+            ].join(','));
+            const csv = [headers.join(','), ...rows].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const safeName = currentEventName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            a.href = url;
+            a.download = `${safeName}_participants_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('✅ Participant list exported!');
         };
 
         window.filterAndRenderEvents = () => {

@@ -589,7 +589,6 @@ router.post("/:id/events", instAdminOnly, upload.single('file'), async (req, res
             return res.status(403).json({ error: "Not authorized" });
         }
 
-        // Multer makes body fields strings if they are sent as FormData
         const body = req.body;
         const name = body.name;
         const category = body.category || "General";
@@ -599,11 +598,9 @@ router.post("/:id/events", instAdminOnly, upload.single('file'), async (req, res
         const duration = parseInt(body.duration) || 60;
         const description = body.description;
 
-        // Parse JSON strings from FormData
         const targetDepts = body.targetDepts ? JSON.parse(body.targetDepts) : [];
         const targetBatches = body.targetBatches ? JSON.parse(body.targetBatches) : [];
         const proctoring = body.proctoring ? JSON.parse(body.proctoring) : {};
-
         const questionMethod = body.questionMethod || 'random';
 
         if (!name || !start || !end) {
@@ -619,25 +616,24 @@ router.post("/:id/events", instAdminOnly, upload.single('file'), async (req, res
             });
         } else if (questionMethod === 'random') {
             const numQuestions = parseInt(body.numQuestions) || 10;
-            // Fetch random questions from QuestionBank matching the category
+            // Case-insensitive match: 'Aptitude' == 'aptitude' == 'APTITUDE'
+            const safeCategory = category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const randomQuestions = await QuestionBank.aggregate([
-                { $match: { category: category.toLowerCase() } },
+                { $match: { category: { $regex: `^${safeCategory}$`, $options: 'i' } } },
                 { $sample: { size: numQuestions } }
             ]);
-
             questions = randomQuestions.map(q => ({
                 question: q.question,
                 options: q.options,
                 answer: q.answer,
                 explanation: q.explanation || ""
             }));
-
             console.log(`🎲 Selected ${questions.length} random questions for category: ${category}`);
         } else if (questionMethod === 'set') {
-            // Placeholder for set logic - for now fallback to random if no sets specified
             const numQuestions = parseInt(body.numQuestions) || 10;
+            const safeCategory = category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const randomQuestions = await QuestionBank.aggregate([
-                { $match: { category: category.toLowerCase() } },
+                { $match: { category: { $regex: `^${safeCategory}$`, $options: 'i' } } },
                 { $sample: { size: numQuestions } }
             ]);
             questions = randomQuestions.map(q => ({
