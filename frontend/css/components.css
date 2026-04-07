@@ -482,22 +482,26 @@ tbody tr:last-child td {
   }
   
   .appbar h2 {
-    font-size: 1.25rem;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 5px;
   }
   
   .nav-links {
-    width: 100%;
-    justify-content: center;
-    gap: 10px;
+    flex: 1;
+    justify-content: flex-start;
+    gap: 8px;
+    width: auto;
   }
   
   .nav-links a {
-    padding: 6px 12px;
-    font-size: 14px;
+    padding: 6px 10px;
+    font-size: 13px;
   }
   
   .right-icons {
-    gap: 15px;
+    gap: 12px;
+    margin-left: auto;
   }
   
   .content-grid {
@@ -545,20 +549,20 @@ tbody tr:last-child td {
   }
   
   .appbar h2 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
   
   .nav-links {
-    gap: 8px;
+    gap: 5px;
   }
   
   .nav-links a {
-    padding: 5px 10px;
+    padding: 4px 8px;
     font-size: 12px;
   }
   
   .right-icons {
-    gap: 12px;
+    gap: 10px;
   }
   
   .right-icons i {
