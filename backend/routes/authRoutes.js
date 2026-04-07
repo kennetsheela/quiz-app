@@ -33,7 +33,7 @@ const verifyToken = async (req, res, next) => {
 // Get user profile
 router.get("/profile", verifyToken, async (req, res) => {
   try {
-    const user = await User.findOne({ firebaseUid: req.user.uid });
+    const user = await User.findOne({ firebaseUid: req.user.uid }).populate("batchId");
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
