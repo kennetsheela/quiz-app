@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AptioGen - Educational Assessment Platform</title>
+  <title>AptioGen - Ace Every Exam with Smart Practice</title>
+  <meta name="description" content="Challenges, quizzes, rankings — everything you need to prep smarter and score higher, in one place.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/common.css">
@@ -13,84 +14,264 @@
 </head>
 
 <body>
+
+  <!-- ── Appbar ─────────────────────────── -->
   <header class="appbar">
     <h2>AptioGen</h2>
     <div class="right-icons">
       <i class="fa-solid fa-moon theme-toggle" title="Toggle Theme"></i>
-      <a href="about.html"><i class="fa-solid fa-circle-info" title="About"></i></a>
     </div>
   </header>
 
-  <main class="container">
+  <main>
+
+    <!-- ── Hero ──────────────────────────── -->
     <section class="hero">
-      <h1>Welcome! Young Minds</h1>
-      <h5>Great minds don't think alike, they think different</h5>
-      <p>The comprehensive educational assessment platform for students, academic institutions, and platform
-        administrators.</p>
-    </section>
-
-    <section class="tier-grid">
-      <!-- Super Admin Tier -->
-      <div class="tier-card">
-        <div>
-          <div class="tier-icon">
-            <i class="fa-solid fa-user-shield"></i>
-          </div>
-          <h2>Super Admin</h2>
-          <p>Directly manage the platform, oversee global questions, and monitor institutional growth.</p>
-          <ul class="tier-features">
-            <li><i class="fa-solid fa-check"></i> Manage Question Bank</li>
-            <li><i class="fa-solid fa-check"></i> Oversee Institutions</li>
-            <li><i class="fa-solid fa-check"></i> Platform Analytics</li>
-            <li><i class="fa-solid fa-check"></i> Content Management</li>
-          </ul>
-        </div>
-        <a href="super-admin-login.html" class="tier-btn tier-btn-outline">Access Platform →</a>
+      <div class="hero-badge">
+        <i class="fa-solid fa-bolt"></i> Built for students
       </div>
 
-      <!-- Institution Tier -->
-      <div class="tier-card">
-        <div>
-          <div class="tier-icon">
-            <i class="fa-solid fa-building-columns"></i>
-          </div>
-          <h2>Institution</h2>
-          <p>Perfect for colleges and schools. Create events, manage year cohorts, and track performance.</p>
-          <ul class="tier-features">
-            <li><i class="fa-solid fa-check"></i> Create Custom Events</li>
-            <li><i class="fa-solid fa-check"></i> Batch Management</li>
-            <li><i class="fa-solid fa-check"></i> Detailed Reports</li>
-            <li><i class="fa-solid fa-check"></i> Real-time Monitoring</li>
-          </ul>
-        </div>
-        <a href="institution-login.html" class="tier-btn tier-btn-primary">Login or Register</a>
+      <h1>Ace every exam<br>with <span class="hero-accent">smart practice</span></h1>
+
+      <p class="hero-sub">
+        Challenges, quizzes, rankings — everything you need to prep<br class="break-md">
+        smarter and score higher, in one place.
+      </p>
+
+      <div class="hero-actions">
+        <a href="student-login.html" class="hero-btn hero-btn-primary" id="heroStartBtn">Start Learning →</a>
+        <button class="hero-btn hero-btn-tour" id="tourBtn" onclick="startTour()">🗺 App Tour</button>
       </div>
 
-      <!-- Student Tier -->
-      <div class="tier-card">
-        <div>
-          <div class="tier-icon">
-            <i class="fa-solid fa-user-graduate"></i>
+      <!-- Feature chips -->
+      <div class="feature-chips">
+        <div class="feature-chip">
+          <span class="chip-icon">⚡</span>
+          <div class="chip-text">
+            <strong>Live Challenges</strong>
+            <span>Compete in real time</span>
           </div>
-          <h2>Student</h2>
-          <p>Access challenges, practice quizzes, and track your individual rank and progress.</p>
-          <ul class="tier-features">
-            <li><i class="fa-solid fa-check"></i> Join Active Events</li>
-            <li><i class="fa-solid fa-check"></i> Practice Mode Quizzes</li>
-            <li><i class="fa-solid fa-check"></i> Global Rankings</li>
-            <li><i class="fa-solid fa-check"></i> Performance Insights</li>
-          </ul>
         </div>
-        <a href="student-login.html" class="tier-btn tier-btn-primary">Start Learning →</a>
+        <div class="feature-chip">
+          <span class="chip-icon">📈</span>
+          <div class="chip-text">
+            <strong>Track Progress</strong>
+            <span>See your growth daily</span>
+          </div>
+        </div>
+        <div class="feature-chip">
+          <span class="chip-icon">🏆</span>
+          <div class="chip-text">
+            <strong>Leaderboards</strong>
+            <span>Know your rank live</span>
+          </div>
+        </div>
       </div>
     </section>
+
+    <!-- ── Role Selector ──────────────────── -->
+    <section class="role-section">
+      <div class="container">
+        <div class="section-label">CHOOSE YOUR ROLE</div>
+        <h2 class="section-title">Who are you?</h2>
+        <p class="section-sub">Pick your path — personalised experience for every user</p>
+
+        <div class="role-tabs" role="tablist">
+          <button class="role-tab active" data-role="student" id="tab-student" role="tab" aria-selected="true">Student</button>
+          <button class="role-tab" data-role="institution" id="tab-institution" role="tab" aria-selected="false">Institution</button>
+          <button class="role-tab" data-role="admin" id="tab-admin" role="tab" aria-selected="false">Super Admin</button>
+        </div>
+
+        <!-- Student Card -->
+        <div class="role-card active" id="role-student" role="tabpanel">
+          <div class="role-card-content">
+            <h3>Student</h3>
+            <p>Access challenges, practice quizzes, and track your individual rank and progress in real time across your institution.</p>
+            <ul class="role-features">
+              <li><span class="dot" style="background:#60a5fa"></span>Adaptive practice quizzes</li>
+              <li><span class="dot" style="background:#f472b6"></span>Live rank on leaderboard</li>
+              <li><span class="dot" style="background:#34d399"></span>Full-length mock exams</li>
+              <li><span class="dot" style="background:#a78bfa"></span>Progress analytics dashboard</li>
+            </ul>
+            <a href="student-login.html" class="role-cta" id="studentCTA">Start Learning →</a>
+          </div>
+          <div class="role-card-illo" aria-hidden="true">🎒</div>
+        </div>
+
+        <!-- Institution Card -->
+        <div class="role-card" id="role-institution" role="tabpanel">
+          <div class="role-card-content">
+            <h3>Institution</h3>
+            <p>Create events, manage student cohorts, monitor performance, and gain deep insights across your entire institution.</p>
+            <ul class="role-features">
+              <li><span class="dot" style="background:#60a5fa"></span>Create custom exam events</li>
+              <li><span class="dot" style="background:#f472b6"></span>Batch &amp; cohort management</li>
+              <li><span class="dot" style="background:#34d399"></span>Detailed performance reports</li>
+              <li><span class="dot" style="background:#a78bfa"></span>Real-time monitoring</li>
+            </ul>
+            <a href="institution-login.html" class="role-cta" id="institutionCTA">Login or Register →</a>
+          </div>
+          <div class="role-card-illo" aria-hidden="true">🏫</div>
+        </div>
+
+        <!-- Super Admin Card -->
+        <div class="role-card" id="role-admin" role="tabpanel">
+          <div class="role-card-content">
+            <h3>Super Admin</h3>
+            <p>Manage the entire platform, oversee global question banks, monitor institutions, and control content at scale.</p>
+            <ul class="role-features">
+              <li><span class="dot" style="background:#60a5fa"></span>Manage question bank</li>
+              <li><span class="dot" style="background:#f472b6"></span>Oversee all institutions</li>
+              <li><span class="dot" style="background:#34d399"></span>Platform-wide analytics</li>
+              <li><span class="dot" style="background:#a78bfa"></span>Content management</li>
+            </ul>
+            <a href="super-admin-login.html" class="role-cta" id="adminCTA">Access Platform →</a>
+          </div>
+          <div class="role-card-illo" aria-hidden="true">🛡️</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── What You Get ─────────────────── -->
+    <section class="wyg-section container" id="what-you-get">
+      <div class="section-label">WHAT YOU GET</div>
+      <h2 class="section-title">Everything to help<br>you <span class="hero-accent">succeed</span></h2>
+
+      <div class="wyg-grid">
+        <div class="wyg-card">
+          <div class="wyg-icon">🎯</div>
+          <h4>Smart Quizzes</h4>
+          <p>Adaptive questions that match your skill level and improve over time.</p>
+        </div>
+        <div class="wyg-card">
+          <div class="wyg-icon">📊</div>
+          <h4>Live Analytics</h4>
+          <p>Track scores, time, accuracy and ranking in real time.</p>
+        </div>
+        <div class="wyg-card">
+          <div class="wyg-icon">🎓</div>
+          <h4>Mock Exams</h4>
+          <p>Full-length timed exams simulating the real thing, end to end.</p>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="container text-center mb-4">
     <p>&copy; 2026 AptioGen Platform. All rights reserved.</p>
   </footer>
 
-  <script type="module" src="js/theme.js"></script>
-</body>
+  <!-- ── App Tour Overlay ──────────────── -->
+  <div id="tourOverlay" class="tour-overlay" aria-hidden="true">
+    <div id="tourSpotlight" class="tour-spotlight"></div>
+    <div id="tourTooltip" class="tour-tooltip">
+      <div class="tour-step-badge" id="tourStepBadge">Step 1 of 5</div>
+      <h4 id="tourTitle"></h4>
+      <p id="tourDesc"></p>
+      <div class="tour-actions">
+        <button class="tour-skip" onclick="endTour()">Skip</button>
+        <div class="tour-nav">
+          <button class="tour-prev" id="tourPrev" onclick="tourStep(-1)">← Prev</button>
+          <button class="tour-next" id="tourNext" onclick="tourStep(1)">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <script type="module" src="js/theme.js"></script>
+  <script>
+    /* ── Role tab switcher ── */
+    document.querySelectorAll('.role-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.role-tab').forEach(t => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        document.getElementById('role-' + tab.dataset.role).classList.add('active');
+      });
+    });
+
+    /* ── App Tour ── */
+    const tourSteps = [
+      {
+        target: '.hero-badge',
+        title: 'Welcome to AptioGen 👋',
+        desc: 'Your all-in-one educational assessment platform — built to help students ace every exam with smart practice.'
+      },
+      {
+        target: '#heroStartBtn',
+        title: 'Start Learning 🚀',
+        desc: 'Click here to log in as a student and jump straight into quizzes, challenges, and your personalised dashboard.'
+      },
+      {
+        target: '.feature-chips',
+        title: 'Platform Highlights ⚡',
+        desc: 'Live Challenges, Progress Tracking, and Leaderboards — see how AptioGen keeps you ahead of the curve in real time.'
+      },
+      {
+        target: '.role-tabs',
+        title: 'Choose Your Role 🎭',
+        desc: 'Switch between Student, Institution, and Super Admin to see the features tailored specifically for your role.'
+      },
+      {
+        target: '.wyg-grid',
+        title: 'Everything You Need 🎓',
+        desc: 'Smart Quizzes, Live Analytics, and Full Mock Exams — all the tools to make real progress, right here.'
+      }
+    ];
+
+    let currentStep = 0;
+
+    function startTour() {
+      currentStep = 0;
+      document.getElementById('tourOverlay').classList.add('active');
+      showStep(currentStep);
+    }
+
+    function endTour() {
+      document.getElementById('tourOverlay').classList.remove('active');
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    }
+
+    function tourStep(dir) {
+      currentStep += dir;
+      if (currentStep < 0) currentStep = 0;
+      if (currentStep >= tourSteps.length) { endTour(); return; }
+      showStep(currentStep);
+    }
+
+    function showStep(index) {
+      const step = tourSteps[index];
+      const target = document.querySelector(step.target);
+      if (!target) return;
+
+      document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+      target.classList.add('tour-highlight');
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      const rect = target.getBoundingClientRect();
+      const pad = 12;
+      const spotlight = document.getElementById('tourSpotlight');
+      spotlight.style.top    = (rect.top + window.scrollY - pad) + 'px';
+      spotlight.style.left   = (rect.left - pad) + 'px';
+      spotlight.style.width  = (rect.width + pad * 2) + 'px';
+      spotlight.style.height = (rect.height + pad * 2) + 'px';
+
+      document.getElementById('tourStepBadge').textContent = 'Step ' + (index + 1) + ' of ' + tourSteps.length;
+      document.getElementById('tourTitle').textContent = step.title;
+      document.getElementById('tourDesc').textContent  = step.desc;
+      document.getElementById('tourPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
+      document.getElementById('tourNext').textContent = index === tourSteps.length - 1 ? 'Finish ✓' : 'Next →';
+    }
+
+    document.getElementById('tourOverlay').addEventListener('click', function(e) {
+      if (e.target === this) endTour();
+    });
+  </script>
+
+</body>
 </html>

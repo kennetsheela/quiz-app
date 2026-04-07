@@ -298,16 +298,9 @@
       <div class="form-group">
         <label for="college" class="label-required">College</label>
         <select id="college" required>
-          <option value="">Select your college</option>
-          <option value="NIT Trichy">NIT Trichy</option>
-          <option value="IIT Madras">IIT Madras</option>
-          <option value="Anna University">Anna University</option>
-          <option value="VIT Vellore">VIT Vellore</option>
-          <option value="SRM University">SRM University</option>
-          <option value="SSN College of Engineering">SSN College of Engineering</option>
-          <option value="PSG College of Technology">PSG College of Technology</option>
-          <option value="Other">Other</option>
+          <option value="">Loading institutions…</option>
         </select>
+        <p id="collegeStatus" style="font-size:12px;margin-top:5px;color:#6b7280;"></p>
       </div>
 
       <div class="form-group">
@@ -329,6 +322,62 @@
   <script type="module">
     import { auth } from "./js/firebase.js";
     import { authAPI } from "./js/api.js";
+    import API_CONFIG from "./js/config.js";
+
+    /* ── Load registered institutions into the college dropdown ── */
+    async function loadInstitutions() {
+      const select = document.getElementById('college');
+      const status = document.getElementById('collegeStatus');
+      try {
+        const res = await fetch(`${API_CONFIG.API_URL}/public/institutions`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // API returns an array of { _id, name, type }
+        const list = Array.isArray(data) ? data : (data.institutions || []);
+
+        select.innerHTML = '<option value="">Select your college</option>';
+
+        if (list.length === 0) {
+          status.textContent = 'No registered institutions found.';
+        } else {
+          list.forEach(inst => {
+            const name = inst.name || inst.institutionName || inst.collegeName || '';
+            if (!name) return;
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            opt.dataset.institutionId = inst._id || '';
+            select.appendChild(opt);
+          });
+          // Always add Other at the end
+          const other = document.createElement('option');
+          other.value = 'Other';
+          other.textContent = 'Other';
+          select.appendChild(other);
+          status.textContent = `${list.length} registered institution${list.length !== 1 ? 's' : ''} available`;
+        }
+      } catch (err) {
+        console.warn('Could not load institutions:', err.message);
+        // Fallback to static list
+        select.innerHTML = `
+          <option value="">Select your college</option>
+          <option value="NIT Trichy">NIT Trichy</option>
+          <option value="IIT Madras">IIT Madras</option>
+          <option value="Anna University">Anna University</option>
+          <option value="VIT Vellore">VIT Vellore</option>
+          <option value="SRM University">SRM University</option>
+          <option value="SSN College of Engineering">SSN College of Engineering</option>
+          <option value="PSG College of Technology">PSG College of Technology</option>
+          <option value="Other">Other</option>`;
+        status.textContent = 'Could not load live list — showing default options.';
+        status.style.color = '#f59e0b';
+      }
+    }
+
+    // Fetch institutions immediately on page load
+    loadInstitutions();
+
 
     const detailsForm = document.getElementById("detailsForm");
     const errorMessage = document.getElementById("errorMessage");
