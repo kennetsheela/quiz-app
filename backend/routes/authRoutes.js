@@ -98,7 +98,43 @@ router.post("/profile", verifyToken, async (req, res) => {
     // Use photoURL from request or from Firebase token
     const userPhotoURL = photoURL || picture || null;
 
-    // Use $or to find by either UID or email to avoid duplicates
+    // First find the user to check existing role/institution
+    let existingUser = await User.findOne({
+      $or: [
+        { firebaseUid: uid },
+        { email: email.toLowerCase() }
+      ]
+    });
+
+    const updateData = {
+      firebaseUid: uid,
+      email: email.toLowerCase(),
+      username,
+      firstName: req.body.firstName || "",
+      lastName: req.body.lastName || "",
+      department: department || "",
+      college: college || "",
+      city: city || "",
+      rollNumber: rollNumber || "",
+      photoURL: userPhotoURL,
+      provider: userProvider,
+      lastLogin: new Date()
+    };
+
+    // ONLY update role and institutionId if they are not already set 
+    // or if the user is a new user (upsert case handled by findOneAndUpdate)
+    if (!existingUser || !existingUser.role || existingUser.role === "student") {
+        if (role) updateData.role = role;
+        else if (!existingUser || !existingUser.role) updateData.role = "student";
+    }
+    
+    if ((!existingUser || !existingUser.institutionId) && institutionId) {
+        updateData.institutionId = institutionId;
+    }
+
+    // Capture batch/year info if provided for students
+    if (batchId) updateData.batchId = batchId;
+
     const user = await User.findOneAndUpdate(
       {
         $or: [
@@ -106,20 +142,7 @@ router.post("/profile", verifyToken, async (req, res) => {
           { email: email.toLowerCase() }
         ]
       },
-      {
-        $set: {
-          firebaseUid: uid,
-          email: email.toLowerCase(),
-          username,
-          firstName: req.body.firstName || "",
-          lastName: req.body.lastName || "",
-          // NOTE: role and institutionId are NOT updated here.
-          // They are set server-side only during institution/student registration flows.
-          photoURL: userPhotoURL,
-          provider: userProvider,
-          lastLogin: new Date()
-        }
-      },
+      { $set: updateData },
       {
         upsert: true,
         new: true,
@@ -140,6 +163,10 @@ router.post("/profile", verifyToken, async (req, res) => {
         email: user.email,
         role: user.role,
         institutionId: user.institutionId,
+        department: user.department,
+        college: user.college,
+        city: user.city,
+        rollNumber: user.rollNumber,
         photoURL: user.photoURL,
         provider: user.provider,
         createdAt: user.createdAt
