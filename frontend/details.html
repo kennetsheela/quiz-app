@@ -281,26 +281,25 @@
       </div>
 
       <div class="form-group">
-        <label for="department" class="label-required">Department</label>
-        <select id="department" required>
-          <option value="">Select your department</option>
-          <option value="aids">Artificial Intelligence and Data Science</option>
-          <option value="cs">Computer Science</option>
-          <option value="it">Information Technology</option>
-          <option value="mechanical">Mechanical Engineering</option>
-          <option value="civil">Civil Engineering</option>
-          <option value="ece">Electronics and Communication</option>
-          <option value="eee">Electrical and Electronics</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div class="form-group">
         <label for="college" class="label-required">College</label>
         <select id="college" required>
           <option value="">Loading institutions…</option>
         </select>
         <p id="collegeStatus" style="font-size:12px;margin-top:5px;color:#6b7280;"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="department" class="label-required">Department</label>
+        <select id="department" required disabled>
+          <option value="">Select your department</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="batchGroup">
+        <label for="batch" class="label-required">Batch (Admission Year)</label>
+        <select id="batch" required disabled>
+          <option value="">Select your batch</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -324,6 +323,19 @@
     import { authAPI } from "./js/api.js";
     import API_CONFIG from "./js/config.js";
 
+    const DEPT_MAP = {
+      "aids": "Artificial Intelligence and Data Science",
+      "cs": "Computer Science",
+      "it": "Information Technology",
+      "mechanical": "Mechanical Engineering",
+      "civil": "Civil Engineering",
+      "ece": "Electronics and Communication",
+      "eee": "Electrical and Electronics"
+    };
+
+    let allInstitutionBatches = [];
+    let allInstitutionDepts = [];
+
     /* ── Load registered institutions into the college dropdown ── */
     async function loadInstitutions() {
       const select = document.getElementById('college');
@@ -332,8 +344,6 @@
         const res = await fetch(`${API_CONFIG.API_URL}/public/institutions`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-
-        // API returns an array of { _id, name, type }
         const list = Array.isArray(data) ? data : (data.institutions || []);
 
         select.innerHTML = '<option value="">Select your college</option>';
@@ -350,34 +360,111 @@
             opt.dataset.institutionId = inst._id || '';
             select.appendChild(opt);
           });
-          // Always add Other at the end
-          const other = document.createElement('option');
-          other.value = 'Other';
-          other.textContent = 'Other';
-          select.appendChild(other);
-          status.textContent = `${list.length} registered institution${list.length !== 1 ? 's' : ''} available`;
+          select.appendChild(new Option('Other', 'Other'));
+          status.textContent = `${list.length} registered institutions available`;
         }
       } catch (err) {
         console.warn('Could not load institutions:', err.message);
-        // Fallback to static list
         select.innerHTML = `
           <option value="">Select your college</option>
           <option value="NIT Trichy">NIT Trichy</option>
           <option value="IIT Madras">IIT Madras</option>
-          <option value="Anna University">Anna University</option>
-          <option value="VIT Vellore">VIT Vellore</option>
-          <option value="SRM University">SRM University</option>
-          <option value="SSN College of Engineering">SSN College of Engineering</option>
-          <option value="PSG College of Technology">PSG College of Technology</option>
           <option value="Other">Other</option>`;
-        status.textContent = 'Could not load live list — showing default options.';
-        status.style.color = '#f59e0b';
+        status.textContent = 'Using default options.';
       }
     }
 
-    // Fetch institutions immediately on page load
-    loadInstitutions();
+    /* ── Load Departments and Batches for a specific institution ── */
+    async function loadInstitutionData(instId) {
+      if (!instId || instId === 'Other') {
+        resetCascadingFields();
+        return;
+      }
 
+      try {
+        const [deptRes, batchRes] = await Promise.all([
+          fetch(`${API_CONFIG.API_URL}/public/institutions/${instId}/departments`),
+          fetch(`${API_CONFIG.API_URL}/public/institutions/${instId}/batches`)
+        ]);
+
+        allInstitutionDepts = await deptRes.json();
+        allInstitutionBatches = await batchRes.json();
+
+        updateDepts(allInstitutionDepts);
+        updateBatches(); // Initial load for global batches
+      } catch (err) {
+        console.error('Failed to load institution data:', err);
+      }
+    }
+
+    function resetCascadingFields() {
+      const deptSelect = document.getElementById('department');
+      const batchSelect = document.getElementById('batch');
+      
+      deptSelect.innerHTML = '<option value="">Select your department</option>';
+      deptSelect.disabled = true;
+      
+      batchSelect.innerHTML = '<option value="">Select your batch</option>';
+      batchSelect.disabled = true;
+      
+      if (document.getElementById('college').value === 'Other') {
+        const customDepts = Object.values(DEPT_MAP).concat(["Other"]);
+        deptSelect.innerHTML = '<option value="">Select your department</option>';
+        customDepts.forEach(d => deptSelect.add(new Option(d, d)));
+        deptSelect.disabled = false;
+
+        batchSelect.innerHTML = '<option value="">Select your batch</option>';
+        [2021, 2022, 2023, 2024, 2025].forEach(y => batchSelect.add(new Option(`${y} Admission`, y)));
+        batchSelect.disabled = false;
+      }
+    }
+
+    function updateDepts(depts) {
+      const select = document.getElementById('department');
+      select.innerHTML = '<option value="">Select your department</option>';
+      (depts || []).forEach(d => {
+        const opt = new Option(d.name, d.name); // Using long name for both
+        opt.dataset.deptId = d._id;
+        select.add(opt);
+      });
+      select.add(new Option('Other', 'Other'));
+      select.disabled = false;
+    }
+
+    function updateBatches() {
+      const deptId = document.getElementById('department').selectedOptions[0]?.dataset.deptId;
+      const select = document.getElementById('batch');
+      select.innerHTML = '<option value="">Select your batch</option>';
+      
+      const filtered = allInstitutionBatches.filter(b => !b.departmentId || b.departmentId === deptId);
+      
+      filtered.forEach(b => {
+        const label = `${b.startYear} - ${b.endYear} (${b.batchID})`;
+        const opt = new Option(label, b._id);
+        opt.dataset.batchId = b._id;
+        select.add(opt);
+      });
+
+      if (filtered.length === 0) {
+        select.add(new Option('No batches available', ''));
+      }
+      
+      select.disabled = false;
+    }
+
+    // Event Listeners for cascading
+    document.getElementById('college').addEventListener('change', async (e) => {
+      const instId = e.target.selectedOptions[0]?.dataset.institutionId;
+      await loadInstitutionData(instId);
+      document.dispatchEvent(new CustomEvent('collegeLoaded'));
+    });
+
+    document.getElementById('department').addEventListener('change', () => {
+      if (allInstitutionBatches.length > 0) updateBatches();
+      document.dispatchEvent(new CustomEvent('deptLoaded'));
+    });
+
+    loadInstitutions();
 
     const detailsForm = document.getElementById("detailsForm");
     const errorMessage = document.getElementById("errorMessage");
@@ -390,9 +477,7 @@
       errorMessage.textContent = message;
       errorMessage.style.display = 'block';
       successMessage.style.display = 'none';
-      setTimeout(() => {
-        errorMessage.style.display = 'none';
-      }, 5000);
+      setTimeout(() => errorMessage.style.display = 'none', 5000);
     }
 
     function showSuccess(message) {
@@ -403,196 +488,126 @@
 
     function setLoading(isLoading) {
       submitBtn.disabled = isLoading;
-      if (isLoading) {
-        btnText.innerHTML = '<span class="spinner"></span> Saving...';
-      } else {
-        btnText.textContent = 'Continue to Dashboard';
-      }
+      btnText.innerHTML = isLoading ? '<span class="spinner"></span> Saving...' : 'Continue to Dashboard';
     }
 
-    // Load user data
+    // Load user data & Pre-fill logic with cascading triggers
     auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        console.log("No user authenticated, redirecting to login");
-        window.location.href = "index.html";
-        return;
-      }
-
-      console.log("Loading user data for:", user.uid);
-      console.log("User info:", {
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
-      });
-
-      // Set email
+      if (!user) { window.location.href = "index.html"; return; }
+      
       document.getElementById("email").value = user.email;
+      if (user.photoURL) userAvatar.innerHTML = `<img src="${user.photoURL}" alt="Profile">`;
+      else if (user.displayName) userAvatar.textContent = user.displayName.split(' ').map(n => n[0]).join('').toUpperCase();
+      if (user.displayName) document.getElementById("username").value = user.displayName;
 
-      // Set avatar
-      if (user.photoURL) {
-        userAvatar.innerHTML = `<img src="${user.photoURL}" alt="Profile">`;
-      } else if (user.displayName) {
-        const initials = user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        userAvatar.textContent = initials;
-      }
-
-      // Pre-fill username if available
-      if (user.displayName) {
-        document.getElementById("username").value = user.displayName;
-      }
-
-      // Try to load existing profile
       try {
         const profile = await authAPI.getProfile();
-        console.log("Existing profile found:", profile);
-
-        if (profile) {
-          // Pre-fill form with existing data
-          if (profile.username) document.getElementById("username").value = profile.username;
-          if (profile.department) document.getElementById("department").value = profile.department;
-          if (profile.college) document.getElementById("college").value = profile.college;
-          if (profile.city) document.getElementById("city").value = profile.city;
-          if (profile.rollNumber) document.getElementById("rollNumber").value = profile.rollNumber;
-        } else {
-          // If no profile, check sessionStorage for registration data
-          const pending = JSON.parse(sessionStorage.getItem('pendingProfile') || '{}');
-          if (pending.name) document.getElementById("username").value = pending.name;
-          if (pending.firstName) window.pendingFirstName = pending.firstName;
-          if (pending.lastName) window.pendingLastName = pending.lastName;
-          if (pending.rollNumber) document.getElementById("rollNumber").value = pending.rollNumber;
-
-          if (pending.departmentName) {
-            const deptSelect = document.getElementById("department");
-            // Check if option exists
-            let exists = false;
-            for (let i = 0; i < deptSelect.options.length; i++) {
-              if (deptSelect.options[i].text === pending.departmentName) {
-                deptSelect.selectedIndex = i;
-                exists = true;
-                break;
-              }
-            }
-            if (!exists) {
-              const opt = new Option(pending.departmentName, pending.departmentName);
-              deptSelect.add(opt);
-              deptSelect.value = pending.departmentName;
-            }
-          }
-
-          if (pending.institutionName) {
-            const collSelect = document.getElementById("college");
-            let exists = false;
-            for (let i = 0; i < collSelect.options.length; i++) {
-              if (collSelect.options[i].text === pending.institutionName || collSelect.options[i].value === pending.institutionName) {
-                collSelect.selectedIndex = i;
-                exists = true;
-                break;
-              }
-            }
-            if (!exists) {
-              const opt = new Option(pending.institutionName, pending.institutionName);
-              collSelect.add(opt);
-              collSelect.value = pending.institutionName;
-            }
-          }
-        }
-      } catch (error) {
-        console.log("No existing profile found (this is normal for new users):", error.message);
-
-        // Fallback to pendingProfile if getProfile fails or is empty
         const pending = JSON.parse(sessionStorage.getItem('pendingProfile') || '{}');
-        if (pending.name) document.getElementById("username").value = pending.name;
-
-        if (pending.departmentName) {
-          const deptSelect = document.getElementById("department");
-          const opt = new Option(pending.departmentName, pending.departmentName);
-          deptSelect.add(opt);
-          deptSelect.value = pending.departmentName;
+        
+        const data = profile || pending;
+        if (data) {
+          if (data.username || data.name) document.getElementById("username").value = data.username || data.name;
+          if (data.rollNumber) document.getElementById("rollNumber").value = data.rollNumber;
+          if (data.city) document.getElementById("city").value = data.city;
+          
+          // Cascading pre-fill: College -> Dept -> Batch
+          if (data.college || data.institutionName) {
+            const collSelect = document.getElementById("college");
+            const checkInt = setInterval(() => {
+              if (collSelect.options.length > 1) {
+                clearInterval(checkInt);
+                const targetText = data.college || data.institutionName;
+                for (let opt of collSelect.options) {
+                  if (opt.text === targetText || opt.value === targetText) {
+                    collSelect.value = opt.value;
+                    const event = new Event('change');
+                    collSelect.dispatchEvent(event);
+                    
+                    // Wait for college data to load depts
+                    const onCollegeLoaded = () => {
+                      document.removeEventListener('collegeLoaded', onCollegeLoaded);
+                      const deptSelect = document.getElementById('department');
+                      let targetDept = data.department || data.departmentName;
+                      if (DEPT_MAP[targetDept]) targetDept = DEPT_MAP[targetDept]; // Fix legacy 'aids' etc.
+                      
+                      for (let dOpt of deptSelect.options) {
+                        if (dOpt.text === targetDept || dOpt.value === targetDept) {
+                          deptSelect.value = dOpt.value;
+                          deptSelect.dispatchEvent(new Event('change'));
+                          
+                          // Wait for dept change to load batches
+                          const onDeptLoaded = () => {
+                            document.removeEventListener('deptLoaded', onDeptLoaded);
+                            const batchSelect = document.getElementById('batch');
+                            const targetBatch = data.batchId || data.yearId;
+                            if (targetBatch) {
+                              const bId = typeof targetBatch === 'object' ? targetBatch._id : targetBatch;
+                              for (let bOpt of batchSelect.options) {
+                                if (bOpt.value === bId || bOpt.text.includes(targetBatch)) {
+                                  batchSelect.value = bOpt.value;
+                                  break;
+                                }
+                              }
+                            }
+                          };
+                          document.addEventListener('deptLoaded', onDeptLoaded);
+                          break;
+                        }
+                      }
+                    };
+                    document.addEventListener('collegeLoaded', onCollegeLoaded);
+                    break;
+                  }
+                }
+              }
+            }, 100);
+          }
         }
-        if (pending.institutionName) {
-          const collSelect = document.getElementById("college");
-          const opt = new Option(pending.institutionName, pending.institutionName);
-          collSelect.add(opt);
-          collSelect.value = pending.institutionName;
-        }
-        if (pending.rollNumber) document.getElementById("rollNumber").value = pending.rollNumber;
-      }
+      } catch (err) { console.log("Profile load failed", err); }
     });
 
-    // Handle form submission
     detailsForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const user = auth.currentUser;
-      if (!user) {
-        showError("Session expired. Please login again.");
-        setTimeout(() => window.location.href = "index.html", 2000);
-        return;
-      }
+      if (!user) return;
 
-      errorMessage.style.display = 'none';
       setLoading(true);
-
-      // Check for pending specific data from registration
       const pendingProfile = JSON.parse(sessionStorage.getItem('pendingProfile') || '{}');
+      
+      const collSelect = document.getElementById("college");
+      const deptSelect = document.getElementById("department");
+      const batchSelect = document.getElementById("batch");
 
       const profileData = {
         username: document.getElementById("username").value.trim(),
-        firstName: window.pendingFirstName || "",
-        lastName: window.pendingLastName || "",
-        email: document.getElementById("email").value,
-        department: document.getElementById("department").value,
-        college: document.getElementById("college").value,
+        email: user.email,
+        department: deptSelect.value, // Long name stored as value
+        college: collSelect.value,
         city: document.getElementById("city").value.trim(),
         rollNumber: document.getElementById("rollNumber").value.trim(),
         photoURL: user.photoURL || null,
         provider: user.providerData[0]?.providerId === 'google.com' ? 'google' : 'email',
-        // Institution specific additions
         role: pendingProfile.role || 'student',
-        institutionId: pendingProfile.institutionId || undefined,
-        departmentId: pendingProfile.departmentId || undefined,
-        batchId: pendingProfile.batchId || pendingProfile.yearId || undefined
+        institutionId: collSelect.selectedOptions[0]?.dataset.institutionId || pendingProfile.institutionId,
+        departmentId: deptSelect.selectedOptions[0]?.dataset.deptId || pendingProfile.departmentId,
+        batchId: batchSelect.value || pendingProfile.batchId
       };
 
-      console.log("Saving profile data:", profileData);
-
       try {
-        const result = await authAPI.saveProfile(profileData);
-        console.log("Profile saved successfully:", result);
-
+        await authAPI.saveProfile(profileData);
         showSuccess("Profile saved successfully! Redirecting...");
-        sessionStorage.removeItem('pendingProfile'); // Clear after use
-
-        setTimeout(() => {
-          window.location.href = "explore.html";
-        }, 1500);
-
+        sessionStorage.removeItem('pendingProfile');
+        setTimeout(() => window.location.href = "explore.html", 1500);
       } catch (error) {
-        console.error("Error saving profile:", error);
-
-        let errorMsg = "Failed to save profile. ";
-        if (error.message.includes("auth/")) {
-          errorMsg += "Please login again.";
-          setTimeout(() => window.location.href = "index.html", 2000);
-        } else if (error.message.includes("Network")) {
-          errorMsg += "Please check your internet connection.";
-        } else {
-          errorMsg += error.message || "Please try again.";
-        }
-
-        showError(errorMsg);
+        showError(error.message || "Failed to save profile.");
         setLoading(false);
       }
     });
 
-    // Handle skip link
-    document.getElementById("skipLink").addEventListener("click", (e) => {
-      e.preventDefault();
-
-      if (confirm("Are you sure you want to skip? You'll need to complete your profile later to access all features.")) {
-        window.location.href = "explore.html";
-      }
+    document.getElementById("skipLink").addEventListener("click", () => {
+      if (confirm("Skip profile completion?")) window.location.href = "explore.html";
     });
+
   </script>
 </body>
 
