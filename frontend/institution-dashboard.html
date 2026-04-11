@@ -4082,9 +4082,19 @@
                 tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-graduation-cap"></i><p>No active batches. Add batches in the setup wizard.</p></div></td></tr>`;
                 return;
             }
-            const currentMonth = new Date().getMonth() + 1;
-            const currentFullYear = new Date().getFullYear();
-            const currentAcademicYear = currentMonth >= 6 ? currentFullYear : currentFullYear - 1;
+            const today = new Date();
+            const currentMonth = today.getMonth() + 1;
+            const currentFullYear = today.getFullYear();
+            // Academic year starts in June (6)
+            const academicYear = currentMonth >= 6 ? currentFullYear : currentFullYear - 1;
+            const programDuration = institutionData?.academicConfig?.programDuration || 4;
+
+            const formatYearLevel = (lvl) => {
+                if (lvl === 1) return "1st Year";
+                if (lvl === 2) return "2nd Year";
+                if (lvl === 3) return "3rd Year";
+                return `${lvl}th Year`;
+            };
 
             tbody.innerHTML = batches.map(b => {
                 const dept = b.departmentId?.name || b.departmentId || '—';
@@ -4095,19 +4105,9 @@
                 let batchLabel = "";
 
                 if (startYear) {
-                    const programDuration = institutionData?.academicConfig?.programDuration || 4;
-                    // Current academic year is current year if month >= June, else previous year
-                    const academicYear = (new Date().getMonth() + 1 >= 6) ? new Date().getFullYear() : new Date().getFullYear() - 1;
-                    
-                    // yearLevel = (2025 - 2025 + 1) = 1st Year
                     let yearLevel = academicYear - startYear + 1;
-                    // Clamp to [1, programDuration]
                     yearLevel = Math.max(1, Math.min(yearLevel, programDuration));
-                    
-                    const s = ['th', 'st', 'nd', 'rd'];
-                    const v = yearLevel % 100;
-                    const suffix = (s[(v - 20) % 10] || s[v] || s[0]);
-                    batchLabel = `${yearLevel}${suffix} Year`;
+                    batchLabel = formatYearLevel(yearLevel);
 
                     if (yearLevel >= programDuration) {
                         batchLabel += ' <span style="color: #ef4444; font-weight: 600;">(Graduating Soon)</span>';
@@ -4132,10 +4132,15 @@
       </tr>`;
             }).join('');
             // Alert for near-graduating batches
-            const nearGrad = batches.filter(b => b.endYear && (b.endYear - currentFullYear <= 0));
+            const nearGrad = batches.filter(b => {
+                const startYear = b.startYear || (b.batchID ? parseInt(b.batchID.split('-')[0]) : null);
+                if (!startYear) return false;
+                const yearLevel = academicYear - startYear + 1;
+                return yearLevel >= programDuration;
+            });
             const alertEl = document.getElementById('activeBatchesAlert');
             if (nearGrad.length > 0) {
-                alertEl.innerHTML = `<div class="info-box" style="margin-bottom:16px">⚠️ <strong>${nearGrad.map(b => b.batchID || b.name).join(', ')}</strong> — graduation period reached. Review and mark as graduated.</div>`;
+                alertEl.innerHTML = `<div class="info-box" style="margin-bottom:16px">⚠️ <strong>Note:</strong> Some batches are in their final year (${programDuration}${programDuration === 1 ? 'st' : programDuration === 2 ? 'nd' : programDuration === 3 ? 'rd' : 'th'} Year). Ensure graduation processing is completed.</div>`;
             } else {
                 alertEl.innerHTML = '';
             }
@@ -4228,26 +4233,56 @@
             try {
                 const data = await apiFetch(`/institutions/${institutionId}/batches/${batchId}/details`);
                 const years = data.years || [];
-                // Force sync with frontend academic year logic
-                const currentAcademicYear = (new Date().getMonth() + 1 >= 6) ? new Date().getFullYear() : new Date().getFullYear() - 1;
+                
+                const today = new Date();
+                const currentMonth = today.getMonth() + 1;
+                const currentFullYear = today.getFullYear();
+                const currentAcademicYear = currentMonth >= 6 ? currentFullYear : currentFullYear - 1;
                 
                 const timelineItems = years.map((yr, i) => {
                     const isPast = yr < currentAcademicYear;
                     const isCurrent = yr === currentAcademicYear;
-                    const lineClass = i > 0 && years[i - 1] < currentAcademicYear ? 'timeline-line past' : 'timeline-line';
+                    const isFuture = yr > currentAcademicYear;
+                    
+                    const lineClass = i > 0 && years[i - 1] <= currentAcademicYear ? 'timeline-line past' : 'timeline-line';
                     let html = i > 0 ? `<div class="${lineClass}"></div>` : '';
-                    html += `<div class="timeline-item"><div class="timeline-dot ${isCurrent ? 'current' : isPast ? 'past' : ''}">${yr}</div><div class="timeline-label ${isCurrent ? 'current' : ''}">${isCurrent ? 'NOW' : isPast ? 'Past' : ''}</div></div>`;
+                    
+                    let label = "";
+                    if (isCurrent) label = "NOW";
+                    else if (isPast) label = "Past";
+                    else label = "Future";
+
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-dot ${isCurrent ? 'current' : isPast ? 'past' : ''}">${yr}</div>
+                            <div class="timeline-label ${isCurrent ? 'current' : ''}">${label}</div>
+                        </div>`;
                     return html;
                 }).join('');
+
+                const programDuration = institutionData?.academicConfig?.programDuration || 4;
+                const startYear = years[0];
+                let yearLevel = currentAcademicYear - startYear + 1;
+                yearLevel = Math.max(1, Math.min(yearLevel, programDuration));
+                
+                const formatYearLevel = (lvl) => {
+                    if (lvl === 1) return "1st Year";
+                    if (lvl === 2) return "2nd Year";
+                    if (lvl === 3) return "3rd Year";
+                    return `${lvl}th Year`;
+                };
+                const displayYearLabel = formatYearLevel(yearLevel);
+
                 const deptDist = data.deptDistribution || {};
                 const perfRows = (data.performanceProgression || []).map(p => `
             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:13px">${p.yr}</span>
         <div style="display:flex;gap:12px;align-items:center"><strong>${p.avg}</strong>${p.change ? `<span class="badge badge-green">${p.change}</span>` : ''}</div>
       </div>`).join('');
+
                 document.getElementById('batchDetailCard').innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
-        <div><h3 style="font-size:20px;font-weight:800">Batch: ${data.batchId}</h3><p style="color:var(--text-2);font-size:13px">${data.currentYearLabel} Year · ${data.studentCount} Students</p></div>
+        <div><h3 style="font-size:20px;font-weight:800">Batch: ${data.batchId || batchId}</h3><p style="color:var(--text-2);font-size:13px">${displayYearLabel} · ${data.studentCount} Students</p></div>
         <div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="showSection('students')">View Students</button></div>
       </div>
       <h4 style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em">Academic Timeline</h4>
