@@ -579,6 +579,14 @@
             </span>
             <span class="detail-value" id="detailCity">-</span>
           </div>
+
+          <div class="detail-row">
+            <span class="detail-label">
+              <i class="fas fa-calendar-alt"></i>
+              Batch
+            </span>
+            <span class="detail-value" id="detailBatch">-</span>
+          </div>
           
           <div class="detail-row">
             <span class="detail-label">
@@ -978,6 +986,16 @@
           departmentMap[profile.department] || profile.department || "Not set";
         document.getElementById("detailCollege").textContent = profile.college || "Not set";
         document.getElementById("detailCity").textContent = profile.city || "Not set";
+        
+        if (profile.batchId && typeof profile.batchId === 'object' && profile.batchId.startYear) {
+          const b = profile.batchId;
+          document.getElementById("detailBatch").textContent = `${b.startYear} - ${b.endYear} (${b.batchID})`;
+        } else if (profile.batchId && typeof profile.batchId === 'string') {
+          // Legacy string batchId — show as-is or fetch batch info
+          document.getElementById("detailBatch").textContent = profile.batchId;
+        } else {
+          document.getElementById("detailBatch").textContent = "Not set";
+        }
         
         const provider = profile.provider || 
           (firebaseUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'email');
