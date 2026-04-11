@@ -1580,8 +1580,8 @@ router.get("/:id/students", authenticate, async (req, res) => {
             { rollNumber: new RegExp(search, "i") }
         ];
         const students = await User.find(query)
-            .populate("batchId", "batchID")
-            .select("username email rollNumber department createdAt");
+            .populate("batchId", "batchID startYear endYear")
+            .select("username email rollNumber department batchId createdAt");
         res.json({ students });
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch students" });

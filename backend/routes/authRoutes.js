@@ -121,19 +121,28 @@ router.post("/profile", verifyToken, async (req, res) => {
       lastLogin: new Date()
     };
 
-    // ONLY update role and institutionId if they are not already set 
-    // or if the user is a new user (upsert case handled by findOneAndUpdate)
+    // Only update role if the user is new or is a plain student
     if (!existingUser || !existingUser.role || existingUser.role === "student") {
         if (role) updateData.role = role;
         else if (!existingUser || !existingUser.role) updateData.role = "student";
     }
-    
-    if ((!existingUser || !existingUser.institutionId) && institutionId) {
+
+    // Allow students to update their institutionId freely.
+    // Protect inst-admin and hod users from having their institution overwritten.
+    const protectedRoles = ["inst-admin", "hod"];
+    const isProtected = existingUser && protectedRoles.includes(existingUser.role);
+    if (!isProtected && institutionId) {
         updateData.institutionId = institutionId;
+    } else if (!isProtected && !institutionId) {
+        // If no institutionId provided (e.g. selected "Other"), clear it
+        updateData.institutionId = null;
     }
 
-    // Capture batch/year info if provided for students
-    if (batchId) updateData.batchId = batchId;
+    // Always update batchId and departmentId for students
+    if (!isProtected) {
+        if (batchId) updateData.batchId = batchId;
+        if (req.body.departmentId) updateData.departmentId = req.body.departmentId;
+    }
 
     const user = await User.findOneAndUpdate(
       {
@@ -179,9 +188,11 @@ router.post("/profile", verifyToken, async (req, res) => {
 });
 
 // Update profile (partial updates)
-// FIX: Strict whitelist — role, institutionId, batchId, uid are NOT updatable by users.
-// Only these safe, non-privileged fields are accepted.
+// Safe non-privileged fields any user can update.
+// institutionId, batchId, departmentId are also allowed for students so
+// that editing the profile page correctly reflects their institution.
 const ALLOWED_PROFILE_UPDATE_FIELDS = ["username", "department", "college", "city", "photoURL", "rollNumber"];
+const STUDENT_EXTRA_FIELDS = ["institutionId", "batchId", "departmentId"];
 
 router.patch("/profile", verifyToken, async (req, res) => {
   try {
@@ -191,13 +202,22 @@ router.patch("/profile", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found. Please create profile first." });
     }
 
-    // Apply ONLY whitelisted fields from the request body
-    // Any attempt to set role, institutionId, batchId, or uid is silently ignored
+    // Apply whitelisted fields from the request body
     ALLOWED_PROFILE_UPDATE_FIELDS.forEach((field) => {
       if (req.body[field] !== undefined) {
         user[field] = req.body[field];
       }
     });
+
+    // Also allow institution/batch updates for students (not for inst-admin or hod)
+    const protectedRoles = ["inst-admin", "hod"];
+    if (!protectedRoles.includes(user.role)) {
+      STUDENT_EXTRA_FIELDS.forEach((field) => {
+        if (req.body[field] !== undefined) {
+          user[field] = req.body[field] || null;
+        }
+      });
+    }
 
     await user.save();
 
