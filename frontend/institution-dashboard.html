@@ -4460,12 +4460,7 @@
             });
         }
 
-        window.exportAnalyticsCSV = () => {
-            const rows = [...document.querySelectorAll('#participantsTbody tr')].map(tr =>
-                [...tr.querySelectorAll('td')].map(td => td.textContent.trim()).join(',')
-            );
-            downloadBlob('Rank,Roll No,Name,Department,Batch,Score,Time\n' + rows.join('\n'), 'analytics-export.csv', 'text/csv');
-        };
+
 
         window.toggleRepCreatorDeptFilter = () => {
             const role = document.getElementById('repCreatorRole').value;
@@ -5234,36 +5229,37 @@
                 return showToast('Please apply filters first to generate data before exporting.', 'warning');
             }
 
-            const eventId = document.getElementById('aEvt').value;
-            const eventName = document.getElementById('aEvt').options[document.getElementById('aEvt').selectedIndex].text.replace(/[^a-z0-9]/gi, '_');
-            
             const btn = document.querySelector('[onclick="exportAnalyticsCSV()"]');
             const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             btn.disabled = true;
 
             try {
+                const eventEl = document.getElementById('aEvt');
+                const eventName = eventEl.options[eventEl.selectedIndex]?.text || "Export";
+                const safeEventName = (eventName || "Export").replace(/[^a-z0-9]/gi, '_');
+
                 const headers = ['Rank', 'Roll No', 'Name', 'Department', 'Batch', 'Score', 'Time Taken'];
-                const escapeCSV = (val) => `"${String(val).replace(/"/g, '""')}"`;
+                const escapeCSV = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
 
                 const rows = analyticsParticipants.map(p => [
-                    p.rank,
-                    p.rollNo,
-                    p.name,
-                    p.dept,
-                    p.batch,
-                    p.score,
-                    p.time
+                    p.rank || '—',
+                    p.rollNo || '—',
+                    p.name || '—',
+                    p.dept || '—',
+                    p.batch || '—',
+                    p.score || '0',
+                    p.time || '—'
                 ].map(escapeCSV).join(','));
 
                 const csvContent = [headers.join(','), ...rows].join('\n');
                 const date = new Date().toISOString().split('T')[0];
                 
-                downloadBlob(csvContent, `analytics_export_${eventName}_${date}.csv`, 'text/csv');
+                downloadBlob(csvContent, `analytics_export_${safeEventName}_${date}.csv`, 'text/csv');
                 showToast('CSV Exported Successfully');
             } catch (err) {
                 console.error("Export CSV Error:", err);
-                showToast('Export failed', 'error');
+                showToast('CSV Export failed: ' + err.message, 'error');
             } finally {
                 btn.innerHTML = orig;
                 btn.disabled = false;
@@ -5275,17 +5271,20 @@
                 return showToast('Please apply filters first to generate data before exporting.', 'warning');
             }
 
-            const eventId = document.getElementById('aEvt').value;
-            const eventName = document.getElementById('aEvt').options[document.getElementById('aEvt').selectedIndex].text;
-            const safeEventName = eventName.replace(/[^a-z0-9]/gi, '_');
-            
             const btn = document.querySelector('[onclick="exportAnalyticsPDF()"]');
             const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             btn.disabled = true;
 
             try {
+                const eventEl = document.getElementById('aEvt');
+                const eventName = eventEl.options[eventEl.selectedIndex]?.text || "Event_Report";
+                const safeEventName = (eventName || "Event_Report").replace(/[^a-z0-9]/gi, '_');
+
                 showToast('Generating PDF Report...', 'info');
+                
+                if (!window.jspdf) throw new Error("PDF Library (jsPDF) not loaded. Please refresh the page.");
+                
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
                 const pageWidth = doc.internal.pageSize.getWidth();
@@ -5300,9 +5299,10 @@
                 doc.setTextColor(100, 116, 139);
                 doc.text(eventName, 14, 30);
                 
+                const instName = institutionData?.name || "Institution Report";
                 doc.setFontSize(9);
                 doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 38);
-                doc.text(`Institution: ${institutionData.name}`, 14, 43);
+                doc.text(`Institution: ${instName}`, 14, 43);
                 
                 // 2. Summary Stats Section
                 doc.setDrawColor(226, 232, 240);
@@ -5315,9 +5315,12 @@
                 
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
-                doc.text(`Average Score: ${document.getElementById('aAvgScore').textContent}`, 14, 64);
-                doc.text(`Total Participants: ${document.getElementById('aTotalPart').textContent}`, 14, 70);
-                doc.text(`Avg Completion Time: ${document.getElementById('aAvgTime').textContent}`, 14, 76);
+                const avgScore = document.getElementById('aAvgScore')?.textContent || '—';
+                const totalPart = document.getElementById('aTotalPart')?.textContent || '0';
+                const avgTime = document.getElementById('aAvgTime')?.textContent || '—';
+                doc.text(`Average Score: ${avgScore}`, 14, 64);
+                doc.text(`Total Participants: ${totalPart}`, 14, 70);
+                doc.text(`Avg Completion Time: ${avgTime}`, 14, 76);
                 
                 // 3. Visual Charts
                 let currentY = 85;
@@ -5358,12 +5361,15 @@
                 
                 doc.setTextColor(15, 23, 42);
                 doc.setFontSize(14);
-                doc.text(document.getElementById('tpName').textContent, 20, currentY + 19);
+                const tpName = document.getElementById('tpName')?.textContent || '—';
+                doc.text(tpName, 20, currentY + 19);
                 
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(100, 116, 139);
-                doc.text(`${document.getElementById('tpMeta').textContent} · #${document.getElementById('tpRank').textContent}`, 20, currentY + 25);
+                const tpMeta = document.getElementById('tpMeta')?.textContent || '—';
+                const tpRank = document.getElementById('tpRank')?.textContent || '—';
+                doc.text(`${tpMeta} · #${tpRank}`, 20, currentY + 25);
                 
                 // 5. Participant Table (Top 50)
                 doc.addPage();
@@ -5405,7 +5411,14 @@
                     }
                     
                     let rowX = 14;
-                    const rowData = [String(p.rank), String(p.rollNo), String(p.name), String(p.dept), String(p.batch), String(p.score)];
+                    const rowData = [
+                        String(p.rank || ''), 
+                        String(p.rollNo || ''), 
+                        String(p.name || ''), 
+                        String(p.dept || ''), 
+                        String(p.batch || ''), 
+                        String(p.score || '')
+                    ];
                     
                     rowData.forEach((val, i) => {
                         let text = val;
@@ -5427,7 +5440,7 @@
                 showToast('PDF Prepared Successfully');
             } catch (err) {
                 console.error("PDF Export Error:", err);
-                showToast('PDF generation failed', 'error');
+                showToast('PDF Export failed: ' + err.message, 'error');
             } finally {
                 btn.innerHTML = orig;
                 btn.disabled = false;
