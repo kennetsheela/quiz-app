@@ -2535,8 +2535,12 @@
                 <div class="card" style="margin-bottom:16px">
                     <div class="events-section-header">
                         <h4>📋 Filtered Participant List</h4>
-                        <button class="btn btn-secondary btn-sm" onclick="exportAnalyticsCSV()"><i
-                                class="fa-solid fa-download"></i> Export CSV</button>
+                        <div style="display:flex;gap:8px">
+                            <button class="btn btn-secondary btn-sm" onclick="exportAnalyticsCSV()"><i
+                                    class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            <button class="btn btn-primary btn-sm" onclick="exportAnalyticsPDF()"><i
+                                    class="fa-solid fa-file-pdf"></i> Export PDF Report</button>
+                        </div>
                     </div>
                     <div class="table-wrap">
                         <table>
@@ -3406,6 +3410,8 @@
                     const errData = await response.json().catch(() => ({}));
                     throw new Error(errData.error || `API Error ${response.status}`);
                 }
+                
+                if (opts.text) return response.text();
                 return response.json();
             } catch (error) {
                 console.error(`[API] Fetch Error (${path}):`, error.message);
@@ -4088,13 +4094,21 @@
                 let batchLabel = "";
 
                 if (startYear) {
-                    const yearLevel = Math.max(1, currentAcademicYear - startYear + 1);
+                    const programDuration = institutionData?.academicConfig?.programDuration || 4;
+                    // Current academic year is current year if month >= June, else previous year
+                    const academicYear = (new Date().getMonth() + 1 >= 6) ? new Date().getFullYear() : new Date().getFullYear() - 1;
+                    
+                    // yearLevel = (2025 - 2025 + 1) = 1st Year
+                    let yearLevel = academicYear - startYear + 1;
+                    // Clamp to [1, programDuration]
+                    yearLevel = Math.max(1, Math.min(yearLevel, programDuration));
+                    
                     const s = ['th', 'st', 'nd', 'rd'];
                     const v = yearLevel % 100;
                     const suffix = (s[(v - 20) % 10] || s[v] || s[0]);
                     batchLabel = `${yearLevel}${suffix} Year`;
 
-                    if (yearLevel >= 4) {
+                    if (yearLevel >= programDuration) {
                         batchLabel += ' <span style="color: #ef4444; font-weight: 600;">(Graduating Soon)</span>';
                     }
                 } else {
@@ -4213,11 +4227,13 @@
             try {
                 const data = await apiFetch(`/institutions/${institutionId}/batches/${batchId}/details`);
                 const years = data.years || [];
-                const currentYear = data.currentYear;
+                // Force sync with frontend academic year logic
+                const currentAcademicYear = (new Date().getMonth() + 1 >= 6) ? new Date().getFullYear() : new Date().getFullYear() - 1;
+                
                 const timelineItems = years.map((yr, i) => {
-                    const isPast = yr < currentYear;
-                    const isCurrent = yr === currentYear;
-                    const lineClass = i > 0 && years[i - 1] < currentYear ? 'timeline-line past' : 'timeline-line';
+                    const isPast = yr < currentAcademicYear;
+                    const isCurrent = yr === currentAcademicYear;
+                    const lineClass = i > 0 && years[i - 1] < currentAcademicYear ? 'timeline-line past' : 'timeline-line';
                     let html = i > 0 ? `<div class="${lineClass}"></div>` : '';
                     html += `<div class="timeline-item"><div class="timeline-dot ${isCurrent ? 'current' : isPast ? 'past' : ''}">${yr}</div><div class="timeline-label ${isCurrent ? 'current' : ''}">${isCurrent ? 'NOW' : isPast ? 'Past' : ''}</div></div>`;
                     return html;
@@ -5216,12 +5232,118 @@
             const eventId = document.getElementById('aEvt').value;
             if (!eventId || eventId === 'all') return showToast('Please select a specific event to export', 'error');
 
+            const btn = document.querySelector('[onclick="exportAnalyticsCSV()"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
             try {
-                const data = await apiFetch(`/analytics/event/${eventId}/export`);
+                // Fix: use text:true to get raw CSV string
+                const data = await apiFetch(`/analytics/event/${eventId}/export`, { text: true });
+                if (typeof data === 'object' && data.error) throw new Error(data.error);
+                
                 downloadBlob(data, `analytics_report_${eventId}.csv`, 'text/csv');
                 showToast('CSV Exported');
             } catch (err) {
-                showToast('Export failed', 'error');
+                console.error("Export CSV Error:", err);
+                showToast('Export failed: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        };
+
+        window.exportAnalyticsPDF = async () => {
+            const eventId = document.getElementById('aEvt').value;
+            if (!eventId || eventId === 'all') return showToast('Please select a specific event to export', 'error');
+
+            const btn = document.querySelector('[onclick="exportAnalyticsPDF()"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                showToast('Generating PDF Report...', 'info');
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = doc.internal.pageSize.getWidth();
+                
+                // Title
+                doc.setFontSize(20);
+                doc.setTextColor(59, 130, 246); // Primary Color
+                const eventName = document.getElementById('aEvt').options[document.getElementById('aEvt').selectedIndex].text;
+                doc.text("Event Performance Report", 14, 20);
+                
+                doc.setFontSize(14);
+                doc.setTextColor(100, 116, 139);
+                doc.text(eventName, 14, 28);
+                
+                // Metadata
+                doc.setFontSize(10);
+                doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 35);
+                doc.text(`Institution: ${institutionData.name}`, 14, 40);
+                
+                // Summary Metrics
+                doc.setDrawColor(226, 232, 240);
+                doc.line(14, 45, pageWidth - 14, 45);
+                
+                doc.setFontSize(12);
+                doc.setTextColor(15, 23, 42);
+                doc.text("Summary Stats", 14, 52);
+                
+                doc.setFontSize(10);
+                doc.text(`Average Score: ${document.getElementById('aAvgScore').textContent}`, 14, 60);
+                doc.text(`Total Participants: ${document.getElementById('aTotalPart').textContent}`, 14, 65);
+                doc.text(`Avg Completion Time: ${document.getElementById('aAvgTime').textContent}`, 14, 70);
+                
+                // Charts
+                let currentY = 80;
+                
+                const scoreChart = document.getElementById('scoreDistChart');
+                const deptChart = document.getElementById('deptPerfChart');
+                
+                if (scoreChart) {
+                    doc.text("Score Distribution", 14, currentY);
+                    const img = scoreChart.toDataURL('image/png');
+                    doc.addImage(img, 'PNG', 14, currentY + 5, 180, 80);
+                    currentY += 95;
+                }
+                
+                if (deptChart) {
+                    if (currentY > 200) { doc.addPage(); currentY = 20; }
+                    doc.text("Department Performance", 14, currentY);
+                    const img = deptChart.toDataURL('image/png');
+                    doc.addImage(img, 'PNG', 14, currentY + 5, 180, 80);
+                    currentY += 95;
+                }
+                
+                // Top Performer
+                if (currentY > 240) { doc.addPage(); currentY = 20; }
+                doc.setDrawColor(59, 130, 246);
+                doc.setFillColor(239, 246, 255);
+                doc.rect(14, currentY, pageWidth - 28, 25, 'FD');
+                
+                doc.setTextColor(37, 99, 235);
+                doc.setFontSize(11);
+                doc.text("TOP PERFORMER", 20, currentY + 8);
+                doc.setTextColor(15, 23, 42);
+                doc.setFontSize(13);
+                doc.text(document.getElementById('tpName').textContent, 20, currentY + 16);
+                
+                // Participants Note
+                currentY += 35;
+                doc.setFontSize(10);
+                doc.setTextColor(100, 116, 139);
+                doc.text("* Detailed participant list is available in the exported CSV file.", 14, currentY);
+
+                doc.save(`Performance_Report_${eventId}.pdf`);
+                showToast('PDF Prepared');
+            } catch (err) {
+                console.error("PDF Export Error:", err);
+                showToast('PDF generation failed', 'error');
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
             }
         };
 
