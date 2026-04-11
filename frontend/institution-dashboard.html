@@ -5225,6 +5225,7 @@
         };
 
         window.exportAnalyticsCSV = async () => {
+            console.log("[Analytics] Starting CSV Export...", { dataLength: analyticsParticipants?.length });
             if (!analyticsParticipants || analyticsParticipants.length === 0) {
                 return showToast('Please apply filters first to generate data before exporting.', 'warning');
             }
@@ -5255,11 +5256,11 @@
                 const csvContent = [headers.join(','), ...rows].join('\n');
                 const date = new Date().toISOString().split('T')[0];
                 
-                downloadBlob(csvContent, `analytics_export_${safeEventName}_${date}.csv`, 'text/csv');
+                window.downloadBlob(csvContent, `analytics_export_${safeEventName}_${date}.csv`, 'text/csv');
                 showToast('CSV Exported Successfully');
             } catch (err) {
-                console.error("Export CSV Error:", err);
-                showToast('CSV Export failed: ' + err.message, 'error');
+                console.log("[Analytics] CSV Export Error", err);
+                showToast('!!! LOG: CSV Export Failed: ' + (err.message || err), 'error');
             } finally {
                 btn.innerHTML = orig;
                 btn.disabled = false;
@@ -5267,6 +5268,7 @@
         };
 
         window.exportAnalyticsPDF = async () => {
+            console.log("[Analytics] Starting PDF Export...", { dataLength: analyticsParticipants?.length });
             if (!analyticsParticipants || analyticsParticipants.length === 0) {
                 return showToast('Please apply filters first to generate data before exporting.', 'warning');
             }
@@ -5334,7 +5336,7 @@
                         const img = scoreChart.toDataURL('image/png', 1.0);
                         doc.addImage(img, 'PNG', 14, currentY + 5, 182, 70);
                         currentY += 85;
-                    } catch (e) { console.error("Score chart capture failed", e); }
+                    } catch (e) { console.error("[PDF] Score chart capture failed", e); }
                 }
 
                 if (deptChart) {
@@ -5345,7 +5347,7 @@
                         const img = deptChart.toDataURL('image/png', 1.0);
                         doc.addImage(img, 'PNG', 14, currentY + 5, 182, 70);
                         currentY += 85;
-                    } catch (e) { console.error("Dept chart capture failed", e); }
+                    } catch (e) { console.error("[PDF] Dept chart capture failed", e); }
                 }
 
                 // 4. Top Performer Highlight
@@ -5439,8 +5441,8 @@
                 doc.save(`Performance_Report_${safeEventName}_${date}.pdf`);
                 showToast('PDF Prepared Successfully');
             } catch (err) {
-                console.error("PDF Export Error:", err);
-                showToast('PDF Export failed: ' + err.message, 'error');
+                console.log("[Analytics] PDF Export Error", err);
+                showToast('!!! LOG: PDF Export Failed: ' + (err.message || err), 'error');
             } finally {
                 btn.innerHTML = orig;
                 btn.disabled = false;
@@ -5674,13 +5676,13 @@
             return isNaN(d) ? dateStr : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         }
 
-        function downloadBlob(content, filename, type) {
+        window.downloadBlob = function(content, filename, type) {
             const blob = new Blob([content], { type });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = filename; a.click();
             URL.revokeObjectURL(url);
-        }
+        };
 
         function showToast(msg, type = 'success') {
             let toast = document.getElementById('globalToast');
