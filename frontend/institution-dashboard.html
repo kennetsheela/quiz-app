@@ -3371,6 +3371,7 @@
         const STU_PER_PAGE = 20;
         let analyticsCharts = {};
         let reportData = null;
+        let analyticsParticipants = []; // Stored data for exports
         // Wizard state
         let wizardStep = 1;
         const WIZARD_STEPS = 4;
@@ -4321,9 +4322,9 @@
                 document.getElementById('aTotalPart').textContent = data.totalParticipants || 0;
 
                 // Participants table
-                const participants = data.participants || [];
-                document.getElementById('participantsTbody').innerHTML = participants.length
-                    ? participants.map(p => `
+                analyticsParticipants = data.participants || [];
+                document.getElementById('participantsTbody').innerHTML = analyticsParticipants.length
+                    ? analyticsParticipants.map(p => `
                         <tr>
                             <td><strong>#${p.rank}</strong></td>
                             <td><code style="font-size:11px;background:var(--surface2);padding:2px 5px;border-radius:4px">${p.rollNo}</code></td>
@@ -5229,24 +5230,40 @@
         };
 
         window.exportAnalyticsCSV = async () => {
-            const eventId = document.getElementById('aEvt').value;
-            if (!eventId || eventId === 'all') return showToast('Please select a specific event to export', 'error');
+            if (!analyticsParticipants || analyticsParticipants.length === 0) {
+                return showToast('Please apply filters first to generate data before exporting.', 'warning');
+            }
 
+            const eventId = document.getElementById('aEvt').value;
+            const eventName = document.getElementById('aEvt').options[document.getElementById('aEvt').selectedIndex].text.replace(/[^a-z0-9]/gi, '_');
+            
             const btn = document.querySelector('[onclick="exportAnalyticsCSV()"]');
             const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             btn.disabled = true;
 
             try {
-                // Fix: use text:true to get raw CSV string
-                const data = await apiFetch(`/analytics/event/${eventId}/export`, { text: true });
-                if (typeof data === 'object' && data.error) throw new Error(data.error);
+                const headers = ['Rank', 'Roll No', 'Name', 'Department', 'Batch', 'Score', 'Time Taken'];
+                const escapeCSV = (val) => `"${String(val).replace(/"/g, '""')}"`;
+
+                const rows = analyticsParticipants.map(p => [
+                    p.rank,
+                    p.rollNo,
+                    p.name,
+                    p.dept,
+                    p.batch,
+                    p.score,
+                    p.time
+                ].map(escapeCSV).join(','));
+
+                const csvContent = [headers.join(','), ...rows].join('\n');
+                const date = new Date().toISOString().split('T')[0];
                 
-                downloadBlob(data, `analytics_report_${eventId}.csv`, 'text/csv');
-                showToast('CSV Exported');
+                downloadBlob(csvContent, `analytics_export_${eventName}_${date}.csv`, 'text/csv');
+                showToast('CSV Exported Successfully');
             } catch (err) {
                 console.error("Export CSV Error:", err);
-                showToast('Export failed: ' + err.message, 'error');
+                showToast('Export failed', 'error');
             } finally {
                 btn.innerHTML = orig;
                 btn.disabled = false;
@@ -5254,9 +5271,14 @@
         };
 
         window.exportAnalyticsPDF = async () => {
-            const eventId = document.getElementById('aEvt').value;
-            if (!eventId || eventId === 'all') return showToast('Please select a specific event to export', 'error');
+            if (!analyticsParticipants || analyticsParticipants.length === 0) {
+                return showToast('Please apply filters first to generate data before exporting.', 'warning');
+            }
 
+            const eventId = document.getElementById('aEvt').value;
+            const eventName = document.getElementById('aEvt').options[document.getElementById('aEvt').selectedIndex].text;
+            const safeEventName = eventName.replace(/[^a-z0-9]/gi, '_');
+            
             const btn = document.querySelector('[onclick="exportAnalyticsPDF()"]');
             const orig = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
@@ -5267,77 +5289,142 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
                 const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
                 
-                // Title
-                doc.setFontSize(20);
-                doc.setTextColor(59, 130, 246); // Primary Color
-                const eventName = document.getElementById('aEvt').options[document.getElementById('aEvt').selectedIndex].text;
+                // 1. Header
+                doc.setFontSize(22);
+                doc.setTextColor(59, 130, 246); // Primary
                 doc.text("Event Performance Report", 14, 20);
                 
                 doc.setFontSize(14);
                 doc.setTextColor(100, 116, 139);
-                doc.text(eventName, 14, 28);
+                doc.text(eventName, 14, 30);
                 
-                // Metadata
-                doc.setFontSize(10);
-                doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 35);
-                doc.text(`Institution: ${institutionData.name}`, 14, 40);
+                doc.setFontSize(9);
+                doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 38);
+                doc.text(`Institution: ${institutionData.name}`, 14, 43);
                 
-                // Summary Metrics
+                // 2. Summary Stats Section
                 doc.setDrawColor(226, 232, 240);
-                doc.line(14, 45, pageWidth - 14, 45);
+                doc.line(14, 48, pageWidth - 14, 48);
                 
                 doc.setFontSize(12);
                 doc.setTextColor(15, 23, 42);
-                doc.text("Summary Stats", 14, 52);
+                doc.setFont('helvetica', 'bold');
+                doc.text("Summary Metrics", 14, 56);
                 
+                doc.setFont('helvetica', 'normal');
                 doc.setFontSize(10);
-                doc.text(`Average Score: ${document.getElementById('aAvgScore').textContent}`, 14, 60);
-                doc.text(`Total Participants: ${document.getElementById('aTotalPart').textContent}`, 14, 65);
-                doc.text(`Avg Completion Time: ${document.getElementById('aAvgTime').textContent}`, 14, 70);
+                doc.text(`Average Score: ${document.getElementById('aAvgScore').textContent}`, 14, 64);
+                doc.text(`Total Participants: ${document.getElementById('aTotalPart').textContent}`, 14, 70);
+                doc.text(`Avg Completion Time: ${document.getElementById('aAvgTime').textContent}`, 14, 76);
                 
-                // Charts
-                let currentY = 80;
-                
+                // 3. Visual Charts
+                let currentY = 85;
                 const scoreChart = document.getElementById('scoreDistChart');
                 const deptChart = document.getElementById('deptPerfChart');
-                
+
                 if (scoreChart) {
+                    doc.setFont('helvetica', 'bold');
                     doc.text("Score Distribution", 14, currentY);
-                    const img = scoreChart.toDataURL('image/png');
-                    doc.addImage(img, 'PNG', 14, currentY + 5, 180, 80);
-                    currentY += 95;
+                    try {
+                        const img = scoreChart.toDataURL('image/png', 1.0);
+                        doc.addImage(img, 'PNG', 14, currentY + 5, 182, 70);
+                        currentY += 85;
+                    } catch (e) { console.error("Score chart capture failed", e); }
                 }
-                
+
                 if (deptChart) {
-                    if (currentY > 200) { doc.addPage(); currentY = 20; }
-                    doc.text("Department Performance", 14, currentY);
-                    const img = deptChart.toDataURL('image/png');
-                    doc.addImage(img, 'PNG', 14, currentY + 5, 180, 80);
-                    currentY += 95;
+                    if (currentY > 220) { doc.addPage(); currentY = 20; }
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("Department Performance (Avg %)", 14, currentY);
+                    try {
+                        const img = deptChart.toDataURL('image/png', 1.0);
+                        doc.addImage(img, 'PNG', 14, currentY + 5, 182, 70);
+                        currentY += 85;
+                    } catch (e) { console.error("Dept chart capture failed", e); }
                 }
-                
-                // Top Performer
+
+                // 4. Top Performer Highlight
                 if (currentY > 240) { doc.addPage(); currentY = 20; }
                 doc.setDrawColor(59, 130, 246);
                 doc.setFillColor(239, 246, 255);
-                doc.rect(14, currentY, pageWidth - 28, 25, 'FD');
+                doc.roundedRect(14, currentY, pageWidth - 28, 28, 3, 3, 'FD');
                 
                 doc.setTextColor(37, 99, 235);
-                doc.setFontSize(11);
-                doc.text("TOP PERFORMER", 20, currentY + 8);
-                doc.setTextColor(15, 23, 42);
-                doc.setFontSize(13);
-                doc.text(document.getElementById('tpName').textContent, 20, currentY + 16);
-                
-                // Participants Note
-                currentY += 35;
                 doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.text("🏆 TOP PERFORMER", 20, currentY + 10);
+                
+                doc.setTextColor(15, 23, 42);
+                doc.setFontSize(14);
+                doc.text(document.getElementById('tpName').textContent, 20, currentY + 19);
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
                 doc.setTextColor(100, 116, 139);
-                doc.text("* Detailed participant list is available in the exported CSV file.", 14, currentY);
+                doc.text(`${document.getElementById('tpMeta').textContent} · #${document.getElementById('tpRank').textContent}`, 20, currentY + 25);
+                
+                // 5. Participant Table (Top 50)
+                doc.addPage();
+                currentY = 20;
+                doc.setTextColor(15, 23, 42);
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.text("Top 50 Participants", 14, currentY);
+                
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(100, 116, 139);
+                doc.text("* Full participant list is available in the exported CSV report.", 14, currentY + 5);
+                
+                currentY += 15;
+                // Simple Table
+                const headers = ['Rank', 'Roll No', 'Name', 'Department', 'Batch', 'Score'];
+                const colWidths = [12, 30, 50, 40, 30, 20];
+                
+                // Draw Header
+                doc.setFillColor(248, 250, 252);
+                doc.rect(14, currentY - 5, pageWidth - 28, 7, 'F');
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(71, 85, 105);
+                let curX = 14;
+                headers.forEach((h, i) => {
+                    doc.text(h, curX + 2, currentY);
+                    curX += colWidths[i];
+                });
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(15, 23, 42);
+                currentY += 8;
+                
+                analyticsParticipants.slice(0, 50).forEach((p, idx) => {
+                    if (currentY > pageHeight - 15) {
+                        doc.addPage();
+                        currentY = 20;
+                    }
+                    
+                    let rowX = 14;
+                    const rowData = [String(p.rank), String(p.rollNo), String(p.name), String(p.dept), String(p.batch), String(p.score)];
+                    
+                    rowData.forEach((val, i) => {
+                        let text = val;
+                        // Truncate name/dept if too long
+                        if (i === 2 && text.length > 25) text = text.substring(0, 22) + '...';
+                        if (i === 3 && text.length > 20) text = text.substring(0, 17) + '...';
+                        
+                        doc.text(text, rowX + 2, currentY);
+                        rowX += colWidths[i];
+                    });
+                    
+                    doc.setDrawColor(241, 245, 249);
+                    doc.line(14, currentY + 2, pageWidth - 14, currentY + 2);
+                    currentY += 7;
+                });
 
-                doc.save(`Performance_Report_${eventId}.pdf`);
-                showToast('PDF Prepared');
+                const date = new Date().toISOString().split('T')[0];
+                doc.save(`Performance_Report_${safeEventName}_${date}.pdf`);
+                showToast('PDF Prepared Successfully');
             } catch (err) {
                 console.error("PDF Export Error:", err);
                 showToast('PDF generation failed', 'error');
