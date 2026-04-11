@@ -121,8 +121,8 @@ router.post("/profile", verifyToken, async (req, res) => {
       lastLogin: new Date()
     };
 
-    // Only update role if the user is new or is a plain student
-    if (!existingUser || !existingUser.role || existingUser.role === "student") {
+    // Update role if the user is new or is a plain student/independent
+    if (!existingUser || !existingUser.role || existingUser.role === "student" || existingUser.role === "independent") {
         if (role) updateData.role = role;
         else if (!existingUser || !existingUser.role) updateData.role = "student";
     }
